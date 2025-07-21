@@ -182,3 +182,11 @@
 - Bestätigung bei erfolgreicher Änderung.
 
 ---
+## User story 15: - Benutzer per Shell anlegen
+
+**Als** Administrator möcht eich neue Benutzer per Symfony Shell Command anlegen können und das Passwort festlegen können
+**damit** ich einfach neue User anlegen kann unda uch einen ersten User erzeugen kann ohne mich anzumelden
+
+**Akzeptanzkriterien:**
+- Email Adresse wird validiert ob sie einer gängigen Email enspricht
+- Passwort muss 16 Zeichen lang sein
