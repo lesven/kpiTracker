@@ -27,11 +27,11 @@ class FileUploadService
     /**
      * Verarbeitet Datei-Uploads für KPI-Werte
      * 
-     * @param UploadedFile[] $uploadedFiles
+     * @param UploadedFile[]|null $uploadedFiles
      * @param KPIValue $kpiValue
      * @return array Statistiken über die Uploads
      */
-    public function handleFileUploads(array $uploadedFiles, KPIValue $kpiValue): array
+    public function handleFileUploads(?array $uploadedFiles, KPIValue $kpiValue): array
     {
         $stats = [
             'uploaded' => 0,
@@ -43,13 +43,16 @@ class FileUploadService
             return $stats;
         }
 
-        foreach ($uploadedFiles as $uploadedFile) {
-            if (!$uploadedFile instanceof UploadedFile || !$uploadedFile->isValid()) {
-                $stats['failed']++;
-                $stats['errors'][] = 'Ungültige Datei: ' . ($uploadedFile?->getClientOriginalName() ?? 'Unbekannt');
-                continue;
-            }
+        // Filter out null values and ensure we only have UploadedFile instances
+        $validFiles = array_filter($uploadedFiles, function($file) {
+            return $file instanceof UploadedFile && $file->isValid() && $file->getError() === UPLOAD_ERR_OK;
+        });
 
+        if (empty($validFiles)) {
+            return $stats;
+        }
+
+        foreach ($validFiles as $uploadedFile) {
             try {
                 $kpiFile = $this->processUpload($uploadedFile, $kpiValue);
                 $stats['uploaded']++;

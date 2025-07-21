@@ -53,6 +53,7 @@ class KPIValueType extends AbstractType
                 'help' => 'Optional: Dateien als Beleg oder zusätzliche Information anhängen',
                 'constraints' => [
                     new All([
+                        'allowMissingFields' => true,
                         'constraints' => [
                             new File([
                                 'maxSize' => '5M',
