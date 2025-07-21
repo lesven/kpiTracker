@@ -28,8 +28,10 @@ RUN echo "upload_max_filesize = 50M" >> /usr/local/etc/php/conf.d/uploads.ini \
 RUN groupadd -g 1000 www \
     && useradd -u 1000 -ms /bin/bash -g www www
 
-# Berechtigungen setzen
-RUN chown -R www:www /var/www/html
+# Verzeichnisse erstellen und Berechtigungen setzen
+RUN mkdir -p /var/www/html/var/cache /var/www/html/var/log /var/www/html/var/sessions \
+    && chown -R www:www /var/www/html \
+    && chmod -R 755 /var/www/html
 
 USER www
 

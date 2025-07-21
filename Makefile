@@ -1,7 +1,7 @@
 # Makefile für KPI-Tracker
 # Vereinfacht die häufigsten Entwicklungsaufgaben
 
-.PHONY: help install start stop restart build test coverage lint fix clean migrate seed
+.PHONY: help install start stop restart build test coverage lint fix clean migrate seed fix-permissions
 
 # Standard-Ziel
 help: ## Zeigt diese Hilfe an
@@ -12,6 +12,7 @@ help: ## Zeigt diese Hilfe an
 install: ## Installiert alle Abhängigkeiten
 	docker compose build
 	docker compose up -d
+	docker compose exec app chown -R www:www /var/www/html
 	docker compose exec app composer install
 	docker compose exec app php bin/console doctrine:database:create --if-not-exists
 	docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
@@ -64,6 +65,10 @@ db: ## Öffnet MySQL-Konsole
 
 backup: ## Erstellt Datenbank-Backup
 	docker compose exec db mysqldump -u symfony -p kpi_tracker > backup_$(shell date +%Y%m%d_%H%M%S).sql
+
+fix-permissions: ## Behebt Berechtigungsprobleme (Linux/Mac)
+	chmod +x fix-permissions.sh
+	./fix-permissions.sh
 
 # Entwicklung
 dev-setup: install ## Komplettes Setup für Entwicklung
