@@ -41,12 +41,16 @@
             <div class="card-body">
                 {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
                 
-                <!-- Zeitraum (readonly) -->
+                <!-- Zeitraum (editierbar) -->
                 <div class="mb-3">
-                    <label class="form-label">Zeitraum</label>
-                    <input type="text" class="form-control" value="{{ current_period }}" readonly>
+                    {{ form_label(form.period, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.period, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_help(form.period) }}
+                    {{ form_errors(form.period) }}
                     <div class="form-text">
-                        Der Zeitraum wird automatisch basierend auf dem KPI-Intervall bestimmt.
+                        <i class="bi bi-info-circle"></i> 
+                        Vorschlag basierend auf KPI-Intervall: <strong>{{ current_period }}</strong><br>
+                        Sie können diesen Zeitraum ändern um historische Daten einzutragen.
                     </div>
                 </div>
 
@@ -112,6 +116,14 @@
                 </h6>
             </div>
             <div class="card-body">
+                <h6>Zeitraum eingeben:</h6>
+                <ul>
+                    <li><strong>Monatlich:</strong> Format Jahr-Monat (z.B. 2024-01 für Januar 2024)</li>
+                    <li><strong>Wöchentlich:</strong> Format Jahr-Woche (z.B. 2024-W05 für 5. Kalenderwoche 2024)</li>
+                    <li><strong>Quartalsweise:</strong> Format Jahr-Quartal (z.B. 2024-Q1 für 1. Quartal 2024)</li>
+                    <li>So können Sie auch Daten für vergangene Zeiträume nachtragen</li>
+                </ul>
+
                 <h6>Wert eingeben:</h6>
                 <ul>
                     <li>Verwenden Sie Punkt oder Komma als Dezimaltrennzeichen</li>

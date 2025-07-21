@@ -156,7 +156,7 @@ class KPIController extends AbstractController
         $kpiValue = new KPIValue();
         $kpiValue->setKpi($kpi);
         
-        // Aktuellen Zeitraum basierend auf KPI-Intervall setzen
+        // Aktuellen Zeitraum als Standardwert vorschlagen
         $currentPeriod = $kpi->getCurrentPeriod();
         $kpiValue->setPeriod($currentPeriod);
         
@@ -164,11 +164,13 @@ class KPIController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $submittedPeriod = $kpiValue->getPeriod();
+            
             // Prüfen ob bereits ein Wert für diesen Zeitraum existiert
-            $existingValue = $this->kpiValueRepository->findByKpiAndPeriod($kpi, $currentPeriod);
+            $existingValue = $this->kpiValueRepository->findByKpiAndPeriod($kpi, $submittedPeriod);
             
             if ($existingValue) {
-                $this->addFlash('warning', 'Für diesen Zeitraum existiert bereits ein Wert. Bitte bearbeiten Sie den bestehenden Wert.');
+                $this->addFlash('warning', 'Für den Zeitraum "' . $submittedPeriod . '" existiert bereits ein Wert. Bitte bearbeiten Sie den bestehenden Wert oder wählen Sie einen anderen Zeitraum.');
                 return $this->redirectToRoute('app_kpi_show', ['id' => $kpi->getId()]);
             }
             

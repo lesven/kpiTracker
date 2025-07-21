@@ -30,6 +30,10 @@ class KPIValue
      */
     #[ORM\Column(length: 20)]
     #[Assert\NotBlank(message: 'Der Zeitraum ist erforderlich.')]
+    #[Assert\Regex(
+        pattern: '/^(\d{4})-(\d{2}|\w\d{2}|Q\d)$/',
+        message: 'Ungültiges Zeitraum-Format. Verwenden Sie: YYYY-MM, YYYY-WXX oder YYYY-QX'
+    )]
     private ?string $period = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]

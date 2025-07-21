@@ -21,6 +21,14 @@ class KPIValueType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            ->add('period', TextType::class, [
+                'label' => 'Zeitraum',
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'z.B. 2024-01, 2024-W05, 2024-Q1'
+                ],
+                'help' => 'Format: Jahr-Monat (2024-01), Jahr-Woche (2024-W05) oder Jahr-Quartal (2024-Q1)'
+            ])
             ->add('value', TextType::class, [
                 'label' => 'Wert',
                 'attr' => [
