@@ -264,6 +264,26 @@ class KPI
         return $this;
     }
 
+    /**
+     * Gibt den Zielwert als Float zurück für Berechnungen
+     */
+    public function getTargetAsFloat(): ?float
+    {
+        if (empty($this->target)) {
+            return null;
+        }
+        
+        // Komma durch Punkt ersetzen für deutsche Zahlenformate
+        $cleanTarget = str_replace(',', '.', $this->target);
+        
+        // Prüfen ob es eine gültige Zahl ist
+        if (is_numeric($cleanTarget)) {
+            return (float) $cleanTarget;
+        }
+        
+        return null;
+    }
+
     public function __toString(): string
     {
         return $this->name ?? '';
