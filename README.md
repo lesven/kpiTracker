@@ -44,32 +44,32 @@ cd kpiTracker
 ### 2. Umgebungsvariablen konfigurieren
 ```bash
 cp .env.example .env
-# .env nach Bedarf anpassen
+# .env nach Bedarf anpassen (Datenbank-Passwörter, E-Mail-Konfiguration)
 ```
 
-### 3. Docker Container starten
+### 3. Komplettes Setup mit einem Befehl
 ```bash
-docker-compose up -d
+# Alles automatisch installieren und einrichten
+make install
+
+# Oder einzeln:
+make build    # Container bauen
+make start    # Container starten
+make migrate  # Datenbank einrichten
 ```
 
-### 4. Symfony installieren und einrichten
+### 4. Anwendung installieren und einrichten
 ```bash
-# Container betreten
-docker exec -it symfony_app bash
+# Alle Abhängigkeiten installieren und Datenbank einrichten
+make install
 
-# Composer installieren
-curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Oder manuell:
+docker compose exec app composer install
+docker compose exec app php bin/console doctrine:database:create --if-not-exists
+docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
 
-# Symfony Projekt erstellen
-composer create-project symfony/skeleton .
-composer require webapp
-
-# Datenbank-Migration
-php bin/console doctrine:database:create
-php bin/console doctrine:migrations:migrate
-
-# Erste Admin-User erstellen
-php bin/console app:create-admin admin@example.com password123
+# Ersten Admin-Benutzer erstellen
+docker compose exec app php bin/console app:create-user admin@example.com --admin
 ```
 
 ### 5. Anwendung aufrufen
@@ -77,43 +77,59 @@ Die Anwendung ist unter `http://localhost:8080` erreichbar.
 
 ## 🛠️ Lokale Entwicklung
 
-### Projekt-Setup (ohne Docker)
+### Entwicklung mit Docker
 ```bash
+# Container starten
+make start
+# oder: docker compose up -d
+
 # PHP-Abhängigkeiten installieren
+docker compose exec app composer install
+
+# Container-Shell öffnen
+make shell
+# oder: docker compose exec app bash
+
+# Lokale Entwicklung ohne Docker (optional)
 composer install
-
-# Node.js-Abhängigkeiten (für Assets)
-npm install
-
-# Assets kompilieren
-npm run build
-
-# Lokalen Server starten
 symfony server:start
 ```
 
 ### Tests ausführen
 ```bash
 # Unit-Tests
-./vendor/bin/phpunit
+make test
+# oder: docker compose exec app ./vendor/bin/phpunit
 
 # Code-Coverage
-./vendor/bin/phpunit --coverage-html coverage/
+make coverage
+# oder: docker compose exec app ./vendor/bin/phpunit --coverage-html coverage/
 
 # Code-Style prüfen
-./vendor/bin/php-cs-fixer fix --dry-run
+make lint
+# oder: docker compose exec app ./vendor/bin/php-cs-fixer fix --dry-run
+
+# Code-Style automatisch korrigieren
+make fix
+# oder: docker compose exec app ./vendor/bin/php-cs-fixer fix
 ```
 
 ### Datenbank-Management
 ```bash
 # Migration erstellen
-php bin/console make:migration
+docker compose exec app php bin/console make:migration
 
 # Migration ausführen
-php bin/console doctrine:migrations:migrate
+make migrate
+# oder: docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
 
 # Fixtures laden (Testdaten)
-php bin/console doctrine:fixtures:load
+make seed
+# oder: docker compose exec app php bin/console doctrine:fixtures:load --no-interaction
+
+# MySQL-Konsole öffnen
+make db
+# oder: docker compose exec db mysql -u symfony -p kpi_tracker
 ```
 
 ## 📁 Projektstruktur
@@ -125,12 +141,21 @@ php bin/console doctrine:fixtures:load
 │   ├── Repository/         # Datenbank-Repository
 │   ├── Service/            # Business Logic
 │   ├── Form/               # Symfony-Forms
-│   └── Security/           # Authentifizierung
+│   ├── Command/            # Console-Commands
+│   └── Security/           # Authentifizierung & Voters
 ├── templates/              # Twig-Templates
+│   ├── admin/              # Admin-Interface
+│   ├── dashboard/          # Dashboard-Views
+│   ├── emails/             # E-Mail-Templates
+│   ├── kpi/                # KPI-Management
+│   └── security/           # Login/Logout
 ├── tests/                  # Unit- und Integrationstests
 ├── migrations/             # Datenbank-Migrationen
 ├── public/                 # Webroot (CSS, JS, Uploads)
 ├── config/                 # Symfony-Konfiguration
+├── docker-compose.yml      # Docker-Entwicklungsumgebung
+├── Dockerfile              # Container-Definition
+├── Makefile               # Entwicklungshelfer
 └── .github/
     ├── workflows/          # GitHub Actions CI/CD
     └── docs/               # Projekt-Dokumentation
@@ -176,8 +201,14 @@ Das System sendet automatische E-Mail-Erinnerungen:
 
 Erinnerungen werden über Cron-Jobs versendet:
 ```bash
-# Crontab-Eintrag für tägliche Erinnerungen
-0 9 * * * cd /path/to/project && php bin/console app:send-reminders
+# Crontab-Eintrag für tägliche Erinnerungen (auf dem Host-System)
+0 9 * * * cd /path/to/kpiTracker && docker compose exec app php bin/console app:send-reminders
+
+# Manuell Erinnerungen senden
+docker compose exec app php bin/console app:send-reminders
+
+# Test-Erinnerung senden
+docker compose exec app php bin/console app:send-test-email admin@example.com
 ```
 
 ## 👥 Benutzerrollen
@@ -199,18 +230,47 @@ Erinnerungen werden über Cron-Jobs versendet:
 ### Produktion
 1. `.env` für Produktionsumgebung anpassen
 2. `APP_ENV=prod` setzen
-3. Cache aufwärmen: `php bin/console cache:warmup`
-4. Assets optimieren: `npm run build`
-5. Webserver auf `public/` zeigen lassen
+3. Produktions-Container bauen: `make prod-build`
+4. Cache aufwärmen: `docker compose exec app php bin/console cache:warmup --env=prod`
+5. Container für Produktion starten: `make prod-deploy`
 
 ### CI/CD (GitHub Actions)
 Automatische Tests und Deployment sind in `.github/workflows/` konfiguriert.
 
 ## 📚 Dokumentation
 
-- [Architektur-Übersicht](.github/docs/ARCHITEKTUR.md)
-- [Admin-Anleitung](.github/docs/ADMIN_GUIDE.md)
-- [Benutzer-Anleitung](.github/docs/USER_GUIDE.md)
+- [🐳 Docker-Anleitung](.github/docs/DOCKER_GUIDE.md)
+- [🏗️ Architektur-Übersicht](.github/docs/ARCHITEKTUR.md)
+- [👨‍💼 Admin-Anleitung](.github/docs/ADMIN_GUIDE.md)
+- [👤 Benutzer-Anleitung](.github/docs/USER_GUIDE.md)
+
+## 🚀 Entwicklung
+
+### Mit Docker (empfohlen)
+```bash
+# Komplettes Setup
+make install
+
+# Tests ausführen
+make test
+
+# Code-Style prüfen
+make lint
+
+# Container-Shell öffnen
+make shell
+```
+
+### Makefile-Befehle
+```bash
+make help      # Alle verfügbaren Befehle anzeigen
+make start     # Container starten
+make stop      # Container stoppen
+make restart   # Container neu starten
+make logs      # Container-Logs anzeigen
+make clean     # Cache und Logs leeren
+make backup    # Datenbank-Backup erstellen
+```
 
 ## 🤝 Beitragen
 

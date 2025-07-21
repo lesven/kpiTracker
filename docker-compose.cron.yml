@@ -1,0 +1,48 @@
+# Separater Docker-Compose für Cron-Jobs
+# Nutzen Sie diese Datei für automatisierte Erinnerungen in Produktionsumgebungen
+
+version: '3.8'
+
+services:
+  kpi-cron:
+    build: .
+    container_name: kpi_cron
+    command: >
+      sh -c "
+        echo '0 9 * * * php /var/www/html/bin/console app:send-reminders >> /var/log/cron.log 2>&1' | crontab - &&
+        echo '0 2 * * * php /var/www/html/bin/console app:cleanup-files >> /var/log/cron.log 2>&1' | crontab - &&
+        cron -f
+      "
+    volumes:
+      - .:/var/www/html
+      - ./var/log:/var/log
+    environment:
+      - APP_ENV=prod
+    depends_on:
+      - db
+    networks:
+      - kpi-network
+    restart: unless-stopped
+
+  db:
+    image: mariadb:latest
+    container_name: kpi_mariadb_cron
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: kpi_tracker
+      MYSQL_USER: symfony
+      MYSQL_PASSWORD: symfony
+    ports:
+      - "3307:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - kpi-network
+    restart: unless-stopped
+
+networks:
+  kpi-network:
+    driver: bridge
+
+volumes:
+  mariadb_data:

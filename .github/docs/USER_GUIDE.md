@@ -158,6 +158,67 @@ Kundenzufriedenheit,quartalsweise,2024-Q1,4.2,Umfrage mit 150 Teilnehmern,2024-0
 
 ## ❓ Häufige Fragen (FAQ)
 
+### Technische Fragen
+
+**Q: Ich kann mich nicht anmelden - was tun?**
+A: Prüfen Sie E-Mail und Passwort. Bei wiederholten Problemen wenden Sie sich an Ihren Administrator.
+
+**Q: Welche Dateiformate kann ich hochladen?**
+A: PDF, Word, Excel, Bilder (JPG, PNG, GIF), Textdateien. Maximale Größe: 5 MB pro Datei.
+
+**Q: Kann ich mehrere Dateien gleichzeitig hochladen?**
+A: Ja, Sie können mehrere Dateien in einem KPI-Wert-Eintrag anhängen.
+
+**Q: Wie ändere ich mein Passwort?**
+A: Klicken Sie auf Ihr Profil im Hauptmenü und wählen Sie "Passwort ändern".
+
+### KPI-Verwaltung
+
+**Q: Was passiert, wenn ich einen Wert zu spät erfasse?**
+A: Sie erhalten E-Mail-Erinnerungen. Der Wert kann nachträglich erfasst werden, bleibt aber als "verspätet" markiert.
+
+**Q: Kann ich KPI-Werte nachträglich bearbeiten?**
+A: Ja, klicken Sie in der KPI-Historie auf das Bearbeiten-Symbol neben dem gewünschten Wert.
+
+**Q: Wie lösche ich eine KPI komplett?**
+A: In der KPI-Liste auf "Bearbeiten" und dann "Löschen" klicken. ⚠️ Alle Werte gehen verloren!
+
+**Q: Warum ist meine KPI rot markiert?**
+A: Rot bedeutet überfällig - der Wert für den aktuellen Zeitraum fehlt.
+
+### Export und Berichte
+
+**Q: Welches Format hat der CSV-Export?**
+A: Standard-CSV mit Spalten: KPI-Name, Intervall, Zeitraum, Wert, Kommentar, Erstellt am.
+
+**Q: Kann ich nur bestimmte KPIs exportieren?**
+A: Aktuell wird der komplette Export Ihrer Daten erstellt. Individuelle Filter sind in Planung.
+
+**Q: Sind meine Daten für andere Benutzer sichtbar?**
+A: Nein, nur Sie und Administratoren haben Zugriff auf Ihre KPI-Daten.
+
+### E-Mail-Erinnerungen
+
+**Q: Kann ich Erinnerungen abschalten?**
+A: Aktuell nicht über die Benutzeroberfläche. Wenden Sie sich an Ihren Administrator.
+
+**Q: Wann erhalte ich Erinnerungen?**
+A: 3 Tage vor Fälligkeit, am Fälligkeitstag, 7 und 14 Tage nach Fälligkeit.
+
+**Q: Warum erhalte ich keine E-Mails?**
+A: Prüfen Sie Ihren Spam-Ordner. Bei anhaltenden Problemen kontaktieren Sie Ihren Administrator.
+
+### Support und Hilfe
+
+**Q: Wer kann mir bei Problemen helfen?**
+A: Ihr Systemadministrator ist der erste Ansprechpartner für technische Probleme und Benutzerrechte.
+
+**Q: Gibt es Schulungen für das System?**
+A: Diese Anleitung enthält alle wichtigen Informationen. Bei Bedarf kann Ihr Administrator weitere Schulungen organisieren.
+
+**Q: Kann ich Verbesserungsvorschläge einreichen?**
+A: Ja, wenden Sie sich an Ihren Administrator mit Feedback und Verbesserungsideen.
+
 ### **F: Ich habe mein Passwort vergessen. Was tun?**
 **A:** Wenden Sie sich an Ihren Administrator. Er kann Ihnen ein neues temporäres Passwort zuweisen.
 

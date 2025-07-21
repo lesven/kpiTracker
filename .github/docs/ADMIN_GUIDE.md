@@ -17,6 +17,9 @@ docker-compose exec app php bin/console app:create-admin
 
 # Oder über Makefile
 make admin
+
+# Mit Parametern (nicht-interaktiv)
+docker-compose exec app php bin/console app:create-admin admin@example.com --password=secure123 --firstname=Admin --lastname=User
 ```
 
 ## 👥 Benutzerverwaltung
@@ -94,12 +97,18 @@ docker-compose exec app php bin/console app:send-reminders
 
 # Nur für bestimmten Benutzer
 docker-compose exec app php bin/console app:send-reminders --user=user@example.com
+
+# Debug-Modus (zeigt alle Erinnerungen an, sendet aber keine E-Mails)
+docker-compose exec app php bin/console app:send-reminders --dry-run
 ```
 
 ### Cron-Job für automatische Erinnerungen
 ```bash
-# Crontab-Eintrag für tägliche Ausführung um 9:00 Uhr
-0 9 * * * cd /path/to/kpiTracker && docker-compose exec app php bin/console app:send-reminders
+# Crontab-Eintrag für tägliche Ausführung um 9:00 Uhr (auf Host-System)
+0 9 * * * cd /path/to/kpiTracker && docker-compose exec -T app php bin/console app:send-reminders
+
+# Für Docker Swarm oder Kubernetes (als Service)
+# Siehe docker-compose.cron.yml für einen separaten Cron-Container
 ```
 
 ## 📈 Datenexport & Reporting
@@ -123,6 +132,9 @@ docker-compose exec app php bin/console app:generate-report monthly
 
 # Quartalsberichte
 docker-compose exec app php bin/console app:generate-report quarterly
+
+# Berichte für bestimmten Zeitraum
+docker-compose exec app php bin/console app:generate-report monthly --from=2024-01 --to=2024-12
 ```
 
 ## 🔧 System-Wartung
@@ -153,14 +165,19 @@ docker-compose exec web tail -f /var/log/nginx/access.log
 # Code aktualisieren
 git pull origin main
 
-# Container neu bauen
+# Container neu bauen und starten
 make build
+make restart
+
+# Abhängigkeiten aktualisieren
+docker-compose exec app composer install --no-dev --optimize-autoloader
 
 # Datenbank-Migrationen
 make migrate
 
-# Cache leeren
+# Cache leeren und neu aufbauen
 make clean
+docker-compose exec app php bin/console cache:warmup --env=prod
 ```
 
 ### Performance-Monitoring
@@ -202,7 +219,15 @@ docker-compose exec app php bin/console debug:autowiring
 # Abhängigkeiten auf Sicherheitslücken prüfen
 docker-compose exec app composer audit
 
-# System-Updates installieren
+# Symfony Security-Check
+docker-compose exec app composer require --dev symfony/security-checker
+docker-compose exec app ./vendor/bin/security-checker security:check
+
+# Container-Updates (neu bauen)
+docker-compose build --no-cache
+docker-compose up -d
+
+# System-Updates im Container installieren
 docker-compose exec app apt update && apt upgrade -y
 ```
 
