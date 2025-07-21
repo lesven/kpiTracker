@@ -1,7 +1,7 @@
 # Makefile für KPI-Tracker
 # Vereinfacht die häufigsten Entwicklungsaufgaben
 
-.PHONY: help install start stop restart build test coverage lint fix clean migrate seed fix-permissions
+.PHONY: help install start stop restart build test coverage lint fix clean migrate seed fix-permissions fresh-install
 
 # Standard-Ziel
 help: ## Zeigt diese Hilfe an
@@ -17,10 +17,10 @@ install: ## Installiert alle Abhängigkeiten
 	@echo "Setze Berechtigungen vor Composer-Installation..."
 	docker compose exec --user root app chown -R www-data:www-data /var/www/html || true
 	docker compose exec --user root app chmod -R 775 /var/www/html || true
-	@echo "Installiere Composer-Abhängigkeiten ohne Post-Scripts..."
-	docker compose exec app composer install --no-interaction --no-scripts
-	@echo "Führe Symfony-Setup aus..."
-	docker compose exec app php bin/console cache:clear --no-warmup || true
+	@echo "Installiere Composer-Abhängigkeiten komplett ohne Scripts..."
+	docker compose exec app composer install --no-interaction --no-scripts --no-plugins
+	@echo "Führe manuell Cache-Clear aus..."
+	docker compose exec app rm -rf var/cache/* || true
 	docker compose exec app php bin/console doctrine:database:create --if-not-exists
 	docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
 	@echo "Installation abgeschlossen!"
@@ -84,6 +84,27 @@ fix-permissions: ## Behebt Berechtigungsprobleme
 # Entwicklung
 dev-setup: install ## Komplettes Setup für Entwicklung
 	@echo "Setup abgeschlossen! Öffne http://localhost:8080"
+
+fresh-install: ## Komplett neue Installation (bei Problemen)
+	@echo "Stoppe und entferne alle Container..."
+	docker compose down -v
+	@echo "Bereinige Docker-Images..."
+	docker compose build --no-cache
+	@echo "Starte Container neu..."
+	docker compose up -d
+	@echo "Warte auf Container-Start..."
+	@sleep 5
+	@echo "Setze Berechtigungen..."
+	docker compose exec --user root app chown -R www-data:www-data /var/www/html
+	docker compose exec --user root app chmod -R 775 /var/www/html
+	@echo "Cache komplett leeren..."
+	docker compose exec app rm -rf var/cache/* var/log/* || true
+	@echo "Composer ohne Scripts installieren..."
+	docker compose exec app composer install --no-scripts --no-plugins --no-interaction
+	@echo "Datenbank einrichten..."
+	docker compose exec app php bin/console doctrine:database:create --if-not-exists
+	docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+	@echo "Frische Installation abgeschlossen!"
 
 # Produktion
 prod-build: ## Build für Produktion
