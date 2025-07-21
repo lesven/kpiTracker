@@ -90,9 +90,14 @@ class KPIRepository extends ServiceEntityRepository
      */
     public function countKpisByUser(): array
     {
-        return $this->createQueryBuilder('k')
+        // Use the user entity as root alias to satisfy Doctrine's requirement
+        // of having at least one root entity alias in the SELECT clause when
+        // selecting an entity. This query returns each user with the number of
+        // KPIs assigned to them ordered by the KPI count.
+        return $this->getEntityManager()->createQueryBuilder()
             ->select('u AS user, COUNT(k.id) AS kpi_count')
-            ->join('k.user', 'u')
+            ->from(User::class, 'u')
+            ->leftJoin('u.kpis', 'k')
             ->groupBy('u.id')
             ->orderBy('kpi_count', 'DESC')
             ->getQuery()
