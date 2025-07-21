@@ -12,10 +12,15 @@ help: ## Zeigt diese Hilfe an
 install: ## Installiert alle Abhängigkeiten
 	docker compose build
 	docker compose up -d
-	docker compose exec app chown -R www:www /var/www/html
-	docker compose exec app composer install
+	@echo "Warte 5 Sekunden auf Container-Start..."
+	@sleep 5
+	@echo "Setze Berechtigungen vor Composer-Installation..."
+	docker compose exec --user root app chown -R www-data:www-data /var/www/html || true
+	docker compose exec --user root app chmod -R 775 /var/www/html || true
+	docker compose exec app composer install --no-interaction
 	docker compose exec app php bin/console doctrine:database:create --if-not-exists
 	docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+	@echo "Installation abgeschlossen!"
 
 start: ## Startet die Container
 	docker compose up -d
@@ -66,9 +71,12 @@ db: ## Öffnet MySQL-Konsole
 backup: ## Erstellt Datenbank-Backup
 	docker compose exec db mysqldump -u symfony -p kpi_tracker > backup_$(shell date +%Y%m%d_%H%M%S).sql
 
-fix-permissions: ## Behebt Berechtigungsprobleme (Linux/Mac)
-	chmod +x fix-permissions.sh
-	./fix-permissions.sh
+fix-permissions: ## Behebt Berechtigungsprobleme
+	@echo "Setze Berechtigungen für alle Symfony-Verzeichnisse..."
+	docker compose exec --user root app chown -R www-data:www-data /var/www/html || true
+	docker compose exec --user root app chmod -R 775 /var/www/html || true
+	docker compose exec --user root app chmod 644 /var/www/html/.env* || true
+	@echo "Berechtigungen wurden gesetzt."
 
 # Entwicklung
 dev-setup: install ## Komplettes Setup für Entwicklung

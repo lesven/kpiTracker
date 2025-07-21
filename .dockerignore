@@ -1,0 +1,40 @@
+# Ignore files for Docker build context
+.git
+.gitignore
+README.md
+Dockerfile
+docker-compose.yml
+docker-compose.prod.yml
+.env.example
+
+# Node modules and build artifacts
+node_modules/
+npm-debug.log
+
+# Vendor directory (will be installed in container)
+vendor/
+
+# Cache and logs
+var/cache/
+var/log/
+var/sessions/
+
+# Uploads (development)
+public/uploads/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+
+# Backup files
+*.sql
+backup_*.sql

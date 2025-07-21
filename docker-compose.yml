@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   app:
     build: .
@@ -10,6 +9,7 @@ services:
       - SYMFONY_ENV=dev
     depends_on:
       - db
+    user: "www-data:www-data"
   web:
     image: nginx:alpine
     container_name: symfony_web
