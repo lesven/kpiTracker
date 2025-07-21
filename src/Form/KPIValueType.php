@@ -10,6 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\All;
 
 /**
  * Formular für KPI-Wert-Erfassung
@@ -51,22 +52,26 @@ class KPIValueType extends AbstractType
                 ],
                 'help' => 'Optional: Dateien als Beleg oder zusätzliche Information anhängen',
                 'constraints' => [
-                    new File([
-                        'maxSize' => '5M',
-                        'mimeTypes' => [
-                            'application/pdf',
-                            'application/msword',
-                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                            'application/vnd.ms-excel',
-                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                            'image/jpeg',
-                            'image/jpg',
-                            'image/png',
-                            'image/gif',
-                            'text/plain'
-                        ],
-                        'mimeTypesMessage' => 'Bitte laden Sie nur unterstützte Dateiformate hoch (PDF, Word, Excel, Bilder, Text).',
-                        'maxSizeMessage' => 'Die Datei ist zu groß. Maximal 5MB sind erlaubt.'
+                    new All([
+                        'constraints' => [
+                            new File([
+                                'maxSize' => '5M',
+                                'mimeTypes' => [
+                                    'application/pdf',
+                                    'application/msword',
+                                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                                    'application/vnd.ms-excel',
+                                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                    'image/jpeg',
+                                    'image/jpg',
+                                    'image/png',
+                                    'image/gif',
+                                    'text/plain'
+                                ],
+                                'mimeTypesMessage' => 'Bitte laden Sie nur unterstützte Dateiformate hoch (PDF, Word, Excel, Bilder, Text).',
+                                'maxSizeMessage' => 'Die Datei ist zu groß. Maximal 5MB sind erlaubt.'
+                            ])
+                        ]
                     ])
                 ]
             ]);
