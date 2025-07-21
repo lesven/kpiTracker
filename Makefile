@@ -17,7 +17,10 @@ install: ## Installiert alle Abhängigkeiten
 	@echo "Setze Berechtigungen vor Composer-Installation..."
 	docker compose exec --user root app chown -R www-data:www-data /var/www/html || true
 	docker compose exec --user root app chmod -R 775 /var/www/html || true
-	docker compose exec app composer install --no-interaction
+	@echo "Installiere Composer-Abhängigkeiten ohne Post-Scripts..."
+	docker compose exec app composer install --no-interaction --no-scripts
+	@echo "Führe Symfony-Setup aus..."
+	docker compose exec app php bin/console cache:clear --no-warmup || true
 	docker compose exec app php bin/console doctrine:database:create --if-not-exists
 	docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
 	@echo "Installation abgeschlossen!"
