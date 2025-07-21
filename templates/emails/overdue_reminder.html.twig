@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRINGEND: KPI-Erinnerung</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #dc3545;
+            color: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+        }
+        .content {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+        }
+        .footer {
+            background-color: #6c757d;
+            color: white;
+            padding: 15px;
+            border-radius: 0 0 8px 8px;
+            text-align: center;
+            font-size: 12px;
+        }
+        .kpi-list {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .kpi-item {
+            padding: 10px;
+            border-left: 4px solid #dc3545;
+            margin-bottom: 10px;
+            background-color: #f8d7da;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #dc3545;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .urgent {
+            color: #721c24;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .escalation-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚨 KPI Tracker</h1>
+        <h2>DRINGEND: KPIs sind seit {{ days_overdue }} Tagen überfällig!</h2>
+    </div>
+    
+    <div class="content">
+        <p>Hallo {{ user.firstName }} {{ user.lastName }},</p>
+        
+        <div class="urgent">
+            ⚠️ <strong>WICHTIGER HINWEIS:</strong> Die folgenden KPIs sind seit {{ days_overdue }} Tagen überfällig!
+        </div>
+        
+        <p>Diese KPIs benötigen <strong>sofortige Aufmerksamkeit</strong>:</p>
+        
+        <div class="kpi-list">
+            {% for reminder in reminders %}
+                <div class="kpi-item">
+                    <strong>🔴 {{ reminder.kpi.name }}</strong>
+                    {% if reminder.kpi.description %}
+                        <br><small>{{ reminder.kpi.description }}</small>
+                    {% endif %}
+                    <br><em>{{ reminder.message }}</em>
+                    <br><strong>Intervall:</strong> 
+                    {% if reminder.kpi.interval == 'weekly' %}Wöchentlich
+                    {% elseif reminder.kpi.interval == 'monthly' %}Monatlich
+                    {% else %}Quartalsweise{% endif %}
+                    {% if reminder.kpi.unit or reminder.kpi.target %}
+                        <br><small>
+                            {% if reminder.kpi.target %}Ziel: {{ reminder.kpi.target }}{% endif %}
+                            {% if reminder.kpi.unit %} {{ reminder.kpi.unit }}{% endif %}
+                        </small>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="escalation-info">
+            <strong>📋 Nächste Schritte:</strong><br>
+            1. Melden Sie sich sofort im System an<br>
+            2. Erfassen Sie die überfälligen Werte<br>
+            3. Fügen Sie ggf. einen Kommentar hinzu, wenn Verzögerungen aufgetreten sind
+        </div>
+        
+        {% if days_overdue >= 14 %}
+            <div class="urgent">
+                <strong>⚠️ ESKALATIONSWARNUNG:</strong> Bei weiterer Verzögerung wird Ihr Administrator automatisch benachrichtigt!
+            </div>
+        {% endif %}
+        
+        <p><strong>Jetzt handeln:</strong></p>
+        
+        <a href="{{ dashboard_url }}" class="btn">🚨 SOFORT WERTE ERFASSEN</a>
+        
+        <p><strong>Warum ist das kritisch?</strong></p>
+        <ul>
+            <li>📊 <strong>Datenqualität:</strong> Lücken in der Datenerfassung beeinträchtigen Analysen</li>
+            <li>📈 <strong>Berichterstattung:</strong> Vollständige Daten sind für Berichte erforderlich</li>
+            <li>⚡ <strong>Entscheidungsfindung:</strong> Aktuelle Daten sind für fundierte Entscheidungen unerlässlich</li>
+            <li>🎯 <strong>Compliance:</strong> Regelmäßige Erfassung kann vertragliche Anforderung sein</li>
+        </ul>
+        
+        <p><strong>Benötigen Sie Unterstützung?</strong><br>
+        Wenden Sie sich umgehend an Ihren Administrator, falls Sie Probleme bei der Erfassung haben.</p>
+        
+        <p>Mit freundlichen Grüßen,<br>
+        Ihr KPI-Tracker-System</p>
+    </div>
+    
+    <div class="footer">
+        <p>
+            Diese Erinnerung wurde automatisch generiert aufgrund überfälliger KPI-Einträge.<br>
+            Bitte antworten Sie nicht auf diese E-Mail.<br>
+            KPI Tracker - Zuverlässiges Performance Management
+        </p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,102 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Neue KPI erstellen - KPI Tracker{% endblock %}
+
+{% block page_title %}Neue KPI erstellen{% endblock %}
+
+{% block page_actions %}
+    <a href="{{ path('app_kpi_index') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Zurück zu KPIs
+    </a>
+{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-plus-circle"></i> Neue KPI erstellen
+                </h5>
+            </div>
+            <div class="card-body">
+                {{ form_start(form) }}
+                
+                <div class="mb-3">
+                    {{ form_label(form.name, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_help(form.name) }}
+                    {{ form_errors(form.name) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_help(form.description) }}
+                    {{ form_errors(form.description) }}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.interval, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.interval, {'attr': {'class': 'form-select'}}) }}
+                            {{ form_help(form.interval) }}
+                            {{ form_errors(form.interval) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.unit, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.unit, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_help(form.unit) }}
+                            {{ form_errors(form.unit) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    {{ form_label(form.target, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.target, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_help(form.target) }}
+                    {{ form_errors(form.target) }}
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{{ path('app_kpi_index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Abbrechen
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> KPI erstellen
+                    </button>
+                </div>
+                
+                {{ form_end(form) }}
+            </div>
+        </div>
+        
+        <!-- Info Box -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-info-circle"></i> Hilfe
+                </h6>
+            </div>
+            <div class="card-body">
+                <h6>Intervalle erklärt:</h6>
+                <ul>
+                    <li><strong>Wöchentlich:</strong> Werte werden jede Woche am Montag fällig</li>
+                    <li><strong>Monatlich:</strong> Werte werden am ersten Tag des Monats fällig</li>
+                    <li><strong>Quartalsweise:</strong> Werte werden am ersten Tag des Quartals fällig</li>
+                </ul>
+                <h6>Tipps:</h6>
+                <ul>
+                    <li>Wählen Sie einen aussagekräftigen Namen für Ihre KPI</li>
+                    <li>Die Beschreibung hilft anderen zu verstehen was gemessen wird</li>
+                    <li>Einheit und Zielwert sind optional aber empfohlen</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

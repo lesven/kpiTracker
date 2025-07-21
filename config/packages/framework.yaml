@@ -1,0 +1,28 @@
+# Symfony-Konfiguration
+framework:
+    secret: '%env(APP_SECRET)%'
+    #csrf_protection: true
+    http_method_override: false
+
+    # Session-Konfiguration
+    session:
+        handler_id: null
+        cookie_secure: auto
+        cookie_samesite: lax
+        storage_factory_id: session.storage.factory.native
+
+    #esi: true
+    #fragments: true
+    php_errors:
+        log: true
+
+    cache:
+        # Konfiguration für Prod-Cache
+        app: cache.adapter.filesystem
+        system: cache.adapter.system
+
+when@test:
+    framework:
+        test: true
+        session:
+            storage_factory_id: session.storage.factory.mock_file

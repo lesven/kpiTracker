@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Anmeldung - KPI Tracker{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm mt-5">
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-graph-up-arrow text-primary" style="font-size: 3rem;"></i>
+                        <h3 class="mt-2">KPI Tracker</h3>
+                        <p class="text-muted">Melden Sie sich an um fortzufahren</p>
+                    </div>
+
+                    {% if error %}
+                        <div class="alert alert-danger">
+                            {{ error.messageKey|trans(error.messageData, 'security') }}
+                        </div>
+                    {% endif %}
+
+                    <form method="post">
+                        <div class="mb-3">
+                            <label for="inputEmail" class="form-label">E-Mail-Adresse</label>
+                            <input type="email" value="{{ last_username }}" name="email" id="inputEmail" 
+                                   class="form-control" autocomplete="email" required autofocus
+                                   placeholder="ihre-email@beispiel.de">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="inputPassword" class="form-label">Passwort</label>
+                            <input type="password" name="password" id="inputPassword" 
+                                   class="form-control" autocomplete="current-password" required
+                                   placeholder="Ihr Passwort">
+                        </div>
+
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="remember_me" name="_remember_me">
+                            <label class="form-check-label" for="remember_me">
+                                Angemeldet bleiben
+                            </label>
+                        </div>
+
+                        <button class="btn btn-primary w-100" type="submit">
+                            <i class="bi bi-box-arrow-in-right"></i> Anmelden
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <small class="text-muted">
+                            Bei Problemen wenden Sie sich an Ihren Administrator
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

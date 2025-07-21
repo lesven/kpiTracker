@@ -1,0 +1,45 @@
+# Doctrine-Konfiguration
+doctrine:
+    dbal:
+        url: '%env(resolve:DATABASE_URL)%'
+        
+        # IMPORTANT: DSGVO-konforme Löschung aktivieren
+        options:
+            !php/const PDO::MYSQL_ATTR_INIT_COMMAND: "SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))"
+
+    orm:
+        auto_generate_proxy_classes: true
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        auto_mapping: true
+        mappings:
+            App:
+                is_bundle: false
+                type: attribute
+                dir: '%kernel.project_dir%/src/Entity'
+                prefix: 'App\Entity'
+                alias: App
+
+when@test:
+    doctrine:
+        dbal:
+            # "TEST_TOKEN" wird durch eine zufällige Zahl in der Parallelisierung ersetzt
+            dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+
+when@prod:
+    doctrine:
+        orm:
+            auto_generate_proxy_classes: false
+            query_cache_driver:
+                type: pool
+                pool: doctrine.query_cache_pool
+            result_cache_driver:
+                type: pool
+                pool: doctrine.result_cache_pool
+
+    framework:
+        cache:
+            pools:
+                doctrine.result_cache_pool:
+                    adapter: cache.app
+                doctrine.query_cache_pool:
+                    adapter: cache.app

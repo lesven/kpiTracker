@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}KPI Tracker{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+        
+        {% block stylesheets %}
+            <style>
+                .status-green { color: #198754; }
+                .status-yellow { color: #ffc107; }
+                .status-red { color: #dc3545; }
+                .bg-status-green { background-color: #d1e7dd; }
+                .bg-status-yellow { background-color: #fff3cd; }
+                .bg-status-red { background-color: #f8d7da; }
+                .sidebar { min-height: 100vh; }
+                .main-content { min-height: 100vh; }
+                .kpi-card { transition: transform 0.2s; }
+                .kpi-card:hover { transform: translateY(-2px); }
+            </style>
+        {% endblock %}
+    </head>
+
+    <body class="bg-light">
+        <div class="container-fluid">
+            <div class="row">
+                <!-- Sidebar -->
+                {% if app.user %}
+                <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar">
+                    <div class="position-sticky pt-3">
+                        <div class="text-center text-white mb-4">
+                            <i class="bi bi-graph-up-arrow fs-1"></i>
+                            <h5 class="mt-2">KPI Tracker</h5>
+                            <small class="text-muted">{{ app.user.firstName }} {{ app.user.lastName }}</small>
+                        </div>
+                        
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link text-white {{ app.request.get('_route') starts with 'app_dashboard' ? 'active bg-primary' : '' }}" 
+                                   href="{{ path('app_dashboard') }}">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white {{ app.request.get('_route') starts with 'app_kpi' ? 'active bg-primary' : '' }}" 
+                                   href="{{ path('app_kpi_index') }}">
+                                    <i class="bi bi-list-task"></i> Meine KPIs
+                                </a>
+                            </li>
+                            {% if is_granted('ROLE_ADMIN') %}
+                                <li class="nav-item mt-3">
+                                    <h6 class="sidebar-heading text-muted">
+                                        <span>Administration</span>
+                                    </h6>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white {{ app.request.get('_route') starts with 'app_admin_dashboard' ? 'active bg-primary' : '' }}" 
+                                       href="{{ path('app_admin_dashboard') }}">
+                                        <i class="bi bi-gear"></i> Admin Dashboard
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white {{ app.request.get('_route') starts with 'app_admin_users' ? 'active bg-primary' : '' }}" 
+                                       href="{{ path('app_admin_users') }}">
+                                        <i class="bi bi-people"></i> Benutzer
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white {{ app.request.get('_route') starts with 'app_admin_kpis' ? 'active bg-primary' : '' }}" 
+                                       href="{{ path('app_admin_kpis') }}">
+                                        <i class="bi bi-graph-up"></i> Alle KPIs
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                        
+                        <div class="position-absolute bottom-0 w-100 p-3">
+                            <a href="{{ path('app_logout') }}" class="btn btn-outline-light btn-sm w-100">
+                                <i class="bi bi-box-arrow-right"></i> Abmelden
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+                {% endif %}
+
+                <!-- Main content -->
+                <main class="{% if app.user %}col-md-9 ms-sm-auto col-lg-10 px-md-4{% else %}col-12{% endif %} main-content">
+                    <!-- Header -->
+                    {% if app.user %}
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">{% block page_title %}Dashboard{% endblock %}</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            {% block page_actions %}{% endblock %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Flash Messages -->
+                    {% for label, messages in app.flashes %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+
+                    <!-- Page Content -->
+                    {% block body %}{% endblock %}
+                </main>
+            </div>
+        </div>
+
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        
+        {% block javascripts %}
+            <script>
+                // Auto-refresh Dashboard alle 5 Minuten
+                {% if app.request.get('_route') == 'app_dashboard' %}
+                setInterval(function() {
+                    fetch('{{ path('app_dashboard_refresh') }}')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Update Status-Badges
+                                document.querySelector('.badge-green').textContent = data.summary.green;
+                                document.querySelector('.badge-yellow').textContent = data.summary.yellow;
+                                document.querySelector('.badge-red').textContent = data.summary.red;
+                                
+                                // Update Timestamp
+                                document.querySelector('.last-updated').textContent = 'Letzte Aktualisierung: ' + data.last_updated;
+                            }
+                        })
+                        .catch(error => console.log('Dashboard refresh failed:', error));
+                }, 5 * 60 * 1000);
+                {% endif %}
+            </script>
+        {% endblock %}
+    </body>
+</html>

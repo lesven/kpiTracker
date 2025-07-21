@@ -1,0 +1,84 @@
+# GitHub Actions CI/CD Pipeline
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mariadb:latest
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: kpi_tracker_test
+          MYSQL_USER: symfony
+          MYSQL_PASSWORD: symfony
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, dom, filter, gd, json, pdo, zip
+        coverage: xdebug
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Create Database
+      env:
+        DATABASE_URL: mysql://symfony:symfony@127.0.0.1:3306/kpi_tracker_test
+      run: |
+        php bin/console doctrine:database:create --env=test
+        php bin/console doctrine:migrations:migrate --no-interaction --env=test
+
+    - name: Run PHPUnit tests
+      env:
+        DATABASE_URL: mysql://symfony:symfony@127.0.0.1:3306/kpi_tracker_test
+      run: ./vendor/bin/phpunit --coverage-clover=coverage.xml
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+
+    - name: Run PHP CS Fixer
+      run: ./vendor/bin/php-cs-fixer fix --dry-run --diff
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Security Check
+      run: |
+        composer audit
+        # Zusätzliche Security-Checks können hier hinzugefügt werden

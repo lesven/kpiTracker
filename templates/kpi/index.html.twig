@@ -1,0 +1,146 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Meine KPIs - KPI Tracker{% endblock %}
+
+{% block page_title %}Meine KPIs{% endblock %}
+
+{% block page_actions %}
+    <a href="{{ path('app_kpi_new') }}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle"></i> Neue KPI
+    </a>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    {% if kpis is empty %}
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-graph-up text-muted" style="font-size: 4rem;"></i>
+                    <h4 class="mt-3 text-muted">Keine KPIs vorhanden</h4>
+                    <p class="text-muted">Erstellen Sie Ihre erste KPI um mit der Erfassung zu beginnen.</p>
+                    <a href="{{ path('app_kpi_new') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Erste KPI erstellen
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        {% for kpi in kpis %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card kpi-card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold">{{ kpi.name }}</h6>
+                        <span class="badge bg-secondary">{{ kpi.interval|trans }}</span>
+                    </div>
+                    <div class="card-body">
+                        {% if kpi.description %}
+                            <p class="card-text text-muted small">{{ kpi.description }}</p>
+                        {% endif %}
+                        
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="border-end">
+                                    <h5 class="mb-0">{{ kpi.values|length }}</h5>
+                                    <small class="text-muted">Einträge</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                {% set latest_value = kpi.values|first %}
+                                {% if latest_value %}
+                                    <h5 class="mb-0">{{ latest_value.value }}{% if kpi.unit %} {{ kpi.unit }}{% endif %}</h5>
+                                    <small class="text-muted">{{ latest_value.period }}</small>
+                                {% else %}
+                                    <h5 class="mb-0 text-muted">-</h5>
+                                    <small class="text-muted">Kein Wert</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if kpi.target %}
+                            <div class="mt-3">
+                                <small class="text-muted">Ziel: {{ kpi.target }}{% if kpi.unit %} {{ kpi.unit }}{% endif %}</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="btn-group" role="group">
+                                <a href="{{ path('app_kpi_show', {id: kpi.id}) }}" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye"></i> Details
+                                </a>
+                                <a href="{{ path('app_kpi_add_value', {id: kpi.id}) }}" 
+                                   class="btn btn-outline-success btn-sm">
+                                    <i class="bi bi-plus"></i> Wert
+                                </a>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" 
+                                        type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ path('app_kpi_edit', {id: kpi.id}) }}">
+                                            <i class="bi bi-pencil"></i> Bearbeiten
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <button class="dropdown-item text-danger" 
+                                                onclick="confirmDelete('{{ kpi.name }}', '{{ path('app_kpi_delete', {id: kpi.id}) }}')">
+                                            <i class="bi bi-trash"></i> Löschen
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">KPI löschen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Möchten Sie die KPI "<span id="deleteKpiName"></span>" wirklich löschen?</p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Achtung:</strong> Alle zugehörigen Werte und Dateien werden ebenfalls gelöscht.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Löschen
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function confirmDelete(kpiName, deleteUrl) {
+            document.getElementById('deleteKpiName').textContent = kpiName;
+            document.getElementById('deleteForm').action = deleteUrl;
+            
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+    </script>
+{% endblock %}

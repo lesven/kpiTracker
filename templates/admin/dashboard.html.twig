@@ -1,0 +1,256 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration - KPI Tracker{% endblock %}
+
+{% block page_title %}Administration{% endblock %}
+
+{% block body %}
+<!-- Stats Overview -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Benutzer</h5>
+                        <h2>{{ stats.total_users }}</h2>
+                        <small>{{ stats.total_admins }} Admins</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-people fs-1"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ path('app_admin_users') }}" class="text-white text-decoration-none">
+                    Verwalten <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">KPIs</h5>
+                        <h2>{{ stats.total_kpis }}</h2>
+                        <small>Alle Benutzer</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-graph-up fs-1"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ path('app_admin_kpis') }}" class="text-white text-decoration-none">
+                    Verwalten <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Neue Benutzer</h5>
+                        <h2>{{ stats.recent_users|length }}</h2>
+                        <small>Letzten 30 Tage</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-person-plus fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">System</h5>
+                        <h2><i class="bi bi-check-circle"></i></h2>
+                        <small>Online</small>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-gear fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Schnellzugriff</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="d-grid">
+                            <a href="{{ path('app_admin_user_new') }}" class="btn btn-outline-primary">
+                                <i class="bi bi-person-plus"></i> Neuen Benutzer erstellen
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-grid">
+                            <a href="{{ path('app_admin_kpi_new') }}" class="btn btn-outline-success">
+                                <i class="bi bi-graph-up"></i> KPI für Benutzer erstellen
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-grid">
+                            <a href="{{ path('app_admin_users') }}" class="btn btn-outline-info">
+                                <i class="bi bi-people"></i> Alle Benutzer anzeigen
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-grid">
+                            <a href="{{ path('app_admin_kpis') }}" class="btn btn-outline-warning">
+                                <i class="bi bi-list-task"></i> Alle KPIs anzeigen
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Users -->
+        {% if stats.recent_users|length > 0 %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Neue Benutzer (letzte 30 Tage)</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>E-Mail</th>
+                                <th>Rolle</th>
+                                <th>Erstellt</th>
+                                <th>KPIs</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in stats.recent_users %}
+                                <tr>
+                                    <td>{{ user.firstName }} {{ user.lastName }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        {% if user.isAdmin() %}
+                                            <span class="badge bg-danger">Admin</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Benutzer</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ user.createdAt|date('d.m.Y') }}</td>
+                                    <td>{{ user.kpis|length }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <!-- KPIs by User -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">KPIs pro Benutzer</h5>
+            </div>
+            <div class="card-body">
+                {% if stats.kpis_by_user is empty %}
+                    <p class="text-muted">Keine Daten verfügbar</p>
+                {% else %}
+                    {% for item in stats.kpis_by_user|slice(0, 10) %}
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 {% if not loop.last %}border-bottom{% endif %}">
+                            <div>
+                                <strong>{{ item.user.firstName }} {{ item.user.lastName }}</strong>
+                                <br><small class="text-muted">{{ item.user.email }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary">{{ item.kpi_count }} KPIs</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- System Info -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">System-Informationen</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-6">PHP Version:</dt>
+                    <dd class="col-sm-6">{{ constant('PHP_VERSION') }}</dd>
+                    
+                    <dt class="col-sm-6">Symfony:</dt>
+                    <dd class="col-sm-6">7.x</dd>
+                    
+                    <dt class="col-sm-6">Datenbank:</dt>
+                    <dd class="col-sm-6">MariaDB</dd>
+                    
+                    <dt class="col-sm-6">Uptime:</dt>
+                    <dd class="col-sm-6">{{ "now"|date("d.m.Y H:i") }}</dd>
+                </dl>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">System-Aktionen</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-info btn-sm" onclick="sendTestReminder()">
+                        <i class="bi bi-envelope"></i> Test-Erinnerung senden
+                    </button>
+                    <button class="btn btn-outline-warning btn-sm" onclick="cleanupFiles()">
+                        <i class="bi bi-trash"></i> Verwaiste Dateien bereinigen
+                    </button>
+                    <a href="{{ path('app_dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-speedometer2"></i> Zum Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function sendTestReminder() {
+            if (confirm('Möchten Sie eine Test-Erinnerung senden?')) {
+                // TODO: AJAX-Request für Test-Erinnerung
+                alert('Test-Erinnerungs-Funktion wird implementiert');
+            }
+        }
+        
+        function cleanupFiles() {
+            if (confirm('Möchten Sie verwaiste Dateien bereinigen?')) {
+                // TODO: AJAX-Request für Dateibereinigung
+                alert('Dateibereinigung wird implementiert');
+            }
+        }
+    </script>
+{% endblock %}

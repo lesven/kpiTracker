@@ -1,0 +1,215 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard - KPI Tracker{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block page_actions %}
+    <div class="btn-group" role="group">
+        <a href="{{ path('app_kpi_new') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle"></i> Neue KPI
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+<!-- Status Overview -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Aktuell</h5>
+                        <h2 class="badge-green">{{ stats.up_to_date_count }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-check-circle fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Bald fällig</h5>
+                        <h2 class="badge-yellow">{{ stats.due_soon_count }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-exclamation-triangle fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Überfällig</h5>
+                        <h2 class="badge-red">{{ stats.overdue_count }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-x-circle fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-light">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Gesamt</h5>
+                        <h2>{{ stats.total_kpis }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-graph-up fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- KPI Overview -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Ihre KPIs</h5>
+                <small class="text-muted last-updated">Letzte Aktualisierung: {{ "now"|date("H:i:s") }}</small>
+            </div>
+            <div class="card-body">
+                {% if kpi_data is empty %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-graph-up text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="mt-3 text-muted">Keine KPIs vorhanden</h5>
+                        <p class="text-muted">Erstellen Sie Ihre erste KPI um loszulegen.</p>
+                        <a href="{{ path('app_kpi_new') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Erste KPI erstellen
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Status</th>
+                                    <th>KPI</th>
+                                    <th>Letzter Wert</th>
+                                    <th>Nächste Fälligkeit</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in kpi_data %}
+                                    <tr class="{% if item.status == 'red' %}table-danger{% elseif item.status == 'yellow' %}table-warning{% endif %}">
+                                        <td>
+                                            {% if item.status == 'green' %}
+                                                <i class="bi bi-check-circle-fill status-green" title="Aktuell"></i>
+                                            {% elseif item.status == 'yellow' %}
+                                                <i class="bi bi-exclamation-triangle-fill status-yellow" title="Bald fällig"></i>
+                                            {% else %}
+                                                <i class="bi bi-x-circle-fill status-red" title="Überfällig"></i>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <strong>{{ item.kpi.name }}</strong>
+                                            {% if item.kpi.description %}
+                                                <br><small class="text-muted">{{ item.kpi.description }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if item.latest_value %}
+                                                <span class="fw-bold">{{ item.latest_value.value }}</span>
+                                                {% if item.kpi.unit %}{{ item.kpi.unit }}{% endif %}
+                                                <br><small class="text-muted">{{ item.latest_value.period }}</small>
+                                            {% else %}
+                                                <span class="text-muted">Noch keine Werte</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if item.next_due_date %}
+                                                {{ item.next_due_date|date('d.m.Y') }}
+                                                {% if item.is_overdue %}
+                                                    <br><small class="text-danger">Überfällig</small>
+                                                {% elseif item.is_due_soon %}
+                                                    <br><small class="text-warning">Bald fällig</small>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ path('app_kpi_show', {id: item.kpi.id}) }}" 
+                                                   class="btn btn-outline-primary btn-sm" title="Details">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="{{ path('app_kpi_add_value', {id: item.kpi.id}) }}" 
+                                                   class="btn btn-outline-success btn-sm" title="Wert erfassen">
+                                                    <i class="bi bi-plus"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Recent Values -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Letzte Eingaben</h5>
+            </div>
+            <div class="card-body">
+                {% if stats.recent_values is empty %}
+                    <p class="text-muted">Keine Eingaben vorhanden</p>
+                {% else %}
+                    {% for value in stats.recent_values %}
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 {% if not loop.last %}border-bottom{% endif %}">
+                            <div>
+                                <small class="fw-bold">{{ value.kpi.name }}</small>
+                                <br><small class="text-muted">{{ value.period }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold">{{ value.value }}</span>{% if value.kpi.unit %} {{ value.kpi.unit }}{% endif %}
+                                <br><small class="text-muted">{{ value.createdAt|date('d.m.') }}</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Schnellzugriff</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ path('app_kpi_new') }}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-circle"></i> Neue KPI erstellen
+                    </a>
+                    <a href="{{ path('app_kpi_index') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-list-task"></i> Alle KPIs anzeigen
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

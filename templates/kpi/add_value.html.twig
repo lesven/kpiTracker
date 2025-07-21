@@ -1,0 +1,188 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Wert erfassen für {{ kpi.name }} - KPI Tracker{% endblock %}
+
+{% block page_title %}Wert erfassen: {{ kpi.name }}{% endblock %}
+
+{% block page_actions %}
+    <a href="{{ path('app_kpi_show', {id: kpi.id}) }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Zurück zu KPI
+    </a>
+{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <!-- KPI Info -->
+        <div class="alert alert-info">
+            <div class="d-flex">
+                <div class="flex-shrink-0">
+                    <i class="bi bi-info-circle"></i>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h6 class="alert-heading">Wert für {{ current_period }} erfassen</h6>
+                    <p class="mb-0">
+                        Sie erfassen einen Wert für <strong>{{ kpi.name }}</strong>
+                        {% if kpi.description %} - {{ kpi.description }}{% endif %}
+                        {% if kpi.target %}
+                            <br><small>Zielwert: {{ kpi.target }}{% if kpi.unit %} {{ kpi.unit }}{% endif %}</small>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-plus-circle"></i> Neuen Wert erfassen
+                </h5>
+            </div>
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+                
+                <!-- Zeitraum (readonly) -->
+                <div class="mb-3">
+                    <label class="form-label">Zeitraum</label>
+                    <input type="text" class="form-control" value="{{ current_period }}" readonly>
+                    <div class="form-text">
+                        Der Zeitraum wird automatisch basierend auf dem KPI-Intervall bestimmt.
+                    </div>
+                </div>
+
+                <!-- Wert -->
+                <div class="mb-3">
+                    {{ form_label(form.value, null, {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="input-group">
+                        {{ form_widget(form.value, {'attr': {'class': 'form-control', 'autofocus': true}}) }}
+                        {% if kpi.unit %}
+                            <span class="input-group-text">{{ kpi.unit }}</span>
+                        {% endif %}
+                    </div>
+                    {{ form_help(form.value) }}
+                    {{ form_errors(form.value) }}
+                    
+                    {% if kpi.target %}
+                        <div class="form-text">
+                            <i class="bi bi-bullseye"></i> Zielwert: {{ kpi.target }}{% if kpi.unit %} {{ kpi.unit }}{% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Kommentar -->
+                <div class="mb-3">
+                    {{ form_label(form.comment, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.comment, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_help(form.comment) }}
+                    {{ form_errors(form.comment) }}
+                </div>
+
+                <!-- Datei-Upload -->
+                <div class="mb-4">
+                    {{ form_label(form.uploadedFiles, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.uploadedFiles, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_help(form.uploadedFiles) }}
+                    {{ form_errors(form.uploadedFiles) }}
+                    
+                    <div class="form-text">
+                        <strong>Erlaubte Dateiformate:</strong> PDF, Word, Excel, Bilder (JPG, PNG, GIF), Textdateien<br>
+                        <strong>Maximale Dateigröße:</strong> 5 MB pro Datei
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-flex justify-content-between">
+                    <a href="{{ path('app_kpi_show', {id: kpi.id}) }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Abbrechen
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Wert speichern
+                    </button>
+                </div>
+                
+                {{ form_end(form) }}
+            </div>
+        </div>
+        
+        <!-- Hilfe -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-question-circle"></i> Hilfe
+                </h6>
+            </div>
+            <div class="card-body">
+                <h6>Wert eingeben:</h6>
+                <ul>
+                    <li>Verwenden Sie Punkt oder Komma als Dezimaltrennzeichen</li>
+                    <li>Negative Werte sind mit Minuszeichen (-) möglich</li>
+                    <li>{% if kpi.unit %}Die Einheit "{{ kpi.unit }}" wird automatisch hinzugefügt{% else %}Sie können in der KPI-Bearbeitung eine Einheit festlegen{% endif %}</li>
+                </ul>
+                
+                <h6>Dateien anhängen:</h6>
+                <ul>
+                    <li>Optional können Sie Belege oder zusätzliche Informationen als Dateien anhängen</li>
+                    <li>Mehrere Dateien können gleichzeitig ausgewählt werden</li>
+                    <li>Die Dateien werden sicher gespeichert und sind nur für Sie sichtbar</li>
+                </ul>
+                
+                {% if kpi.target %}
+                    <h6>Zielerreichung:</h6>
+                    <p class="mb-0">
+                        Ihr Zielwert liegt bei {{ kpi.target }}{% if kpi.unit %} {{ kpi.unit }}{% endif %}.
+                        Nach dem Speichern wird automatisch der Zielerreichungsgrad berechnet.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Automatische Zielwert-Berechnung bei Eingabe
+        {% if kpi.target %}
+        document.addEventListener('DOMContentLoaded', function() {
+            const valueInput = document.querySelector('input[name="kpi_value[value]"]');
+            const target = {{ kpi.target }};
+            
+            if (valueInput) {
+                // Info-Element für Zielerreichung erstellen
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'form-text mt-2';
+                infoDiv.id = 'target-info';
+                valueInput.parentNode.appendChild(infoDiv);
+                
+                valueInput.addEventListener('input', function() {
+                    const value = parseFloat(this.value.replace(',', '.'));
+                    const infoElement = document.getElementById('target-info');
+                    
+                    if (!isNaN(value) && value !== 0) {
+                        const percentage = (value / target * 100).toFixed(1);
+                        let className = 'text-muted';
+                        let icon = 'bi-info-circle';
+                        
+                        if (percentage >= 100) {
+                            className = 'text-success';
+                            icon = 'bi-check-circle';
+                        } else if (percentage >= 75) {
+                            className = 'text-warning';
+                            icon = 'bi-exclamation-triangle';
+                        } else {
+                            className = 'text-danger';
+                            icon = 'bi-x-circle';
+                        }
+                        
+                        infoElement.innerHTML = `<i class="bi ${icon}"></i> Das entspricht ${percentage}% des Zielwerts`;
+                        infoElement.className = `form-text mt-2 ${className}`;
+                    } else {
+                        infoElement.innerHTML = '';
+                    }
+                });
+            }
+        });
+        {% endif %}
+    </script>
+{% endblock %}

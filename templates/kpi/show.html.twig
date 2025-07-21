@@ -1,0 +1,239 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ kpi.name }} - Details - KPI Tracker{% endblock %}
+
+{% block page_title %}{{ kpi.name }}{% endblock %}
+
+{% block page_actions %}
+    <div class="btn-group" role="group">
+        <a href="{{ path('app_kpi_index') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Zurück
+        </a>
+        <a href="{{ path('app_kpi_add_value', {id: kpi.id}) }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle"></i> Wert erfassen
+        </a>
+        <a href="{{ path('app_kpi_edit', {id: kpi.id}) }}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-pencil"></i> Bearbeiten
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- KPI Values -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Erfasste Werte</h5>
+                <span class="badge bg-{{ status == 'green' ? 'success' : (status == 'yellow' ? 'warning' : 'danger') }}">
+                    {% if status == 'green' %}
+                        <i class="bi bi-check-circle"></i> Aktuell
+                    {% elseif status == 'yellow' %}
+                        <i class="bi bi-exclamation-triangle"></i> Bald fällig
+                    {% else %}
+                        <i class="bi bi-x-circle"></i> Überfällig
+                    {% endif %}
+                </span>
+            </div>
+            <div class="card-body">
+                {% if values is empty %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-graph-up text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="mt-3 text-muted">Noch keine Werte erfasst</h5>
+                        <p class="text-muted">Erfassen Sie den ersten Wert für diese KPI.</p>
+                        <a href="{{ path('app_kpi_add_value', {id: kpi.id}) }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Ersten Wert erfassen
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Zeitraum</th>
+                                    <th>Wert</th>
+                                    <th>Kommentar</th>
+                                    <th>Dateien</th>
+                                    <th>Erfasst am</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for value in values %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ value.getFormattedPeriod() }}</strong>
+                                            {% if value.updatedAt and value.updatedAt != value.createdAt %}
+                                                <br><small class="text-muted">
+                                                    <i class="bi bi-pencil"></i> Bearbeitet
+                                                </small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="h5 mb-0">{{ value.value }}</span>
+                                            {% if kpi.unit %} {{ kpi.unit }}{% endif %}
+                                            {% if kpi.target %}
+                                                {% set percentage = (value.getValueAsFloat() / kpi.target) * 100 %}
+                                                <br><small class="text-muted">
+                                                    {{ percentage|round(1) }}% des Ziels
+                                                </small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if value.comment %}
+                                                <span class="text-muted">{{ value.comment|slice(0, 50) }}{% if value.comment|length > 50 %}...{% endif %}</span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if value.files|length > 0 %}
+                                                <span class="badge bg-info">
+                                                    <i class="bi bi-paperclip"></i> {{ value.files|length }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ value.createdAt|date('d.m.Y H:i') }}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ path('app_kpi_value_edit', {id: value.id}) }}" 
+                                                   class="btn btn-outline-primary btn-sm" title="Bearbeiten">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <button class="btn btn-outline-danger btn-sm" 
+                                                        onclick="confirmDeleteValue('{{ value.getFormattedPeriod() }}', '{{ path('app_kpi_value_delete', {id: value.id}) }}')"
+                                                        title="Löschen">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- KPI Info -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">KPI-Informationen</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-5">Name:</dt>
+                    <dd class="col-sm-7">{{ kpi.name }}</dd>
+                    
+                    {% if kpi.description %}
+                        <dt class="col-sm-5">Beschreibung:</dt>
+                        <dd class="col-sm-7">{{ kpi.description }}</dd>
+                    {% endif %}
+                    
+                    <dt class="col-sm-5">Intervall:</dt>
+                    <dd class="col-sm-7">
+                        <span class="badge bg-secondary">
+                            {% if kpi.interval == 'weekly' %}Wöchentlich
+                            {% elseif kpi.interval == 'monthly' %}Monatlich
+                            {% else %}Quartalsweise{% endif %}
+                        </span>
+                    </dd>
+                    
+                    {% if kpi.unit %}
+                        <dt class="col-sm-5">Einheit:</dt>
+                        <dd class="col-sm-7">{{ kpi.unit }}</dd>
+                    {% endif %}
+                    
+                    {% if kpi.target %}
+                        <dt class="col-sm-5">Zielwert:</dt>
+                        <dd class="col-sm-7">{{ kpi.target }}{% if kpi.unit %} {{ kpi.unit }}{% endif %}</dd>
+                    {% endif %}
+                    
+                    <dt class="col-sm-5">Erstellt:</dt>
+                    <dd class="col-sm-7">{{ kpi.createdAt|date('d.m.Y') }}</dd>
+                    
+                    <dt class="col-sm-5">Einträge:</dt>
+                    <dd class="col-sm-7">{{ kpi.values|length }}</dd>
+                </dl>
+            </div>
+        </div>
+        
+        <!-- Statistics -->
+        {% if values|length > 0 %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Statistiken</h5>
+                </div>
+                <div class="card-body">
+                    {% set numericValues = [] %}
+                    {% for value in values %}
+                        {% set numericValues = numericValues|merge([value.getValueAsFloat()]) %}
+                    {% endfor %}
+                    
+                    <dl class="row">
+                        <dt class="col-sm-6">Aktueller Wert:</dt>
+                        <dd class="col-sm-6">{{ values[0].value }}{% if kpi.unit %} {{ kpi.unit }}{% endif %}</dd>
+                        
+                        <dt class="col-sm-6">Durchschnitt:</dt>
+                        <dd class="col-sm-6">{{ (numericValues|reduce((carry, v) => carry + v, 0) / numericValues|length)|round(2) }}{% if kpi.unit %} {{ kpi.unit }}{% endif %}</dd>
+                        
+                        <dt class="col-sm-6">Minimum:</dt>
+                        <dd class="col-sm-6">{{ min(numericValues) }}{% if kpi.unit %} {{ kpi.unit }}{% endif %}</dd>
+                        
+                        <dt class="col-sm-6">Maximum:</dt>
+                        <dd class="col-sm-6">{{ max(numericValues) }}{% if kpi.unit %} {{ kpi.unit }}{% endif %}</dd>
+                    </dl>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Value Confirmation Modal -->
+<div class="modal fade" id="deleteValueModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Wert löschen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Möchten Sie den Wert für "<span id="deleteValuePeriod"></span>" wirklich löschen?</p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Achtung:</strong> Alle zugehörigen Dateien werden ebenfalls gelöscht.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                <form id="deleteValueForm" method="post" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Löschen
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function confirmDeleteValue(period, deleteUrl) {
+            document.getElementById('deleteValuePeriod').textContent = period;
+            document.getElementById('deleteValueForm').action = deleteUrl;
+            
+            const modal = new bootstrap.Modal(document.getElementById('deleteValueModal'));
+            modal.show();
+        }
+    </script>
+{% endblock %}
