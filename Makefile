@@ -12,17 +12,21 @@ help: ## Zeigt diese Hilfe an
 install: ## Installiert alle Abhängigkeiten
 	docker compose build
 	docker compose up -d
-	@echo "Warte 5 Sekunden auf Container-Start..."
-	@sleep 5
+	@echo "Warte 10 Sekunden auf Container-Start..."
+	@sleep 10
 	@echo "Setze Berechtigungen vor Composer-Installation..."
 	docker compose exec --user root --workdir /var/www/html app chown -R www-data:www-data . || true
 	docker compose exec --user root --workdir /var/www/html app chmod -R 775 . || true
-	@echo "Installiere Composer-Abhängigkeiten ohne Scripts..."
-	docker compose exec --workdir /var/www/html app composer install --no-interaction --no-scripts --no-plugins
+	docker compose exec --user root --workdir /var/www/html app chmod +x bin/console || true
+	@echo "Installiere Composer-Abhängigkeiten..."
+	docker compose exec --workdir /var/www/html app composer install --no-interaction
+	@echo "Prüfe ob bin/console existiert..."
+	docker compose exec --workdir /var/www/html app test -f bin/console && echo "bin/console gefunden" || echo "bin/console nicht gefunden"
 	@echo "Räume Cache manuell auf..."
 	docker compose exec --workdir /var/www/html app rm -rf var/cache/* || true
-	docker compose exec --workdir /var/www/html app php bin/console doctrine:database:create --if-not-exists
-	docker compose exec --workdir /var/www/html app php bin/console doctrine:migrations:migrate --no-interaction
+	@echo "Erstelle Datenbank..."
+	docker compose exec --workdir /var/www/html app php bin/console doctrine:database:create --if-not-exists || echo "Fehler bei Datenbank-Erstellung"
+	docker compose exec --workdir /var/www/html app php bin/console doctrine:migrations:migrate --no-interaction || echo "Fehler bei Migration"
 	@echo "Installation abgeschlossen!"
 
 start: ## Startet die Container
@@ -38,32 +42,32 @@ build: ## Baut die Container neu
 	docker compose build --no-cache
 
 test: ## Führt alle Tests aus
-	docker compose exec app ./vendor/bin/phpunit
+	docker compose exec --workdir /var/www/html app ./vendor/bin/phpunit
 
 coverage: ## Erstellt Test-Coverage-Report
-	docker compose exec app ./vendor/bin/phpunit --coverage-html coverage/
+	docker compose exec --workdir /var/www/html app ./vendor/bin/phpunit --coverage-html coverage/
 
 lint: ## Prüft Code-Style (PSR-12)
-	docker compose exec app ./vendor/bin/php-cs-fixer fix --dry-run --diff
+	docker compose exec --workdir /var/www/html app ./vendor/bin/php-cs-fixer fix --dry-run --diff
 
 fix: ## Korrigiert Code-Style automatisch
-	docker compose exec app ./vendor/bin/php-cs-fixer fix
+	docker compose exec --workdir /var/www/html app ./vendor/bin/php-cs-fixer fix
 
 clean: ## Räumt Cache und Logs auf
-	docker compose exec app php bin/console cache:clear
-	docker compose exec app rm -rf var/log/*.log
+	docker compose exec --workdir /var/www/html app php bin/console cache:clear --no-warmup || true
+	docker compose exec --workdir /var/www/html app rm -rf var/log/*.log || true
 
 migrate: ## Führt Datenbank-Migrationen aus
-	docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+	docker compose exec --workdir /var/www/html app php bin/console doctrine:migrations:migrate --no-interaction
 
 seed: ## Lädt Testdaten (Fixtures)
-	docker compose exec app php bin/console doctrine:fixtures:load --no-interaction
+	docker compose exec --workdir /var/www/html app php bin/console doctrine:fixtures:load --no-interaction
 
 admin: ## Erstellt einen Admin-Benutzer (interaktiv)
-	docker compose exec app php bin/console app:create-user --admin
+	docker compose exec --workdir /var/www/html app php bin/console app:create-user --admin
 
 shell: ## Öffnet Shell im Container
-	docker compose exec app bash
+	docker compose exec --workdir /var/www/html app bash
 
 logs: ## Zeigt Container-Logs
 	docker compose logs -f
@@ -76,35 +80,24 @@ backup: ## Erstellt Datenbank-Backup
 
 fix-permissions: ## Behebt Berechtigungsprobleme
 	@echo "Setze Berechtigungen für alle Symfony-Verzeichnisse..."
-	docker compose exec --user root app chown -R www-data:www-data /var/www/html || true
-	docker compose exec --user root app chmod -R 775 /var/www/html || true
-	docker compose exec --user root app chmod 644 /var/www/html/.env* || true
+	docker compose exec --user root --workdir /var/www/html app chown -R www-data:www-data . || true
+	docker compose exec --user root --workdir /var/www/html app chmod -R 775 . || true
+	docker compose exec --user root --workdir /var/www/html app chmod 644 .env* || true
 	@echo "Berechtigungen wurden gesetzt."
 
 # Entwicklung
 dev-setup: install ## Komplettes Setup für Entwicklung
 	@echo "Setup abgeschlossen! Öffne http://localhost:8080"
 
-fresh-install: ## Komplett neue Installation (bei Problemen)
-	@echo "Stoppe und entferne alle Container..."
-	docker compose down -v
-	@echo "Bereinige Docker-Images..."
+fresh-install: ## Komplette Neuinstallation (bei Problemen)
+	@echo "Stoppe und entferne alle Container und Volumes..."
+	docker compose down --volumes --remove-orphans || true
+	@echo "Bereinige Docker-System..."
+	docker system prune -f || true
+	@echo "Baue Container komplett neu..."
 	docker compose build --no-cache
-	@echo "Starte Container neu..."
-	docker compose up -d
-	@echo "Warte auf Container-Start..."
-	@sleep 5
-	@echo "Setze Berechtigungen..."
-	docker compose exec --user root app chown -R www-data:www-data /var/www/html
-	docker compose exec --user root app chmod -R 775 /var/www/html
-	@echo "Cache komplett leeren..."
-	docker compose exec app rm -rf var/cache/* var/log/* || true
-	@echo "Composer ohne Scripts installieren..."
-	docker compose exec app composer install --no-scripts --no-plugins --no-interaction
-	@echo "Datenbank einrichten..."
-	docker compose exec app php bin/console doctrine:database:create --if-not-exists
-	docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
-	@echo "Frische Installation abgeschlossen!"
+	@echo "Starte Installation..."
+	$(MAKE) install
 
 # Produktion
 prod-build: ## Build für Produktion
@@ -113,13 +106,3 @@ prod-build: ## Build für Produktion
 prod-deploy: ## Deployment für Produktion
 	docker compose -f docker-compose.prod.yml up -d
 	docker compose -f docker-compose.prod.yml exec --workdir /var/www/html app php bin/console cache:warmup --env=prod
-
-# Entwicklung - Komplett-Reset
-fresh-install: ## Komplette Neuinstallation (Container, Volumes, etc.)
-	@echo "Stoppe und entferne alle Container und Volumes..."
-	docker compose down --volumes --remove-orphans || true
-	docker system prune -f || true
-	@echo "Baue Container neu..."
-	docker compose build --no-cache
-	@echo "Starte Installation..."
-	$(MAKE) install
