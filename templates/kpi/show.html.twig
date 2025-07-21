@@ -62,11 +62,7 @@
                                 {% for value in values %}
                                     <tr>
                                         <td>
-                                            {% try %}
-                                                <strong>{{ value.getFormattedPeriod() }}</strong>
-                                            {% catch %}
-                                                <strong>{{ value.period }}</strong>
-                                            {% endtry %}
+                                            <strong>{{ value.period ? value.getFormattedPeriod() : 'Unbekannter Zeitraum' }}</strong>
                                             {% if value.updatedAt and value.updatedAt != value.createdAt %}
                                                 <br><small class="text-muted">
                                                     <i class="bi bi-pencil"></i> Bearbeitet
