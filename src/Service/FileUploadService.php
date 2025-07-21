@@ -54,6 +54,14 @@ class FileUploadService
 
         foreach ($validFiles as $uploadedFile) {
             try {
+                // Datei validieren bevor Upload
+                $validationErrors = $this->validateFile($uploadedFile);
+                if (!empty($validationErrors)) {
+                    $stats['failed']++;
+                    $stats['errors'][] = 'Datei "' . $uploadedFile->getClientOriginalName() . '": ' . implode(', ', $validationErrors);
+                    continue;
+                }
+
                 $kpiFile = $this->processUpload($uploadedFile, $kpiValue);
                 $stats['uploaded']++;
                 

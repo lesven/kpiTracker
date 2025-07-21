@@ -50,31 +50,7 @@ class KPIValueType extends AbstractType
                     'class' => 'form-control',
                     'accept' => '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.txt'
                 ],
-                'help' => 'Optional: Dateien als Beleg oder zusätzliche Information anhängen',
-                'constraints' => [
-                    new All([
-                        'allowMissingFields' => true,
-                        'constraints' => [
-                            new File([
-                                'maxSize' => '5M',
-                                'mimeTypes' => [
-                                    'application/pdf',
-                                    'application/msword',
-                                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                                    'application/vnd.ms-excel',
-                                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                                    'image/jpeg',
-                                    'image/jpg',
-                                    'image/png',
-                                    'image/gif',
-                                    'text/plain'
-                                ],
-                                'mimeTypesMessage' => 'Bitte laden Sie nur unterstützte Dateiformate hoch (PDF, Word, Excel, Bilder, Text).',
-                                'maxSizeMessage' => 'Die Datei ist zu groß. Maximal 5MB sind erlaubt.'
-                            ])
-                        ]
-                    ])
-                ]
+                'help' => 'Optional: Dateien als Beleg oder zusätzliche Information anhängen'
             ]);
     }
 
