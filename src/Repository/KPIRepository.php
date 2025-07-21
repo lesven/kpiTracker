@@ -8,8 +8,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository für KPI-Entity
- * 
+ * Repository für KPI-Entity.
+ *
  * @extends ServiceEntityRepository<KPI>
  */
 class KPIRepository extends ServiceEntityRepository
@@ -20,8 +20,8 @@ class KPIRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet alle KPIs eines bestimmten Benutzers
-     * 
+     * Findet alle KPIs eines bestimmten Benutzers.
+     *
      * @return KPI[]
      */
     public function findByUser(User $user): array
@@ -35,8 +35,8 @@ class KPIRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet KPIs mit einem bestimmten Intervall
-     * 
+     * Findet KPIs mit einem bestimmten Intervall.
+     *
      * @return KPI[]
      */
     public function findByInterval(string $interval): array
@@ -50,8 +50,8 @@ class KPIRepository extends ServiceEntityRepository
     }
 
     /**
-     * Sucht KPIs anhand des Namens (für Admins)
-     * 
+     * Sucht KPIs anhand des Namens (für Admins).
+     *
      * @return KPI[]
      */
     public function findByNameLike(string $searchTerm): array
@@ -59,7 +59,7 @@ class KPIRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('k')
             ->join('k.user', 'u')
             ->andWhere('k.name LIKE :term')
-            ->setParameter('term', '%' . $searchTerm . '%')
+            ->setParameter('term', '%'.$searchTerm.'%')
             ->orderBy('k.name', 'ASC')
             ->addOrderBy('u.email', 'ASC')
             ->setMaxResults(50)
@@ -68,8 +68,8 @@ class KPIRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet alle KPIs für Admin-Übersicht mit Benutzerinformationen
-     * 
+     * Findet alle KPIs für Admin-Übersicht mit Benutzerinformationen.
+     *
      * @return KPI[]
      */
     public function findAllWithUser(): array
@@ -84,31 +84,24 @@ class KPIRepository extends ServiceEntityRepository
     }
 
     /**
-     * Zählt KPIs pro Benutzer
-     * 
-     * @return array<string, int> E-Mail => Anzahl KPIs
+     * Zählt KPIs pro Benutzer.
+     *
+     * @return array<int, array{user: User, kpi_count: int}>
      */
     public function countKpisByUser(): array
     {
-        $result = $this->createQueryBuilder('k')
-            ->select('u.email, COUNT(k.id) as kpi_count')
+        return $this->createQueryBuilder('k')
+            ->select('u AS user, COUNT(k.id) AS kpi_count')
             ->join('k.user', 'u')
             ->groupBy('u.id')
             ->orderBy('kpi_count', 'DESC')
             ->getQuery()
             ->getResult();
-
-        $counts = [];
-        foreach ($result as $row) {
-            $counts[$row['email']] = (int) $row['kpi_count'];
-        }
-
-        return $counts;
     }
 
     /**
-     * Findet KPIs die in einem bestimmten Zeitraum erstellt wurden
-     * 
+     * Findet KPIs die in einem bestimmten Zeitraum erstellt wurden.
+     *
      * @return KPI[]
      */
     public function findCreatedBetween(\DateTimeImmutable $start, \DateTimeImmutable $end): array
@@ -126,8 +119,8 @@ class KPIRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet KPIs die möglicherweise überfällig sind (für Erinnerungen)
-     * 
+     * Findet KPIs die möglicherweise überfällig sind (für Erinnerungen).
+     *
      * @return KPI[]
      */
     public function findDueForReminder(): array
@@ -143,7 +136,7 @@ class KPIRepository extends ServiceEntityRepository
     }
 
     /**
-     * Zählt die Gesamtanzahl aller KPIs
+     * Zählt die Gesamtanzahl aller KPIs.
      */
     public function countAll(): int
     {
@@ -154,8 +147,8 @@ class KPIRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet KPIs mit den meisten Werten (für Statistiken)
-     * 
+     * Findet KPIs mit den meisten Werten (für Statistiken).
+     *
      * @return KPI[]
      */
     public function findMostActive(int $limit = 10): array
