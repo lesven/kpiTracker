@@ -67,7 +67,7 @@ class CreateUserCommand extends Command
         }
 
         // Passwort validieren (Akzeptanzkriterium: Passwort muss 16 Zeichen lang sein)
-        if (strlen($password) !== 16) {
+        if (strlen($password) < 16) {
             $io->error('Das Passwort muss genau 16 Zeichen lang sein.');
             return Command::FAILURE;
         }

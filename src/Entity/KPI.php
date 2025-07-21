@@ -37,6 +37,12 @@ class KPI
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $unit = null;
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?string $target = null;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -234,6 +240,28 @@ class KPI
             'quarterly' => $now->format('Y') . '-Q' . ceil($now->format('n') / 3),
             default => $now->format('Y-m-d'),
         };
+    }
+
+    public function getUnit(): ?string
+    {
+        return $this->unit;
+    }
+
+    public function setUnit(?string $unit): static
+    {
+        $this->unit = $unit;
+        return $this;
+    }
+
+    public function getTarget(): ?string
+    {
+        return $this->target;
+    }
+
+    public function setTarget(?string $target): static
+    {
+        $this->target = $target;
+        return $this;
     }
 
     public function __toString(): string
