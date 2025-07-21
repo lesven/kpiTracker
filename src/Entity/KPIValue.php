@@ -173,6 +173,11 @@ class KPIValue
      */
     public function getFormattedPeriod(): string
     {
+        // Sicherheitscheck für leeren/null Zeitraum
+        if (empty($this->period)) {
+            return 'Unbekannter Zeitraum';
+        }
+
         // Beispiele: "2024-01" -> "Januar 2024", "2024-W05" -> "KW 5/2024"
         if (preg_match('/^(\d{4})-(\d{2})$/', $this->period, $matches)) {
             $year = $matches[1];
@@ -183,7 +188,13 @@ class KPIValue
                 '07' => 'Juli', '08' => 'August', '09' => 'September',
                 '10' => 'Oktober', '11' => 'November', '12' => 'Dezember'
             ];
-            return $monthNames[$month] . ' ' . $year;
+            
+            // Prüfen ob der Monat im Array existiert
+            if (isset($monthNames[$month])) {
+                return $monthNames[$month] . ' ' . $year;
+            } else {
+                return 'Monat ' . $month . ' ' . $year;
+            }
         }
         
         if (preg_match('/^(\d{4})-W(\d{2})$/', $this->period, $matches)) {
