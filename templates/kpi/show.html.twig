@@ -62,7 +62,11 @@
                                 {% for value in values %}
                                     <tr>
                                         <td>
-                                            <strong>{{ value.getFormattedPeriod() }}</strong>
+                                            {% try %}
+                                                <strong>{{ value.getFormattedPeriod() }}</strong>
+                                            {% catch %}
+                                                <strong>{{ value.period }}</strong>
+                                            {% endtry %}
                                             {% if value.updatedAt and value.updatedAt != value.createdAt %}
                                                 <br><small class="text-muted">
                                                     <i class="bi bi-pencil"></i> Bearbeitet
@@ -72,8 +76,8 @@
                                         <td>
                                             <span class="h5 mb-0">{{ value.value }}</span>
                                             {% if kpi.unit %} {{ kpi.unit }}{% endif %}
-                                            {% if kpi.target and kpi.target != '0' %}
-                                                {% set targetValue = kpi.target|replace(',', '.') %}
+                                            {% if kpi.target and kpi.target != '0' and kpi.target != '' %}
+                                                {% set targetValue = (kpi.target ~ '')|replace(',', '.') %}
                                                 {% if targetValue > 0 %}
                                                     {% set percentage = (value.getValueAsFloat() / targetValue) * 100 %}
                                                     <br><small class="text-muted">
