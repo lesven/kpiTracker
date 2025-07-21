@@ -15,14 +15,14 @@ install: ## Installiert alle Abhängigkeiten
 	@echo "Warte 5 Sekunden auf Container-Start..."
 	@sleep 5
 	@echo "Setze Berechtigungen vor Composer-Installation..."
-	docker compose exec --user root app chown -R www-data:www-data /var/www/html || true
-	docker compose exec --user root app chmod -R 775 /var/www/html || true
-	@echo "Installiere Composer-Abhängigkeiten komplett ohne Scripts..."
-	docker compose exec app composer install --no-interaction --no-scripts --no-plugins
-	@echo "Führe manuell Cache-Clear aus..."
-	docker compose exec app rm -rf var/cache/* || true
-	docker compose exec app php bin/console doctrine:database:create --if-not-exists
-	docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+	docker compose exec --user root --workdir /var/www/html app chown -R www-data:www-data . || true
+	docker compose exec --user root --workdir /var/www/html app chmod -R 775 . || true
+	@echo "Installiere Composer-Abhängigkeiten ohne Scripts..."
+	docker compose exec --workdir /var/www/html app composer install --no-interaction --no-scripts --no-plugins
+	@echo "Räume Cache manuell auf..."
+	docker compose exec --workdir /var/www/html app rm -rf var/cache/* || true
+	docker compose exec --workdir /var/www/html app php bin/console doctrine:database:create --if-not-exists
+	docker compose exec --workdir /var/www/html app php bin/console doctrine:migrations:migrate --no-interaction
 	@echo "Installation abgeschlossen!"
 
 start: ## Startet die Container
@@ -112,4 +112,14 @@ prod-build: ## Build für Produktion
 
 prod-deploy: ## Deployment für Produktion
 	docker compose -f docker-compose.prod.yml up -d
-	docker compose -f docker-compose.prod.yml exec app php bin/console cache:warmup --env=prod
+	docker compose -f docker-compose.prod.yml exec --workdir /var/www/html app php bin/console cache:warmup --env=prod
+
+# Entwicklung - Komplett-Reset
+fresh-install: ## Komplette Neuinstallation (Container, Volumes, etc.)
+	@echo "Stoppe und entferne alle Container und Volumes..."
+	docker compose down --volumes --remove-orphans || true
+	docker system prune -f || true
+	@echo "Baue Container neu..."
+	docker compose build --no-cache
+	@echo "Starte Installation..."
+	$(MAKE) install
