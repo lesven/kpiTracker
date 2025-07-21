@@ -27,7 +27,7 @@ class KPI
     /**
      * Intervall für die KPI-Erfassung (weekly, monthly, quarterly)
      */
-    #[ORM\Column(length: 20)]
+    #[ORM\Column(name: '`interval`', length: 20)]
     #[Assert\Choice(
         choices: ['weekly', 'monthly', 'quarterly'],
         message: 'Bitte wählen Sie ein gültiges Intervall aus.'
