@@ -72,11 +72,14 @@
                                         <td>
                                             <span class="h5 mb-0">{{ value.value }}</span>
                                             {% if kpi.unit %} {{ kpi.unit }}{% endif %}
-                                            {% if kpi.target %}
-                                                {% set percentage = (value.getValueAsFloat() / kpi.target) * 100 %}
-                                                <br><small class="text-muted">
-                                                    {{ percentage|round(1) }}% des Ziels
-                                                </small>
+                                            {% if kpi.target and kpi.target != '0' %}
+                                                {% set targetValue = kpi.target|replace(',', '.')|number_format(2, '.', '') %}
+                                                {% if targetValue > 0 %}
+                                                    {% set percentage = (value.getValueAsFloat() / targetValue) * 100 %}
+                                                    <br><small class="text-muted">
+                                                        {{ percentage|round(1) }}% des Ziels
+                                                    </small>
+                                                {% endif %}
                                             {% endif %}
                                         </td>
                                         <td>
