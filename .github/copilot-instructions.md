@@ -5,49 +5,139 @@ This is a **Symfony 7 LTS** KPI tracking application with strict German document
 
 ### Key Architectural Patterns
 - **Email-based Authentication**: Users identified by email (`User::getUserIdentifier()` returns email)
-- **Role-based Security**: Two roles `ROLE_USER` (default) and `ROLE_ADMIN` with Voter-based permissions
+- **Role-based Security**: Two roles `User::ROLE_USER` (default) and `User::ROLE_ADMIN` with Voter-based permissions
 - **Entity Ownership Model**: Users own KPIs, KPIs contain KPIValues, KPIValues can have file attachments
 - **GDPR Compliance**: `UserService::deleteUserWithData()` handles cascading deletion
 
 ## Critical Development Workflows
 
-### Database Operations
+### Docker-First Development
 ```bash
-# Create migration after entity changes
-docker compose exec app php bin/console doctrine:migrations:diff
-# Apply migrations  
-docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
-# Clear cache after config changes
-docker compose exec app php bin/console cache:clear
+# Complete setup (preferred workflow)
+make install          # Full Docker setup with permissions, DB, migrations
+make start            # Start containers only
+make shell            # Access container shell for debugging
+make fix-permissions  # Fix Docker volume permission issues (Windows/macOS)
 ```
 
-### User Management Commands
+### Database Operations
 ```bash
-# Create admin user (User Story 2)
+# After entity changes - always create migrations
+docker compose exec app php bin/console doctrine:migrations:diff
+make migrate          # Apply migrations
+make seed            # Load test fixtures
+```
+
+### User Management Commands (Critical for Setup)
+```bash
+# Create admin user (User Story 2) 
 docker compose exec app php bin/console app:create-admin email@example.com [password]
-# Create regular user (User Story 15) - requires 16-char password
+# Create regular user (User Story 15) - REQUIRES exactly 16-char password
 docker compose exec app php bin/console app:create-user email@example.com 1234567890123456 --first-name="Name"
 ```
 
-### Container Access
-- Primary development: `docker compose exec app bash`
-- Use `make install` for complete setup, `make fix-permissions` for Docker permission issues
+### Testing & Quality Pipeline
+```bash
+make test-full        # Complete test suite with validation (scripts/run-full-tests.sh)
+make test            # Basic PHPUnit tests
+make validate        # Symfony system validation
+make security-check  # Security audits
+make lint && make fix # Code style PSR-12
+```
 
 ## Security & Access Control
 
 ### Authentication Setup
-- Login uses email/password via `security.yaml` with `username_parameter: email`
+- Login uses **email/password** via `security.yaml` with `username_parameter: email`
 - Forms must use `name="email"` not `_username` for login
 - CSRF protection enabled: `{{ csrf_token('authenticate') }}` in login forms
 
 ### Authorization Patterns
 - Controllers use `#[IsGranted('ROLE_ADMIN')]` for admin-only routes
 - Entity access via Voters: `$this->denyAccessUnlessGranted('edit', $kpi)` in controllers
-- KPIVoter checks ownership: users can only access their own KPIs unless admin
+- **Use Constants**: `User::ROLE_ADMIN`, `User::ROLE_USER` (not string literals)
 
-## Form & Entity Conventions
+## Entity & Form Conventions
 
-### Entity Relationships
+### Entity Relationships & Recent Updates
+```php
+User 1:N KPI 1:N KPIValue 1:N KPIFile
+```
+
+### Entity Best Practices (Post-Refactoring)
+- **User Entity**: Has constants `ROLE_USER`, `ROLE_ADMIN`, `API_TOKEN_LENGTH`
+- **Dual Setter Pattern**: `setEmail()` for forms, `setEmailWithValidation()` for commands
+- **Helper Methods**: `getFullName()`, `hasRole()`, `addRole()`, `clearApiToken()`
+- **Defensive Programming**: Early returns, null-safe operations, input trimming
+
+### Form Types by Use Case
+- `UserType`: Admin user management (has `is_edit` option for password handling)
+- `KPIType`: User KPI creation  
+- `KPIAdminType`: Admin KPI creation with user selection
+- `KPIValueType`: Value entry with file upload support
+
+### Template Integration
+- Bootstrap 5 with custom CSS classes: `.status-green`, `.status-yellow`, `.status-red`
+- German labels: "E-Mail-Adresse", "Passwort", "Anmelden"
+- Use `{{ encore_entry_link_tags('app') }}` for assets
+
+## Business Logic Services
+
+### KPI Status System (User Story 9)
+- `KPIStatusService::getKpiStatus()` returns color-coded status
+- Period calculation: `KPI::getCurrentPeriod()` formats based on interval
+
+### File Upload Handling (User Story 13)
+- `FileUploadService::handleFileUploads()` processes multiple files
+- Files stored in `uploads/kpi_files/` with UUID filenames
+- Supported: PDF, Word, Excel, images, text (5MB limit)
+
+### Email Reminders (User Stories 6-7)
+- `ReminderService` sends automated reminders
+- Templates in `templates/emails/`
+
+## Testing & Quality Standards
+
+### Code Standards
+- **German comments, English code**: `// Prüft ob Benutzer Administrator ist` but `public function isAdmin()`
+- **PSR-12 compliance**: Auto-enforced via `make fix`
+- **Return types required**: All methods need explicit return types
+
+### Test Organization
+- **3-tier test suite**: unit, integration, functional
+- **Full validation script**: `scripts/run-full-tests.sh` includes system validation
+- **Coverage reports**: Generated to `public/coverage/`
+
+## Common Patterns & Anti-Patterns
+
+### Repository Usage
+- Custom queries: `findByUser()`, `findByKpiAndPeriod()`
+- Use constants in queries: `'%' . User::ROLE_ADMIN . '%'` not `'%ROLE_ADMIN%'`
+
+### Entity Method Patterns
+- **Status methods**: `User::isAdmin()`, `KPI::getStatusColor()`
+- **Collection helpers**: Early returns for idempotent operations
+- **Clean Code patterns**: Constants over magic strings, defensive programming
+
+### Service Injection
+- Constructor injection with `private readonly` properties
+- Specific services over generic EntityManager when possible
+
+### Migration Workflow
+**Critical**: Always create migrations after entity changes. New fields like `unit`, `target` need migrations even if optional. Run `doctrine:migrations:diff` after every entity modification.
+
+## Development Environment
+
+### Container Structure
+- **Primary container**: `app` (PHP 8.2-fpm)
+- **Database**: MySQL with symfony/kpi_tracker
+- **Working directory**: `/var/www/html` (always use `--workdir` flag)
+- **Port**: Application runs on `localhost:8080`
+
+### Permission Management
+- **Windows/macOS**: Use `make fix-permissions` for Docker volume issues
+- **Root operations**: Use `--user root` flag when needed
+- **File ownership**: `www-data:www-data` inside container
 ```php
 User 1:N KPI 1:N KPIValue 1:N KPIFile
 ```
