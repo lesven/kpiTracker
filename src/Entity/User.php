@@ -51,6 +51,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $lastName = null;
 
+    #[ORM\Column(length: 80, nullable: true, unique: true)]
+    private ?string $apiToken = null;
+
     /**
      * KPIs die diesem Benutzer zugeordnet sind.
      */
@@ -162,6 +165,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setLastName(?string $lastName): static
     {
         $this->lastName = $lastName;
+
+        return $this;
+    }
+
+    public function getApiToken(): ?string
+    {
+        return $this->apiToken;
+    }
+
+    public function setApiToken(?string $apiToken): static
+    {
+        $this->apiToken = $apiToken;
+
+        return $this;
+    }
+
+    public function generateApiToken(): static
+    {
+        $this->apiToken = bin2hex(random_bytes(32));
 
         return $this;
     }
