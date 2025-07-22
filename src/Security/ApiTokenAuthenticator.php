@@ -21,7 +21,7 @@ class ApiTokenAuthenticator extends AbstractAuthenticator
 
     public function supports(Request $request): ?bool
     {
-        return 0 === mb_strpos((string) $request->headers->get('Authorization'), 'Bearer ');
+        return str_starts_with((string) $request->headers->get('Authorization'), 'Bearer ');  
     }
 
     public function authenticate(Request $request): Passport

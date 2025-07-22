@@ -16,6 +16,7 @@ class ApiController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function values(KPI $kpi, KPIValueRepository $repository): JsonResponse
     {
+        $this->denyAccessUnlessGranted('view', $kpi);
         $values = $repository->findByKPI($kpi);
 
         $data = [];
