@@ -77,7 +77,7 @@ jobs:
         file: ./coverage.xml
 
     - name: Run PHP CS Fixer
-      run: ./vendor/bin/php-cs-fixer fix --dry-run --diff
+      run: ./vendor/bin/php-cs-fixer fix --dry-run --diff --allow-risky=yes
 
   security:
     runs-on: ubuntu-latest
