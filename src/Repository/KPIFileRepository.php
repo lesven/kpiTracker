@@ -8,8 +8,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository für KPIFile-Entity
- * 
+ * Repository für KPIFile-Entity.
+ *
  * @extends ServiceEntityRepository<KPIFile>
  */
 class KPIFileRepository extends ServiceEntityRepository
@@ -20,8 +20,8 @@ class KPIFileRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet alle Dateien zu einem bestimmten KPI-Wert
-     * 
+     * Findet alle Dateien zu einem bestimmten KPI-Wert.
+     *
      * @return KPIFile[]
      */
     public function findByKpiValue(KPIValue $kpiValue): array
@@ -35,7 +35,7 @@ class KPIFileRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet eine Datei anhand des Dateinamens
+     * Findet eine Datei anhand des Dateinamens.
      */
     public function findByFilename(string $filename): ?KPIFile
     {
@@ -47,8 +47,8 @@ class KPIFileRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet Dateien anhand des MIME-Types
-     * 
+     * Findet Dateien anhand des MIME-Types.
+     *
      * @return KPIFile[]
      */
     public function findByMimeType(string $mimeType): array
@@ -62,8 +62,8 @@ class KPIFileRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet alle Bilddateien
-     * 
+     * Findet alle Bilddateien.
+     *
      * @return KPIFile[]
      */
     public function findImages(): array
@@ -77,8 +77,8 @@ class KPIFileRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet Dateien größer als eine bestimmte Größe
-     * 
+     * Findet Dateien größer als eine bestimmte Größe.
+     *
      * @return KPIFile[]
      */
     public function findLargerThan(int $sizeInBytes): array
@@ -92,7 +92,7 @@ class KPIFileRepository extends ServiceEntityRepository
     }
 
     /**
-     * Berechnet die Gesamtgröße aller Dateien
+     * Berechnet die Gesamtgröße aller Dateien.
      */
     public function getTotalFileSize(): int
     {
@@ -105,8 +105,8 @@ class KPIFileRepository extends ServiceEntityRepository
     }
 
     /**
-     * Zählt Dateien nach MIME-Type
-     * 
+     * Zählt Dateien nach MIME-Type.
+     *
      * @return array<string, int> MIME-Type => Anzahl
      */
     public function countByMimeType(): array
@@ -127,8 +127,8 @@ class KPIFileRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet verwaiste Dateien (ohne zugehörigen KPI-Wert)
-     * 
+     * Findet verwaiste Dateien (ohne zugehörigen KPI-Wert).
+     *
      * @return KPIFile[]
      */
     public function findOrphaned(): array
@@ -141,8 +141,8 @@ class KPIFileRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet alte Dateien für Cleanup
-     * 
+     * Findet alte Dateien für Cleanup.
+     *
      * @return KPIFile[]
      */
     public function findOlderThan(\DateTimeImmutable $date): array
@@ -156,7 +156,7 @@ class KPIFileRepository extends ServiceEntityRepository
     }
 
     /**
-     * Zählt die Gesamtanzahl aller Dateien
+     * Zählt die Gesamtanzahl aller Dateien.
      */
     public function countAll(): int
     {

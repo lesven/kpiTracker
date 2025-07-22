@@ -15,7 +15,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
  * Console Command für Admin-Benutzer-Erstellung
- * User Story 2: Administrator kann Benutzer anlegen
+ * User Story 2: Administrator kann Benutzer anlegen.
  */
 #[AsCommand(
     name: 'app:create-admin',
@@ -25,7 +25,7 @@ class CreateAdminCommand extends Command
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private UserPasswordHasherInterface $passwordHasher
+        private UserPasswordHasherInterface $passwordHasher,
     ) {
         parent::__construct();
     }
@@ -55,14 +55,16 @@ class CreateAdminCommand extends Command
         // E-Mail validieren
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $io->error('Ungültige E-Mail-Adresse.');
+
             return Command::FAILURE;
         }
 
         // Prüfen ob Benutzer bereits existiert
         $existingUser = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
-        
+
         if ($existingUser && !$force) {
             $io->error("Benutzer mit E-Mail '{$email}' existiert bereits. Verwenden Sie --force zum Überschreiben.");
+
             return Command::FAILURE;
         }
 
@@ -73,8 +75,9 @@ class CreateAdminCommand extends Command
         }
 
         // Passwort validieren
-        if (strlen($password) < 8) {
+        if (mb_strlen($password) < 8) {
             $io->error('Das Passwort muss mindestens 8 Zeichen lang sein.');
+
             return Command::FAILURE;
         }
 
@@ -113,33 +116,33 @@ class CreateAdminCommand extends Command
                     ['Vorname', $user->getFirstName()],
                     ['Nachname', $user->getLastName()],
                     ['Rollen', implode(', ', $user->getRoles())],
-                    ['Passwort', str_repeat('*', strlen($password))],
+                    ['Passwort', str_repeat('*', mb_strlen($password))],
                 ]
             );
 
             $io->note('Notieren Sie sich das Passwort für die erste Anmeldung.');
 
             return Command::SUCCESS;
-
         } catch (\Exception $e) {
             $this->entityManager->rollback();
-            $io->error('Fehler beim Erstellen des Administrators: ' . $e->getMessage());
+            $io->error('Fehler beim Erstellen des Administrators: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }
 
     /**
-     * Generiert ein sicheres zufälliges Passwort
+     * Generiert ein sicheres zufälliges Passwort.
      */
     private function generatePassword(int $length = 12): string
     {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*';
         $password = '';
-        
-        for ($i = 0; $i < $length; $i++) {
-            $password .= $characters[random_int(0, strlen($characters) - 1)];
+
+        for ($i = 0; $i < $length; ++$i) {
+            $password .= $characters[random_int(0, mb_strlen($characters) - 1)];
         }
-        
+
         return $password;
     }
 }

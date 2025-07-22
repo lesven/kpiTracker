@@ -12,7 +12,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * Console Command für E-Mail-Erinnerungen
- * User Stories 6, 7: Reminder für fällige KPI-Einträge und Eskalation
+ * User Stories 6, 7: Reminder für fällige KPI-Einträge und Eskalation.
  */
 #[AsCommand(
     name: 'app:send-reminders',
@@ -21,7 +21,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class SendRemindersCommand extends Command
 {
     public function __construct(
-        private ReminderService $reminderService
+        private ReminderService $reminderService,
     ) {
         parent::__construct();
     }
@@ -42,16 +42,17 @@ class SendRemindersCommand extends Command
         // Test-E-Mail senden falls angegeben
         if ($testEmail = $input->getOption('test-email')) {
             $io->title('Sende Test-E-Mail');
-            
+
             $success = $this->reminderService->sendTestEmail($testEmail);
-            
+
             if ($success) {
                 $io->success("Test-E-Mail wurde erfolgreich an {$testEmail} gesendet.");
+
                 return Command::SUCCESS;
-            } else {
-                $io->error("Fehler beim Senden der Test-E-Mail an {$testEmail}.");
-                return Command::FAILURE;
             }
+            $io->error("Fehler beim Senden der Test-E-Mail an {$testEmail}.");
+
+            return Command::FAILURE;
         }
 
         $isDryRun = $input->getOption('dry-run');
@@ -93,16 +94,16 @@ class SendRemindersCommand extends Command
                 $io->warning("Es gab {$stats['failed']} Fehler beim E-Mail-Versand. Prüfen Sie die Logs für Details.");
             }
 
-            if ($stats['sent'] === 0 && $stats['escalations'] === 0) {
+            if (0 === $stats['sent'] && 0 === $stats['escalations']) {
                 $io->info('Keine Erinnerungen zu versenden.');
             } else {
                 $io->success('Erinnerungs-Verarbeitung abgeschlossen.');
             }
 
             return Command::SUCCESS;
-
         } catch (\Exception $e) {
-            $io->error('Fehler beim Verarbeiten der Erinnerungen: ' . $e->getMessage());
+            $io->error('Fehler beim Verarbeiten der Erinnerungen: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

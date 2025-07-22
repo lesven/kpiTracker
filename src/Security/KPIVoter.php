@@ -9,7 +9,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 /**
  * Security Voter für KPI-Zugriffskontrolle
- * Stellt sicher dass Benutzer nur ihre eigenen KPIs verwalten können
+ * Stellt sicher dass Benutzer nur ihre eigenen KPIs verwalten können.
  */
 class KPIVoter extends Voter
 {
@@ -20,7 +20,7 @@ class KPIVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::ADD_VALUE])
+        return in_array($attribute, [self::VIEW, self::EDIT, self::DELETE, self::ADD_VALUE], true)
             && $subject instanceof KPI;
     }
 
@@ -37,7 +37,7 @@ class KPIVoter extends Voter
         $kpi = $subject;
 
         // Administratoren haben immer Zugriff
-        if (in_array('ROLE_ADMIN', $user->getRoles())) {
+        if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
             return true;
         }
 

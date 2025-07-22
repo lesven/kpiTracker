@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * KPI-Datei Entity für Datei-Uploads zu KPI-Werten
+ * KPI-Datei Entity für Datei-Uploads zu KPI-Werten.
  */
 #[ORM\Entity(repositoryClass: KPIFileRepository::class)]
 class KPIFile
@@ -18,27 +18,27 @@ class KPIFile
     private ?int $id = null;
 
     /**
-     * Gespeicherter Dateiname auf dem Server
+     * Gespeicherter Dateiname auf dem Server.
      */
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Dateiname ist erforderlich.')]
     private ?string $filename = null;
 
     /**
-     * Ursprünglicher Dateiname vom Upload
+     * Ursprünglicher Dateiname vom Upload.
      */
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Originaldateiname ist erforderlich.')]
     private ?string $originalName = null;
 
     /**
-     * MIME-Type der Datei
+     * MIME-Type der Datei.
      */
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $mimeType = null;
 
     /**
-     * Dateigröße in Bytes
+     * Dateigröße in Bytes.
      */
     #[ORM\Column(nullable: true)]
     private ?int $fileSize = null;
@@ -47,7 +47,7 @@ class KPIFile
     private ?\DateTimeImmutable $createdAt = null;
 
     /**
-     * KPI-Wert zu dem diese Datei gehört
+     * KPI-Wert zu dem diese Datei gehört.
      */
     #[ORM\ManyToOne(inversedBy: 'files')]
     #[ORM\JoinColumn(nullable: false)]
@@ -71,6 +71,7 @@ class KPIFile
     public function setFilename(string $filename): static
     {
         $this->filename = $filename;
+
         return $this;
     }
 
@@ -82,6 +83,7 @@ class KPIFile
     public function setOriginalName(string $originalName): static
     {
         $this->originalName = $originalName;
+
         return $this;
     }
 
@@ -93,6 +95,7 @@ class KPIFile
     public function setMimeType(?string $mimeType): static
     {
         $this->mimeType = $mimeType;
+
         return $this;
     }
 
@@ -104,6 +107,7 @@ class KPIFile
     public function setFileSize(?int $fileSize): static
     {
         $this->fileSize = $fileSize;
+
         return $this;
     }
 
@@ -115,6 +119,7 @@ class KPIFile
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -126,11 +131,12 @@ class KPIFile
     public function setKpiValue(?KPIValue $kpiValue): static
     {
         $this->kpiValue = $kpiValue;
+
         return $this;
     }
 
     /**
-     * Formatiert die Dateigröße für die Anzeige
+     * Formatiert die Dateigröße für die Anzeige.
      */
     public function getFormattedFileSize(): string
     {
@@ -139,20 +145,20 @@ class KPIFile
         }
 
         $bytes = $this->fileSize;
-        
+
         if ($bytes >= 1048576) {
-            return round($bytes / 1048576, 2) . ' MB';
+            return round($bytes / 1048576, 2).' MB';
         }
-        
+
         if ($bytes >= 1024) {
-            return round($bytes / 1024, 2) . ' KB';
+            return round($bytes / 1024, 2).' KB';
         }
-        
-        return $bytes . ' Bytes';
+
+        return $bytes.' Bytes';
     }
 
     /**
-     * Prüft ob die Datei ein Bild ist
+     * Prüft ob die Datei ein Bild ist.
      */
     public function isImage(): bool
     {
@@ -160,7 +166,7 @@ class KPIFile
     }
 
     /**
-     * Holt die Dateiendung basierend auf dem MIME-Type
+     * Holt die Dateiendung basierend auf dem MIME-Type.
      */
     public function getFileExtension(): string
     {

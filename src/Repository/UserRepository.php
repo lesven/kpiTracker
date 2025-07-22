@@ -11,9 +11,10 @@ use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 
 /**
  * Repository für User-Entity
- * Implementiert PasswordUpgraderInterface für automatische Passwort-Upgrades
- * 
+ * Implementiert PasswordUpgraderInterface für automatische Passwort-Upgrades.
+ *
  * @extends ServiceEntityRepository<User>
+ *
  * @implements PasswordUpgraderInterface<User>
  */
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
@@ -24,7 +25,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Upgrade des Passwort-Hashs wenn nötig (z.B. von bcrypt zu Argon2)
+     * Upgrade des Passwort-Hashs wenn nötig (z.B. von bcrypt zu Argon2).
      */
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
     {
@@ -38,7 +39,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Findet einen Benutzer anhand der E-Mail-Adresse
+     * Findet einen Benutzer anhand der E-Mail-Adresse.
      */
     public function findByEmail(string $email): ?User
     {
@@ -50,8 +51,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Findet alle Administratoren
-     * 
+     * Findet alle Administratoren.
+     *
      * @return User[]
      */
     public function findAdmins(): array
@@ -65,8 +66,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Findet alle normalen Benutzer (keine Admins)
-     * 
+     * Findet alle normalen Benutzer (keine Admins).
+     *
      * @return User[]
      */
     public function findRegularUsers(): array
@@ -80,15 +81,15 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Sucht Benutzer anhand von E-Mail oder Teilstring
-     * 
+     * Sucht Benutzer anhand von E-Mail oder Teilstring.
+     *
      * @return User[]
      */
     public function findByEmailLike(string $searchTerm): array
     {
         return $this->createQueryBuilder('u')
             ->andWhere('u.email LIKE :term')
-            ->setParameter('term', '%' . $searchTerm . '%')
+            ->setParameter('term', '%'.$searchTerm.'%')
             ->orderBy('u.email', 'ASC')
             ->setMaxResults(20)
             ->getQuery()
@@ -96,7 +97,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Zählt die Anzahl der Benutzer
+     * Zählt die Anzahl der Benutzer.
      */
     public function countUsers(): int
     {
@@ -107,7 +108,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Zählt die Anzahl der Administratoren
+     * Zählt die Anzahl der Administratoren.
      */
     public function countAdmins(): int
     {
@@ -120,8 +121,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Findet Benutzer die in einem bestimmten Zeitraum erstellt wurden
-     * 
+     * Findet Benutzer die in einem bestimmten Zeitraum erstellt wurden.
+     *
      * @return User[]
      */
     public function findCreatedBetween(\DateTimeImmutable $start, \DateTimeImmutable $end): array

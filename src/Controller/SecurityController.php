@@ -9,12 +9,12 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 /**
  * Controller für Authentifizierung (Login/Logout)
- * User Story 1: Benutzer können sich einloggen
+ * User Story 1: Benutzer können sich einloggen.
  */
 class SecurityController extends AbstractController
 {
     /**
-     * Login-Seite anzeigen und Login-Versuche verarbeiten
+     * Login-Seite anzeigen und Login-Versuche verarbeiten.
      */
     #[Route(path: '/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
@@ -26,7 +26,7 @@ class SecurityController extends AbstractController
 
         // Letzten Login-Fehler abrufen falls vorhanden
         $error = $authenticationUtils->getLastAuthenticationError();
-        
+
         // Letzten eingegebenen Benutzernamen abrufen
         $lastUsername = $authenticationUtils->getLastUsername();
 
@@ -37,7 +37,7 @@ class SecurityController extends AbstractController
     }
 
     /**
-     * Logout wird von Symfony Security automatisch verarbeitet
+     * Logout wird von Symfony Security automatisch verarbeitet.
      */
     #[Route(path: '/logout', name: 'app_logout')]
     public function logout(): void

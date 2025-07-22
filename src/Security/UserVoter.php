@@ -8,7 +8,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 /**
  * Security Voter für Benutzer-Zugriffskontrolle
- * Stellt sicher dass nur Administratoren andere Benutzer verwalten können
+ * Stellt sicher dass nur Administratoren andere Benutzer verwalten können.
  */
 class UserVoter extends Voter
 {
@@ -18,7 +18,7 @@ class UserVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, [self::VIEW, self::EDIT, self::DELETE])
+        return in_array($attribute, [self::VIEW, self::EDIT, self::DELETE], true)
             && $subject instanceof User;
     }
 
@@ -50,7 +50,7 @@ class UserVoter extends Voter
         }
 
         // Administratoren können alle Benutzer anzeigen
-        return in_array('ROLE_ADMIN', $currentUser->getRoles());
+        return in_array('ROLE_ADMIN', $currentUser->getRoles(), true);
     }
 
     private function canEdit(User $targetUser, User $currentUser): bool
@@ -61,7 +61,7 @@ class UserVoter extends Voter
         }
 
         // Nur Administratoren können andere Benutzer bearbeiten
-        return in_array('ROLE_ADMIN', $currentUser->getRoles());
+        return in_array('ROLE_ADMIN', $currentUser->getRoles(), true);
     }
 
     private function canDelete(User $targetUser, User $currentUser): bool
@@ -72,6 +72,6 @@ class UserVoter extends Voter
         }
 
         // Nur Administratoren können Benutzer löschen
-        return in_array('ROLE_ADMIN', $currentUser->getRoles());
+        return in_array('ROLE_ADMIN', $currentUser->getRoles(), true);
     }
 }

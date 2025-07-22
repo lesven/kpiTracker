@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Benutzer-Entity für die Anwendung
- * Implementiert Symfony Security Interface für Authentifizierung
+ * Implementiert Symfony Security Interface für Authentifizierung.
  */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -31,13 +31,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $email = null;
 
     /**
-     * Benutzerrollen (ROLE_USER, ROLE_ADMIN)
+     * Benutzerrollen (ROLE_USER, ROLE_ADMIN).
      */
     #[ORM\Column]
     private array $roles = [];
 
     /**
-     * Gehashtes Passwort
+     * Gehashtes Passwort.
      */
     #[ORM\Column]
     private ?string $password = null;
@@ -52,7 +52,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $lastName = null;
 
     /**
-     * KPIs die diesem Benutzer zugeordnet sind
+     * KPIs die diesem Benutzer zugeordnet sind.
      */
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: KPI::class, orphanRemoval: true)]
     private Collection $kpis;
@@ -76,11 +76,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
+
         return $this;
     }
 
     /**
-     * Eindeutige Bezeichnung für den Benutzer (E-Mail)
+     * Eindeutige Bezeichnung für den Benutzer (E-Mail).
      */
     public function getUserIdentifier(): string
     {
@@ -102,6 +103,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
+
         return $this;
     }
 
@@ -116,6 +118,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): static
     {
         $this->password = $password;
+
         return $this;
     }
 
@@ -135,6 +138,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -146,6 +150,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setFirstName(?string $firstName): static
     {
         $this->firstName = $firstName;
+
         return $this;
     }
 
@@ -157,6 +162,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setLastName(?string $lastName): static
     {
         $this->lastName = $lastName;
+
         return $this;
     }
 
@@ -191,11 +197,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * Prüft ob der Benutzer Administrator ist
+     * Prüft ob der Benutzer Administrator ist.
      */
     public function isAdmin(): bool
     {
-        return in_array('ROLE_ADMIN', $this->roles);
+        return in_array('ROLE_ADMIN', $this->roles, true);
     }
 
     public function __toString(): string

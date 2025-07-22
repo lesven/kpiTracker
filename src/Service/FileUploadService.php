@@ -5,14 +5,14 @@ namespace App\Service;
 use App\Entity\KPIFile;
 use App\Entity\KPIValue;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\String\Slugger\SluggerInterface;
-use Psr\Log\LoggerInterface;
 
 /**
  * Service für Datei-Upload-Handling
- * User Story 5: Benutzer kann KPI-Werte mit Dateien erfassen
+ * User Story 5: Benutzer kann KPI-Werte mit Dateien erfassen.
  */
 class FileUploadService
 {
@@ -20,15 +20,16 @@ class FileUploadService
         private EntityManagerInterface $entityManager,
         private SluggerInterface $slugger,
         private LoggerInterface $logger,
-        private string $uploadDirectory = 'uploads/'
+        private string $uploadDirectory = 'uploads/',
     ) {
     }
 
     /**
-     * Verarbeitet Datei-Uploads für KPI-Werte
-     * 
+     * Verarbeitet Datei-Uploads für KPI-Werte.
+     *
      * @param UploadedFile[]|null $uploadedFiles
-     * @param KPIValue $kpiValue
+     * @param KPIValue            $kpiValue
+     *
      * @return array Statistiken über die Uploads
      */
     public function handleFileUploads(?array $uploadedFiles, KPIValue $kpiValue): array
@@ -36,7 +37,7 @@ class FileUploadService
         $stats = [
             'uploaded' => 0,
             'failed' => 0,
-            'errors' => []
+            'errors' => [],
         ];
 
         if (empty($uploadedFiles)) {
@@ -44,8 +45,8 @@ class FileUploadService
         }
 
         // Filter out null values and ensure we only have UploadedFile instances
-        $validFiles = array_filter($uploadedFiles, function($file) {
-            return $file instanceof UploadedFile && $file->isValid() && $file->getError() === UPLOAD_ERR_OK;
+        $validFiles = array_filter($uploadedFiles, function ($file) {
+            return $file instanceof UploadedFile && $file->isValid() && UPLOAD_ERR_OK === $file->getError();
         });
 
         if (empty($validFiles)) {
@@ -57,27 +58,26 @@ class FileUploadService
                 // Datei validieren bevor Upload
                 $validationErrors = $this->validateFile($uploadedFile);
                 if (!empty($validationErrors)) {
-                    $stats['failed']++;
-                    $stats['errors'][] = 'Datei "' . $uploadedFile->getClientOriginalName() . '": ' . implode(', ', $validationErrors);
+                    ++$stats['failed'];
+                    $stats['errors'][] = 'Datei "'.$uploadedFile->getClientOriginalName().'": '.implode(', ', $validationErrors);
                     continue;
                 }
 
                 $kpiFile = $this->processUpload($uploadedFile, $kpiValue);
-                $stats['uploaded']++;
-                
+                ++$stats['uploaded'];
+
                 $this->logger->info('File uploaded successfully', [
                     'original_name' => $kpiFile->getOriginalName(),
                     'filename' => $kpiFile->getFilename(),
-                    'kpi_value_id' => $kpiValue->getId()
+                    'kpi_value_id' => $kpiValue->getId(),
                 ]);
-                
             } catch (FileException $e) {
-                $stats['failed']++;
-                $stats['errors'][] = 'Fehler beim Upload von "' . $uploadedFile->getClientOriginalName() . '": ' . $e->getMessage();
-                
+                ++$stats['failed'];
+                $stats['errors'][] = 'Fehler beim Upload von "'.$uploadedFile->getClientOriginalName().'": '.$e->getMessage();
+
                 $this->logger->error('File upload failed', [
                     'original_name' => $uploadedFile->getClientOriginalName(),
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -86,18 +86,18 @@ class FileUploadService
     }
 
     /**
-     * Verarbeitet einen einzelnen Datei-Upload
+     * Verarbeitet einen einzelnen Datei-Upload.
      */
     private function processUpload(UploadedFile $uploadedFile, KPIValue $kpiValue): KPIFile
     {
         // Sicheren Dateinamen generieren
         $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
         $safeFilename = $this->slugger->slug($originalFilename);
-        $fileName = $safeFilename . '-' . uniqid() . '.' . $uploadedFile->guessExtension();
+        $fileName = $safeFilename.'-'.uniqid().'.'.$uploadedFile->guessExtension();
 
         // Vollständigen Upload-Pfad erstellen
         $uploadPath = $this->getUploadDirectory();
-        
+
         // Verzeichnis erstellen falls nicht vorhanden
         if (!is_dir($uploadPath)) {
             mkdir($uploadPath, 0755, true);
@@ -116,49 +116,48 @@ class FileUploadService
 
         // In Datenbank speichern
         $this->entityManager->persist($kpiFile);
-        
+
         return $kpiFile;
     }
 
     /**
-     * Löscht eine Datei physisch und aus der Datenbank
+     * Löscht eine Datei physisch und aus der Datenbank.
      */
     public function deleteFile(KPIFile $kpiFile): bool
     {
         try {
             // Physische Datei löschen
-            $filePath = $this->getUploadDirectory() . $kpiFile->getFilename();
+            $filePath = $this->getUploadDirectory().$kpiFile->getFilename();
             if (file_exists($filePath)) {
                 unlink($filePath);
             }
 
             // Aus Datenbank entfernen
             $this->entityManager->remove($kpiFile);
-            
+
             $this->logger->info('File deleted successfully', [
                 'filename' => $kpiFile->getFilename(),
-                'original_name' => $kpiFile->getOriginalName()
+                'original_name' => $kpiFile->getOriginalName(),
             ]);
 
             return true;
-            
         } catch (\Exception $e) {
             $this->logger->error('File deletion failed', [
                 'filename' => $kpiFile->getFilename(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
+
             return false;
         }
     }
 
     /**
-     * Validiert eine hochgeladene Datei
+     * Validiert eine hochgeladene Datei.
      */
     public function validateFile(UploadedFile $file): array
     {
         $errors = [];
-        
+
         // Dateigröße prüfen (5MB Limit)
         if ($file->getSize() > 5 * 1024 * 1024) {
             $errors[] = 'Datei ist zu groß. Maximum: 5MB';
@@ -175,64 +174,64 @@ class FileUploadService
             'image/jpg',
             'image/png',
             'image/gif',
-            'text/plain'
+            'text/plain',
         ];
 
-        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
-            $errors[] = 'Dateityp nicht erlaubt: ' . $file->getMimeType();
+        if (!in_array($file->getMimeType(), $allowedMimeTypes, true)) {
+            $errors[] = 'Dateityp nicht erlaubt: '.$file->getMimeType();
         }
 
         // Dateiname prüfen
         $originalName = $file->getClientOriginalName();
-        if (strlen($originalName) > 255) {
+        if (mb_strlen($originalName) > 255) {
             $errors[] = 'Dateiname ist zu lang';
         }
 
         // Schädliche Endungen blockieren
         $dangerousExtensions = ['php', 'exe', 'bat', 'cmd', 'com', 'pif', 'scr', 'vbs', 'js'];
-        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
-        
-        if (in_array($extension, $dangerousExtensions)) {
-            $errors[] = 'Dateierweiterung nicht erlaubt: ' . $extension;
+        $extension = mb_strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+        if (in_array($extension, $dangerousExtensions, true)) {
+            $errors[] = 'Dateierweiterung nicht erlaubt: '.$extension;
         }
 
         return $errors;
     }
 
     /**
-     * Gibt den absoluten Upload-Pfad zurück
+     * Gibt den absoluten Upload-Pfad zurück.
      */
     public function getUploadDirectory(): string
     {
-        return __DIR__ . '/../../public/' . rtrim($this->uploadDirectory, '/') . '/';
+        return __DIR__.'/../../public/'.rtrim($this->uploadDirectory, '/').'/';
     }
 
     /**
-     * Gibt den relativen Upload-Pfad für URLs zurück
+     * Gibt den relativen Upload-Pfad für URLs zurück.
      */
     public function getUploadUrl(): string
     {
-        return '/' . rtrim($this->uploadDirectory, '/') . '/';
+        return '/'.rtrim($this->uploadDirectory, '/').'/';
     }
 
     /**
-     * Generiert eine sichere Download-URL für eine Datei
+     * Generiert eine sichere Download-URL für eine Datei.
      */
     public function getFileUrl(KPIFile $kpiFile): string
     {
-        return $this->getUploadUrl() . $kpiFile->getFilename();
+        return $this->getUploadUrl().$kpiFile->getFilename();
     }
 
     /**
-     * Bereinigt verwaiste Dateien (Dateien ohne DB-Eintrag)
+     * Bereinigt verwaiste Dateien (Dateien ohne DB-Eintrag).
      */
     public function cleanupOrphanedFiles(): array
     {
         $stats = ['deleted' => 0, 'errors' => 0];
-        
+
         try {
             $uploadPath = $this->getUploadDirectory();
-            
+
             if (!is_dir($uploadPath)) {
                 return $stats;
             }
@@ -244,32 +243,31 @@ class FileUploadService
                 ->select('f.filename')
                 ->getQuery()
                 ->getScalarResult();
-                
+
             $dbFilenames = array_column($dbFiles, 'filename');
 
             // Alle physischen Dateien durchgehen
             $files = scandir($uploadPath);
             foreach ($files as $file) {
-                if ($file === '.' || $file === '..') {
+                if ('.' === $file || '..' === $file) {
                     continue;
                 }
 
                 // Wenn Datei nicht in DB existiert, löschen
-                if (!in_array($file, $dbFilenames)) {
-                    $filePath = $uploadPath . $file;
+                if (!in_array($file, $dbFilenames, true)) {
+                    $filePath = $uploadPath.$file;
                     if (unlink($filePath)) {
-                        $stats['deleted']++;
+                        ++$stats['deleted'];
                         $this->logger->info('Orphaned file deleted', ['filename' => $file]);
                     } else {
-                        $stats['errors']++;
+                        ++$stats['errors'];
                         $this->logger->error('Failed to delete orphaned file', ['filename' => $file]);
                     }
                 }
             }
-
         } catch (\Exception $e) {
             $this->logger->error('Cleanup failed', ['error' => $e->getMessage()]);
-            $stats['errors']++;
+            ++$stats['errors'];
         }
 
         return $stats;

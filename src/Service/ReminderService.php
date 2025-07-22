@@ -5,15 +5,15 @@ namespace App\Service;
 use App\Entity\KPI;
 use App\Entity\User;
 use App\Repository\KPIRepository;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
-use Psr\Log\LoggerInterface;
 
 /**
  * Service für E-Mail-Erinnerungen
- * User Stories 6, 7: Reminder für fällige KPI-Einträge und Eskalation
+ * User Stories 6, 7: Reminder für fällige KPI-Einträge und Eskalation.
  */
 class ReminderService
 {
@@ -24,14 +24,14 @@ class ReminderService
         private KPIStatusService $kpiStatusService,
         private KPIRepository $kpiRepository,
         private LoggerInterface $logger,
-        private string $fromEmail = 'noreply@kpi-tracker.local'
+        private string $fromEmail = 'noreply@kpi-tracker.local',
     ) {
     }
 
     /**
      * Sendet alle fälligen Erinnerungen
-     * User Story 6: Reminder für fällige KPI-Einträge
-     * 
+     * User Story 6: Reminder für fällige KPI-Einträge.
+     *
      * @return array Statistiken über gesendete E-Mails
      */
     public function sendDueReminders(): array
@@ -45,7 +45,7 @@ class ReminderService
 
         // Alle KPIs für Erinnerungsverarbeitung laden
         $allKpis = $this->kpiRepository->findDueForReminder();
-        
+
         // Nach Benutzern gruppieren für effiziente E-Mail-Verarbeitung
         $kpisByUser = [];
         foreach ($allKpis as $kpi) {
@@ -53,7 +53,7 @@ class ReminderService
             if (!isset($kpisByUser[$userId])) {
                 $kpisByUser[$userId] = [
                     'user' => $kpi->getUser(),
-                    'kpis' => []
+                    'kpis' => [],
                 ];
             }
             $kpisByUser[$userId]['kpis'][] = $kpi;
@@ -62,7 +62,7 @@ class ReminderService
         foreach ($kpisByUser as $userGroup) {
             $user = $userGroup['user'];
             $userKpis = $userGroup['kpis'];
-            
+
             // Verschiedene Erinnerungstypen sammeln
             $upcomingReminders = $this->kpiStatusService->getKpisForReminder($userKpis, 3, 0);
             $dueTodayReminders = $this->kpiStatusService->getKpisForReminder($userKpis, 0, 0);
@@ -112,7 +112,7 @@ class ReminderService
     }
 
     /**
-     * Sendet Vorab-Erinnerung (3 Tage vor Fälligkeit)
+     * Sendet Vorab-Erinnerung (3 Tage vor Fälligkeit).
      */
     private function sendUpcomingReminder(User $user, array $reminders): bool
     {
@@ -124,28 +124,29 @@ class ReminderService
                 ->html($this->twig->render('emails/upcoming_reminder.html.twig', [
                     'user' => $user,
                     'reminders' => $reminders,
-                    'dashboard_url' => $this->urlGenerator->generate('app_dashboard', [], UrlGeneratorInterface::ABSOLUTE_URL)
+                    'dashboard_url' => $this->urlGenerator->generate('app_dashboard', [], UrlGeneratorInterface::ABSOLUTE_URL),
                 ]));
 
             $this->mailer->send($email);
-            
+
             $this->logger->info('Upcoming reminder sent', [
                 'user' => $user->getEmail(),
-                'kpi_count' => count($reminders)
+                'kpi_count' => count($reminders),
             ]);
-            
+
             return true;
         } catch (\Exception $e) {
             $this->logger->error('Failed to send upcoming reminder', [
                 'user' => $user->getEmail(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
-     * Sendet Erinnerung für heute fällige KPIs
+     * Sendet Erinnerung für heute fällige KPIs.
      */
     private function sendDueTodayReminder(User $user, array $reminders): bool
     {
@@ -157,28 +158,29 @@ class ReminderService
                 ->html($this->twig->render('emails/due_today_reminder.html.twig', [
                     'user' => $user,
                     'reminders' => $reminders,
-                    'dashboard_url' => $this->urlGenerator->generate('app_dashboard', [], UrlGeneratorInterface::ABSOLUTE_URL)
+                    'dashboard_url' => $this->urlGenerator->generate('app_dashboard', [], UrlGeneratorInterface::ABSOLUTE_URL),
                 ]));
 
             $this->mailer->send($email);
-            
+
             $this->logger->info('Due today reminder sent', [
                 'user' => $user->getEmail(),
-                'kpi_count' => count($reminders)
+                'kpi_count' => count($reminders),
             ]);
-            
+
             return true;
         } catch (\Exception $e) {
             $this->logger->error('Failed to send due today reminder', [
                 'user' => $user->getEmail(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
-     * Sendet Erinnerung für überfällige KPIs
+     * Sendet Erinnerung für überfällige KPIs.
      */
     private function sendOverdueReminder(User $user, array $reminders, int $daysOverdue): bool
     {
@@ -186,7 +188,7 @@ class ReminderService
             $urgencyLevel = match ($daysOverdue) {
                 7 => 'medium',
                 14 => 'high',
-                default => 'low'
+                default => 'low',
             };
 
             $email = (new Email())
@@ -198,31 +200,32 @@ class ReminderService
                     'reminders' => $reminders,
                     'days_overdue' => $daysOverdue,
                     'urgency_level' => $urgencyLevel,
-                    'dashboard_url' => $this->urlGenerator->generate('app_dashboard', [], UrlGeneratorInterface::ABSOLUTE_URL)
+                    'dashboard_url' => $this->urlGenerator->generate('app_dashboard', [], UrlGeneratorInterface::ABSOLUTE_URL),
                 ]));
 
             $this->mailer->send($email);
-            
+
             $this->logger->info('Overdue reminder sent', [
                 'user' => $user->getEmail(),
                 'days_overdue' => $daysOverdue,
-                'kpi_count' => count($reminders)
+                'kpi_count' => count($reminders),
             ]);
-            
+
             return true;
         } catch (\Exception $e) {
             $this->logger->error('Failed to send overdue reminder', [
                 'user' => $user->getEmail(),
                 'days_overdue' => $daysOverdue,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
      * Sendet Eskalation an alle Administratoren
-     * User Story 7: Eskalation bei fehlender Eintragung
+     * User Story 7: Eskalation bei fehlender Eintragung.
      */
     private function sendEscalationToAdmins(User $user, array $reminders): bool
     {
@@ -234,8 +237,9 @@ class ReminderService
 
             if (empty($admins)) {
                 $this->logger->warning('No admins found for escalation', [
-                    'user' => $user->getEmail()
+                    'user' => $user->getEmail(),
                 ]);
+
                 return false;
             }
 
@@ -249,30 +253,31 @@ class ReminderService
                         'user' => $user,
                         'reminders' => $reminders,
                         'days_overdue' => 21,
-                        'admin_url' => $this->urlGenerator->generate('app_admin_dashboard', [], UrlGeneratorInterface::ABSOLUTE_URL)
+                        'admin_url' => $this->urlGenerator->generate('app_admin_dashboard', [], UrlGeneratorInterface::ABSOLUTE_URL),
                     ]));
 
                 $this->mailer->send($email);
             }
-            
+
             $this->logger->warning('Escalation sent to admins', [
                 'user' => $user->getEmail(),
                 'admin_count' => count($admins),
-                'kpi_count' => count($reminders)
+                'kpi_count' => count($reminders),
             ]);
-            
+
             return true;
         } catch (\Exception $e) {
             $this->logger->error('Failed to send escalation to admins', [
                 'user' => $user->getEmail(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
-     * Sendet Test-E-Mail an angegebene Adresse
+     * Sendet Test-E-Mail an angegebene Adresse.
      */
     public function sendTestEmail(string $recipientEmail): bool
     {
@@ -283,21 +288,22 @@ class ReminderService
                 ->subject('KPI-Tracker: Test-E-Mail')
                 ->html($this->twig->render('emails/test_email.html.twig', [
                     'recipient' => $recipientEmail,
-                    'timestamp' => new \DateTimeImmutable()
+                    'timestamp' => new \DateTimeImmutable(),
                 ]));
 
             $this->mailer->send($email);
-            
+
             $this->logger->info('Test email sent', [
-                'recipient' => $recipientEmail
+                'recipient' => $recipientEmail,
             ]);
-            
+
             return true;
         } catch (\Exception $e) {
             $this->logger->error('Failed to send test email', [
                 'recipient' => $recipientEmail,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }

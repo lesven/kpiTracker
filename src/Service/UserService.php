@@ -8,30 +8,31 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Service für Benutzerverwaltung und DSGVO-konforme Löschung
- * User Story 2: Administrator kann Benutzer anlegen (mit DSGVO-Löschung)
+ * User Story 2: Administrator kann Benutzer anlegen (mit DSGVO-Löschung).
  */
 class UserService
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
     ) {
     }
 
     /**
-     * Löscht einen Benutzer DSGVO-konform mit allen zugehörigen Daten
-     * 
+     * Löscht einen Benutzer DSGVO-konform mit allen zugehörigen Daten.
+     *
      * @param User $user Der zu löschende Benutzer
+     *
      * @throws \Exception Bei Fehlern während der Löschung
      */
     public function deleteUserWithData(User $user): void
     {
         $userEmail = $user->getEmail();
         $userId = $user->getId();
-        
+
         $this->logger->info('Starting GDPR-compliant user deletion', [
             'user_id' => $userId,
-            'user_email' => $userEmail
+            'user_email' => $userEmail,
         ]);
 
         try {
@@ -46,51 +47,50 @@ class UserService
             // 1. Alle KPIs des Benutzers laden und löschen
             $kpis = $user->getKpis();
             foreach ($kpis as $kpi) {
-                $stats['kpis_deleted']++;
-                
+                ++$stats['kpis_deleted'];
+
                 // 2. Alle KPI-Werte löschen (Cascade löscht auch Files)
                 $values = $kpi->getValues();
                 foreach ($values as $value) {
-                    $stats['values_deleted']++;
-                    
+                    ++$stats['values_deleted'];
+
                     // 3. Dateien physisch vom Server löschen
                     $files = $value->getFiles();
                     foreach ($files as $file) {
-                        $stats['files_deleted']++;
+                        ++$stats['files_deleted'];
                         $this->deletePhysicalFile($file->getFilename());
                     }
                 }
-                
+
                 // KPI löschen (Cascade löscht Values und Files aus DB)
                 $this->entityManager->remove($kpi);
             }
 
             // 4. Benutzer löschen
             $this->entityManager->remove($user);
-            
+
             // 5. Änderungen in DB schreiben
             $this->entityManager->flush();
             $this->entityManager->commit();
 
             $this->logger->info('GDPR-compliant user deletion completed', [
                 'user_email' => $userEmail, // E-Mail für Audit-Log OK da bereits gelöscht
-                'stats' => $stats
+                'stats' => $stats,
             ]);
-
         } catch (\Exception $e) {
             $this->entityManager->rollback();
-            
+
             $this->logger->error('GDPR user deletion failed', [
                 'user_id' => $userId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
-            throw new \Exception('Fehler beim Löschen des Benutzers: ' . $e->getMessage());
+
+            throw new \Exception('Fehler beim Löschen des Benutzers: '.$e->getMessage());
         }
     }
 
     /**
-     * Löscht eine physische Datei vom Server
+     * Löscht eine physische Datei vom Server.
      */
     private function deletePhysicalFile(string $filename): void
     {
@@ -98,8 +98,8 @@ class UserService
             return;
         }
 
-        $filePath = __DIR__ . '/../../public/uploads/' . $filename;
-        
+        $filePath = __DIR__.'/../../public/uploads/'.$filename;
+
         if (file_exists($filePath)) {
             try {
                 unlink($filePath);
@@ -107,7 +107,7 @@ class UserService
             } catch (\Exception $e) {
                 $this->logger->warning('Failed to delete physical file', [
                     'file' => $filename,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
                 // Nicht kritisch - weiter machen
             }
@@ -115,7 +115,7 @@ class UserService
     }
 
     /**
-     * Erstellt Statistiken über einen Benutzer vor der Löschung
+     * Erstellt Statistiken über einen Benutzer vor der Löschung.
      */
     public function getUserDeletionStats(User $user): array
     {
@@ -129,13 +129,13 @@ class UserService
         ];
 
         foreach ($user->getKpis() as $kpi) {
-            $stats['kpi_count']++;
-            
+            ++$stats['kpi_count'];
+
             foreach ($kpi->getValues() as $value) {
-                $stats['value_count']++;
-                
+                ++$stats['value_count'];
+
                 foreach ($value->getFiles() as $file) {
-                    $stats['file_count']++;
+                    ++$stats['file_count'];
                     $stats['total_file_size'] += $file->getFileSize() ?? 0;
                 }
             }
@@ -145,7 +145,7 @@ class UserService
     }
 
     /**
-     * Validiert ob ein Benutzer gelöscht werden kann
+     * Validiert ob ein Benutzer gelöscht werden kann.
      */
     public function canDeleteUser(User $user, User $currentUser): array
     {
@@ -163,7 +163,7 @@ class UserService
             $adminCount = $this->entityManager
                 ->getRepository(User::class)
                 ->countAdmins();
-                
+
             if ($adminCount <= 1) {
                 $canDelete = false;
                 $reasons[] = 'Der letzte Administrator kann nicht gelöscht werden.';
@@ -172,7 +172,7 @@ class UserService
 
         return [
             'can_delete' => $canDelete,
-            'reasons' => $reasons
+            'reasons' => $reasons,
         ];
     }
 }

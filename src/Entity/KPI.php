@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * KPI-Entity für die Verwaltung von Key Performance Indicators
+ * KPI-Entity für die Verwaltung von Key Performance Indicators.
  */
 #[ORM\Entity(repositoryClass: KPIRepository::class)]
 class KPI
@@ -25,7 +25,7 @@ class KPI
     private ?string $name = null;
 
     /**
-     * Intervall für die KPI-Erfassung (weekly, monthly, quarterly)
+     * Intervall für die KPI-Erfassung (weekly, monthly, quarterly).
      */
     #[ORM\Column(name: '`interval`', length: 20)]
     #[Assert\Choice(
@@ -47,14 +47,14 @@ class KPI
     private ?\DateTimeImmutable $createdAt = null;
 
     /**
-     * Benutzer dem diese KPI zugeordnet ist
+     * Benutzer dem diese KPI zugeordnet ist.
      */
     #[ORM\ManyToOne(inversedBy: 'kpis')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
     /**
-     * Alle Werte die für diese KPI erfasst wurden
+     * Alle Werte die für diese KPI erfasst wurden.
      */
     #[ORM\OneToMany(mappedBy: 'kpi', targetEntity: KPIValue::class, orphanRemoval: true)]
     private Collection $values;
@@ -78,6 +78,7 @@ class KPI
     public function setName(string $name): static
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -89,6 +90,7 @@ class KPI
     public function setInterval(string $interval): static
     {
         $this->interval = $interval;
+
         return $this;
     }
 
@@ -100,6 +102,7 @@ class KPI
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -111,6 +114,7 @@ class KPI
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -122,6 +126,7 @@ class KPI
     public function setUser(?User $user): static
     {
         $this->user = $user;
+
         return $this;
     }
 
@@ -155,12 +160,12 @@ class KPI
     }
 
     /**
-     * Berechnet das nächste Fälligkeitsdatum basierend auf dem Intervall
+     * Berechnet das nächste Fälligkeitsdatum basierend auf dem Intervall.
      */
     public function getNextDueDate(): \DateTimeImmutable
     {
         $now = new \DateTimeImmutable();
-        
+
         return match ($this->interval) {
             'weekly' => $now->modify('next monday'),
             'monthly' => $now->modify('first day of next month'),
@@ -170,27 +175,27 @@ class KPI
     }
 
     /**
-     * Ermittelt den Beginn des nächsten Quartals
+     * Ermittelt den Beginn des nächsten Quartals.
      */
     private function getNextQuarterStart(): \DateTimeImmutable
     {
         $now = new \DateTimeImmutable();
         $currentMonth = (int) $now->format('n');
-        
+
         $nextQuarterMonth = match (true) {
             $currentMonth <= 3 => 4,
             $currentMonth <= 6 => 7,
             $currentMonth <= 9 => 10,
             default => 1,
         };
-        
-        $year = $nextQuarterMonth === 1 ? $now->format('Y') + 1 : $now->format('Y');
-        
+
+        $year = 1 === $nextQuarterMonth ? $now->format('Y') + 1 : $now->format('Y');
+
         return new \DateTimeImmutable("{$year}-{$nextQuarterMonth}-01");
     }
 
     /**
-     * Prüft ob ein Wert für einen bestimmten Zeitraum bereits existiert
+     * Prüft ob ein Wert für einen bestimmten Zeitraum bereits existiert.
      */
     public function hasValueForPeriod(string $period): bool
     {
@@ -199,45 +204,45 @@ class KPI
                 return true;
             }
         }
-        
+
         return false;
     }
 
     /**
-     * Holt den aktuellen Status für das Dashboard (green, yellow, red)
+     * Holt den aktuellen Status für das Dashboard (green, yellow, red).
      */
     public function getStatus(): string
     {
         $now = new \DateTimeImmutable();
         $dueDate = $this->getNextDueDate();
-        
+
         // Aktueller Zeitraum bestimmen
         $currentPeriod = $this->getCurrentPeriod();
-        
+
         if ($this->hasValueForPeriod($currentPeriod)) {
             return 'green'; // Erledigt
         }
-        
+
         $daysDiff = $now->diff($dueDate)->days;
-        
+
         if ($daysDiff <= 3) {
             return 'yellow'; // Bald fällig
         }
-        
+
         return 'red'; // Überfällig
     }
 
     /**
-     * Ermittelt den aktuellen Zeitraum basierend auf dem Intervall
+     * Ermittelt den aktuellen Zeitraum basierend auf dem Intervall.
      */
     public function getCurrentPeriod(): string
     {
         $now = new \DateTimeImmutable();
-        
+
         return match ($this->interval) {
             'weekly' => $now->format('Y-W'),
             'monthly' => $now->format('Y-m'),
-            'quarterly' => $now->format('Y') . '-Q' . ceil($now->format('n') / 3),
+            'quarterly' => $now->format('Y').'-Q'.ceil($now->format('n') / 3),
             default => $now->format('Y-m-d'),
         };
     }
@@ -250,6 +255,7 @@ class KPI
     public function setUnit(?string $unit): static
     {
         $this->unit = $unit;
+
         return $this;
     }
 
@@ -261,26 +267,27 @@ class KPI
     public function setTarget(?string $target): static
     {
         $this->target = $target;
+
         return $this;
     }
 
     /**
-     * Gibt den Zielwert als Float zurück für Berechnungen
+     * Gibt den Zielwert als Float zurück für Berechnungen.
      */
     public function getTargetAsFloat(): ?float
     {
         if (empty($this->target)) {
             return null;
         }
-        
+
         // Komma durch Punkt ersetzen für deutsche Zahlenformate
         $cleanTarget = str_replace(',', '.', $this->target);
-        
+
         // Prüfen ob es eine gültige Zahl ist
         if (is_numeric($cleanTarget)) {
             return (float) $cleanTarget;
         }
-        
+
         return null;
     }
 

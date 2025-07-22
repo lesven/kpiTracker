@@ -13,7 +13,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * Dashboard-Controller für die Hauptübersicht
- * User Story 9: KPI-Dashboard mit Ampellogik
+ * User Story 9: KPI-Dashboard mit Ampellogik.
  */
 #[IsGranted('ROLE_USER')]
 class DashboardController extends AbstractController
@@ -21,12 +21,12 @@ class DashboardController extends AbstractController
     public function __construct(
         private KPIRepository $kpiRepository,
         private KPIValueRepository $kpiValueRepository,
-        private KPIStatusService $kpiStatusService
+        private KPIStatusService $kpiStatusService,
     ) {
     }
 
     /**
-     * Hauptdashboard mit KPI-Übersicht und Ampellogik
+     * Hauptdashboard mit KPI-Übersicht und Ampellogik.
      */
     #[Route('/', name: 'app_dashboard')]
     #[Route('/dashboard', name: 'app_dashboard_alt')]
@@ -34,15 +34,15 @@ class DashboardController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        
+
         // Alle KPIs des Benutzers mit Status laden
         $userKpis = $this->kpiRepository->findByUser($user);
         $kpiData = [];
-        
+
         foreach ($userKpis as $kpi) {
             $status = $this->kpiStatusService->getKpiStatus($kpi);
             $latestValue = $this->kpiValueRepository->findByKPI($kpi)[0] ?? null;
-            
+
             $kpiData[] = [
                 'kpi' => $kpi,
                 'status' => $status,
@@ -52,19 +52,20 @@ class DashboardController extends AbstractController
                 'next_due_date' => $kpi->getNextDueDate(),
             ];
         }
-        
+
         // Sortierung: Überfällige zuerst, dann bald fällige, dann aktuelle
         usort($kpiData, function ($a, $b) {
             $statusOrder = ['red' => 0, 'yellow' => 1, 'green' => 2];
+
             return $statusOrder[$a['status']] <=> $statusOrder[$b['status']];
         });
-        
+
         // Statistiken für Dashboard
         $stats = [
             'total_kpis' => count($userKpis),
-            'overdue_count' => count(array_filter($kpiData, fn($item) => $item['status'] === 'red')),
-            'due_soon_count' => count(array_filter($kpiData, fn($item) => $item['status'] === 'yellow')),
-            'up_to_date_count' => count(array_filter($kpiData, fn($item) => $item['status'] === 'green')),
+            'overdue_count' => count(array_filter($kpiData, fn ($item) => 'red' === $item['status'])),
+            'due_soon_count' => count(array_filter($kpiData, fn ($item) => 'yellow' === $item['status'])),
+            'up_to_date_count' => count(array_filter($kpiData, fn ($item) => 'green' === $item['status'])),
             'recent_values' => $this->kpiValueRepository->findRecentByUser($user, 5),
         ];
 
@@ -76,26 +77,26 @@ class DashboardController extends AbstractController
     }
 
     /**
-     * AJAX-Endpunkt für Dashboard-Updates (für Live-Updates)
+     * AJAX-Endpunkt für Dashboard-Updates (für Live-Updates).
      */
     #[Route('/dashboard/refresh', name: 'app_dashboard_refresh', methods: ['GET'])]
     public function refresh(): Response
     {
         /** @var User $user */
         $user = $this->getUser();
-        
+
         $userKpis = $this->kpiRepository->findByUser($user);
         $statusSummary = [
             'green' => 0,
             'yellow' => 0,
             'red' => 0,
         ];
-        
+
         foreach ($userKpis as $kpi) {
             $status = $this->kpiStatusService->getKpiStatus($kpi);
-            $statusSummary[$status]++;
+            ++$statusSummary[$status];
         }
-        
+
         return $this->json([
             'success' => true,
             'summary' => $statusSummary,

@@ -11,7 +11,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * Console Command für Dateisystem-Wartung
- * Bereinigt verwaiste Dateien und führt Wartungsaufgaben durch
+ * Bereinigt verwaiste Dateien und führt Wartungsaufgaben durch.
  */
 #[AsCommand(
     name: 'app:cleanup-files',
@@ -20,7 +20,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class CleanupFilesCommand extends Command
 {
     public function __construct(
-        private FileUploadService $fileUploadService
+        private FileUploadService $fileUploadService,
     ) {
         parent::__construct();
     }
@@ -40,9 +40,9 @@ class CleanupFilesCommand extends Command
 
         try {
             $io->text('Starte Bereinigung verwaister Dateien...');
-            
+
             $stats = $this->fileUploadService->cleanupOrphanedFiles();
-            
+
             $io->horizontalTable(
                 ['Metrik', 'Anzahl'],
                 [
@@ -55,16 +55,16 @@ class CleanupFilesCommand extends Command
                 $io->warning("Es gab {$stats['errors']} Fehler bei der Bereinigung. Prüfen Sie die Logs für Details.");
             }
 
-            if ($stats['deleted'] === 0) {
+            if (0 === $stats['deleted']) {
                 $io->success('Keine verwaisten Dateien gefunden. Dateisystem ist sauber.');
             } else {
                 $io->success("Bereinigung abgeschlossen. {$stats['deleted']} verwaiste Dateien wurden entfernt.");
             }
 
             return Command::SUCCESS;
-
         } catch (\Exception $e) {
-            $io->error('Fehler bei der Dateisystem-Wartung: ' . $e->getMessage());
+            $io->error('Fehler bei der Dateisystem-Wartung: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

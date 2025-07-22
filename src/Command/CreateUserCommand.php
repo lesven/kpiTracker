@@ -15,7 +15,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
  * Console Command für Benutzer-Erstellung per Shell
- * User Story 15: Benutzer per Shell anlegen
+ * User Story 15: Benutzer per Shell anlegen.
  */
 #[AsCommand(
     name: 'app:create-user',
@@ -25,7 +25,7 @@ class CreateUserCommand extends Command
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private UserPasswordHasherInterface $passwordHasher
+        private UserPasswordHasherInterface $passwordHasher,
     ) {
         parent::__construct();
     }
@@ -57,26 +57,30 @@ class CreateUserCommand extends Command
         // E-Mail validieren (Akzeptanzkriterium: Email validiert)
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $io->error('Ungültige E-Mail-Adresse. Bitte geben Sie eine gültige E-Mail-Adresse ein.');
+
             return Command::FAILURE;
         }
 
         // Zusätzliche E-Mail-Validierung für gängige E-Mail-Formate
         if (!$this->isValidEmailFormat($email)) {
             $io->error('Die E-Mail-Adresse entspricht nicht einem gängigen E-Mail-Format.');
+
             return Command::FAILURE;
         }
 
         // Passwort validieren (Akzeptanzkriterium: Passwort muss 16 Zeichen lang sein)
-        if (strlen($password) < 16) {
+        if (mb_strlen($password) < 16) {
             $io->error('Das Passwort muss genau 16 Zeichen lang sein.');
+
             return Command::FAILURE;
         }
 
         // Prüfen ob Benutzer bereits existiert
         $existingUser = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
-        
+
         if ($existingUser && !$force) {
             $io->error("Benutzer mit E-Mail '{$email}' existiert bereits. Verwenden Sie --force zum Überschreiben.");
+
             return Command::FAILURE;
         }
 
@@ -121,7 +125,7 @@ class CreateUserCommand extends Command
                     ['Vorname', $user->getFirstName()],
                     ['Nachname', $user->getLastName()],
                     ['Rollen', implode(', ', $user->getRoles())],
-                    ['Passwort', str_repeat('*', strlen($password))],
+                    ['Passwort', str_repeat('*', mb_strlen($password))],
                 ]
             );
 
@@ -130,17 +134,17 @@ class CreateUserCommand extends Command
             }
 
             return Command::SUCCESS;
-
         } catch (\Exception $e) {
             $this->entityManager->rollback();
-            $io->error('Fehler beim Erstellen des Benutzers: ' . $e->getMessage());
+            $io->error('Fehler beim Erstellen des Benutzers: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }
 
     /**
      * Validiert ob die E-Mail-Adresse einem gängigen Format entspricht
-     * Akzeptanzkriterium: Email wird validiert ob sie einer gängigen Email entspricht
+     * Akzeptanzkriterium: Email wird validiert ob sie einer gängigen Email entspricht.
      */
     private function isValidEmailFormat(string $email): bool
     {
@@ -151,7 +155,7 @@ class CreateUserCommand extends Command
 
         // Zusätzliche Prüfungen für gängige E-Mail-Formate
         $parts = explode('@', $email);
-        if (count($parts) !== 2) {
+        if (2 !== count($parts)) {
             return false;
         }
 
@@ -159,17 +163,17 @@ class CreateUserCommand extends Command
         $domain = $parts[1];
 
         // Lokaler Teil darf nicht leer sein und keine aufeinanderfolgenden Punkte haben
-        if (empty($local) || strpos($local, '..') !== false) {
+        if (empty($local) || false !== mb_strpos($local, '..')) {
             return false;
         }
 
         // Domain-Teil prüfen
-        if (empty($domain) || strpos($domain, '..') !== false) {
+        if (empty($domain) || false !== mb_strpos($domain, '..')) {
             return false;
         }
 
         // Domain muss mindestens einen Punkt haben (für TLD)
-        if (strpos($domain, '.') === false) {
+        if (false === mb_strpos($domain, '.')) {
             return false;
         }
 

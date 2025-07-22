@@ -9,8 +9,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository für KPIValue-Entity
- * 
+ * Repository für KPIValue-Entity.
+ *
  * @extends ServiceEntityRepository<KPIValue>
  */
 class KPIValueRepository extends ServiceEntityRepository
@@ -21,8 +21,8 @@ class KPIValueRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet alle Werte einer bestimmten KPI
-     * 
+     * Findet alle Werte einer bestimmten KPI.
+     *
      * @return KPIValue[]
      */
     public function findByKPI(KPI $kpi): array
@@ -36,7 +36,7 @@ class KPIValueRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet einen Wert für eine bestimmte KPI und Zeitraum
+     * Findet einen Wert für eine bestimmte KPI und Zeitraum.
      */
     public function findByKpiAndPeriod(KPI $kpi, string $period): ?KPIValue
     {
@@ -50,8 +50,8 @@ class KPIValueRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet alle Werte eines Benutzers
-     * 
+     * Findet alle Werte eines Benutzers.
+     *
      * @return KPIValue[]
      */
     public function findByUser(User $user): array
@@ -66,8 +66,8 @@ class KPIValueRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet Werte in einem bestimmten Zeitraum
-     * 
+     * Findet Werte in einem bestimmten Zeitraum.
+     *
      * @return KPIValue[]
      */
     public function findCreatedBetween(\DateTimeImmutable $start, \DateTimeImmutable $end): array
@@ -86,8 +86,8 @@ class KPIValueRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet die neuesten Werte für Dashboard-Anzeige
-     * 
+     * Findet die neuesten Werte für Dashboard-Anzeige.
+     *
      * @return KPIValue[]
      */
     public function findRecentByUser(User $user, int $limit = 10): array
@@ -104,8 +104,8 @@ class KPIValueRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet alle Werte für CSV-Export eines Benutzers
-     * 
+     * Findet alle Werte für CSV-Export eines Benutzers.
+     *
      * @return KPIValue[]
      */
     public function findForUserExport(User $user): array
@@ -122,8 +122,8 @@ class KPIValueRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet alle Werte für Admin-CSV-Export
-     * 
+     * Findet alle Werte für Admin-CSV-Export.
+     *
      * @return KPIValue[]
      */
     public function findForAdminExport(): array
@@ -140,8 +140,8 @@ class KPIValueRepository extends ServiceEntityRepository
     }
 
     /**
-     * Zählt Werte pro KPI
-     * 
+     * Zählt Werte pro KPI.
+     *
      * @return array<int, int> KPI-ID => Anzahl Werte
      */
     public function countValuesByKpi(): array
@@ -161,8 +161,8 @@ class KPIValueRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet Werte mit Kommentaren
-     * 
+     * Findet Werte mit Kommentaren.
+     *
      * @return KPIValue[]
      */
     public function findWithComments(): array
@@ -180,8 +180,8 @@ class KPIValueRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet Werte mit Datei-Uploads
-     * 
+     * Findet Werte mit Datei-Uploads.
+     *
      * @return KPIValue[]
      */
     public function findWithFiles(): array
@@ -197,7 +197,7 @@ class KPIValueRepository extends ServiceEntityRepository
     }
 
     /**
-     * Berechnet Durchschnittswerte für eine KPI
+     * Berechnet Durchschnittswerte für eine KPI.
      */
     public function calculateAverageForKpi(KPI $kpi): ?float
     {
@@ -212,7 +212,7 @@ class KPIValueRepository extends ServiceEntityRepository
     }
 
     /**
-     * Findet den höchsten Wert für eine KPI
+     * Findet den höchsten Wert für eine KPI.
      */
     public function findMaxValueForKpi(KPI $kpi): ?KPIValue
     {
@@ -226,7 +226,7 @@ class KPIValueRepository extends ServiceEntityRepository
     }
 
     /**
-     * Zählt die Gesamtanzahl aller erfassten Werte
+     * Zählt die Gesamtanzahl aller erfassten Werte.
      */
     public function countAll(): int
     {

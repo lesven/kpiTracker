@@ -14,7 +14,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * Formular für Benutzerverwaltung durch Administratoren
- * User Story 2: Administrator kann Benutzer anlegen
+ * User Story 2: Administrator kann Benutzer anlegen.
  */
 class UserType extends AbstractType
 {
@@ -27,23 +27,23 @@ class UserType extends AbstractType
                 'label' => 'E-Mail-Adresse',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'user@example.com'
+                    'placeholder' => 'user@example.com',
                 ],
-                'help' => 'Wird als Benutzername für die Anmeldung verwendet'
+                'help' => 'Wird als Benutzername für die Anmeldung verwendet',
             ])
             ->add('firstName', TextType::class, [
                 'label' => 'Vorname',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Max'
-                ]
+                    'placeholder' => 'Max',
+                ],
             ])
             ->add('lastName', TextType::class, [
                 'label' => 'Nachname',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Mustermann'
-                ]
+                    'placeholder' => 'Mustermann',
+                ],
             ])
             ->add('roles', ChoiceType::class, [
                 'label' => 'Benutzerrolle',
@@ -54,9 +54,9 @@ class UserType extends AbstractType
                 'multiple' => true,
                 'expanded' => true,
                 'attr' => [
-                    'class' => 'form-check-input'
+                    'class' => 'form-check-input',
                 ],
-                'help' => 'Administratoren können andere Benutzer verwalten'
+                'help' => 'Administratoren können andere Benutzer verwalten',
             ]);
 
         // Passwort-Feld nur bei Neuanlage als Pflichtfeld, bei Bearbeitung optional
@@ -68,16 +68,16 @@ class UserType extends AbstractType
                     'label' => 'Passwort',
                     'attr' => [
                         'class' => 'form-control',
-                        'autocomplete' => 'new-password'
+                        'autocomplete' => 'new-password',
                     ],
-                    'help' => 'Mindestens 8 Zeichen'
+                    'help' => 'Mindestens 8 Zeichen',
                 ],
                 'second_options' => [
                     'label' => 'Passwort wiederholen',
                     'attr' => [
                         'class' => 'form-control',
-                        'autocomplete' => 'new-password'
-                    ]
+                        'autocomplete' => 'new-password',
+                    ],
                 ],
                 'invalid_message' => 'Die Passwörter müssen übereinstimmen.',
                 'constraints' => [
@@ -101,16 +101,16 @@ class UserType extends AbstractType
                     'attr' => [
                         'class' => 'form-control',
                         'autocomplete' => 'new-password',
-                        'placeholder' => 'Leer lassen um Passwort nicht zu ändern'
+                        'placeholder' => 'Leer lassen um Passwort nicht zu ändern',
                     ],
-                    'help' => 'Leer lassen um das aktuelle Passwort zu behalten'
+                    'help' => 'Leer lassen um das aktuelle Passwort zu behalten',
                 ],
                 'second_options' => [
                     'label' => 'Passwort wiederholen',
                     'attr' => [
                         'class' => 'form-control',
-                        'autocomplete' => 'new-password'
-                    ]
+                        'autocomplete' => 'new-password',
+                    ],
                 ],
                 'invalid_message' => 'Die Passwörter müssen übereinstimmen.',
                 'constraints' => [

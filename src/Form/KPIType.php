@@ -4,7 +4,6 @@ namespace App\Form;
 
 use App\Entity\KPI;
 use App\Entity\User;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -14,7 +13,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * Formular für KPI-Erstellung und -Bearbeitung
- * User Story 3: Benutzer kann KPI anlegen
+ * User Story 3: Benutzer kann KPI anlegen.
  */
 class KPIType extends AbstractType
 {
@@ -25,9 +24,9 @@ class KPIType extends AbstractType
                 'label' => 'KPI-Name',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'z.B. Umsatz, Kundenzufriedenheit, ...'
+                    'placeholder' => 'z.B. Umsatz, Kundenzufriedenheit, ...',
                 ],
-                'help' => 'Eindeutiger Name für Ihre KPI'
+                'help' => 'Eindeutiger Name für Ihre KPI',
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Beschreibung',
@@ -35,9 +34,9 @@ class KPIType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 3,
-                    'placeholder' => 'Optionale Beschreibung der KPI...'
+                    'placeholder' => 'Optionale Beschreibung der KPI...',
                 ],
-                'help' => 'Zusätzliche Informationen zur KPI (optional)'
+                'help' => 'Zusätzliche Informationen zur KPI (optional)',
             ])
             ->add('interval', ChoiceType::class, [
                 'label' => 'Intervall',
@@ -47,27 +46,27 @@ class KPIType extends AbstractType
                     'Quartalsweise' => 'quarterly',
                 ],
                 'attr' => [
-                    'class' => 'form-select'
+                    'class' => 'form-select',
                 ],
-                'help' => 'Wie oft soll diese KPI erfasst werden?'
+                'help' => 'Wie oft soll diese KPI erfasst werden?',
             ])
             ->add('unit', TextType::class, [
                 'label' => 'Einheit',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'z.B. EUR, %, Anzahl, ...'
+                    'placeholder' => 'z.B. EUR, %, Anzahl, ...',
                 ],
-                'help' => 'Maßeinheit für die Werte (optional)'
+                'help' => 'Maßeinheit für die Werte (optional)',
             ])
             ->add('target', TextType::class, [
                 'label' => 'Zielwert',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'z.B. 100000, 95, ...'
+                    'placeholder' => 'z.B. 100000, 95, ...',
                 ],
-                'help' => 'Angestrebter Zielwert (optional)'
+                'help' => 'Angestrebter Zielwert (optional)',
             ]);
     }
 

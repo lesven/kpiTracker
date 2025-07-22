@@ -9,8 +9,8 @@ use App\Form\KPIType;
 use App\Form\KPIValueType;
 use App\Repository\KPIRepository;
 use App\Repository\KPIValueRepository;
-use App\Service\KPIService;
 use App\Service\FileUploadService;
+use App\Service\KPIService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,7 +20,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * KPI-Controller für Verwaltung von KPIs und Werten
- * User Stories 3, 5: KPI anlegen und Werte erfassen
+ * User Stories 3, 5: KPI anlegen und Werte erfassen.
  */
 #[Route('/kpi')]
 #[IsGranted('ROLE_USER')]
@@ -31,19 +31,19 @@ class KPIController extends AbstractController
         private KPIRepository $kpiRepository,
         private KPIValueRepository $kpiValueRepository,
         private KPIService $kpiService,
-        private FileUploadService $fileUploadService
+        private FileUploadService $fileUploadService,
     ) {
     }
 
     /**
-     * Liste aller KPIs des Benutzers
+     * Liste aller KPIs des Benutzers.
      */
     #[Route('/', name: 'app_kpi_index', methods: ['GET'])]
     public function index(): Response
     {
         /** @var User $user */
         $user = $this->getUser();
-        
+
         $kpis = $this->kpiRepository->findByUser($user);
 
         return $this->render('kpi/index.html.twig', [
@@ -53,7 +53,7 @@ class KPIController extends AbstractController
 
     /**
      * Neue KPI erstellen
-     * User Story 3: Benutzer kann KPI anlegen
+     * User Story 3: Benutzer kann KPI anlegen.
      */
     #[Route('/new', name: 'app_kpi_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
@@ -66,11 +66,11 @@ class KPIController extends AbstractController
             /** @var User $user */
             $user = $this->getUser();
             $kpi->setUser($user);
-            
+
             $this->entityManager->persist($kpi);
             $this->entityManager->flush();
 
-            $this->addFlash('success', 'KPI "' . $kpi->getName() . '" wurde erfolgreich erstellt.');
+            $this->addFlash('success', 'KPI "'.$kpi->getName().'" wurde erfolgreich erstellt.');
 
             return $this->redirectToRoute('app_kpi_index');
         }
@@ -82,14 +82,14 @@ class KPIController extends AbstractController
     }
 
     /**
-     * KPI-Details anzeigen mit Historie aller Werte
+     * KPI-Details anzeigen mit Historie aller Werte.
      */
     #[Route('/{id}', name: 'app_kpi_show', methods: ['GET'])]
     public function show(KPI $kpi): Response
     {
         // Prüfen ob KPI dem aktuellen Benutzer gehört
         $this->denyAccessUnlessGranted('view', $kpi);
-        
+
         $values = $this->kpiValueRepository->findByKPI($kpi);
         $status = $this->kpiService->getKpiStatus($kpi);
 
@@ -101,13 +101,13 @@ class KPIController extends AbstractController
     }
 
     /**
-     * KPI bearbeiten
+     * KPI bearbeiten.
      */
     #[Route('/{id}/edit', name: 'app_kpi_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, KPI $kpi): Response
     {
         $this->denyAccessUnlessGranted('edit', $kpi);
-        
+
         $form = $this->createForm(KPIType::class, $kpi);
         $form->handleRequest($request);
 
@@ -126,19 +126,19 @@ class KPIController extends AbstractController
     }
 
     /**
-     * KPI löschen
+     * KPI löschen.
      */
     #[Route('/{id}/delete', name: 'app_kpi_delete', methods: ['POST'])]
     public function delete(Request $request, KPI $kpi): Response
     {
         $this->denyAccessUnlessGranted('delete', $kpi);
-        
+
         if ($this->isCsrfTokenValid('delete'.$kpi->getId(), $request->request->get('_token'))) {
             $kpiName = $kpi->getName();
             $this->entityManager->remove($kpi);
             $this->entityManager->flush();
-            
-            $this->addFlash('success', 'KPI "' . $kpiName . '" und alle zugehörigen Werte wurden gelöscht.');
+
+            $this->addFlash('success', 'KPI "'.$kpiName.'" und alle zugehörigen Werte wurden gelöscht.');
         }
 
         return $this->redirectToRoute('app_kpi_index');
@@ -146,34 +146,35 @@ class KPIController extends AbstractController
 
     /**
      * Neuen KPI-Wert erfassen
-     * User Story 5: Benutzer kann KPI-Werte erfassen
+     * User Story 5: Benutzer kann KPI-Werte erfassen.
      */
     #[Route('/{id}/add-value', name: 'app_kpi_add_value', methods: ['GET', 'POST'])]
     public function addValue(Request $request, KPI $kpi): Response
     {
         $this->denyAccessUnlessGranted('add_value', $kpi);
-        
+
         $kpiValue = new KPIValue();
         $kpiValue->setKpi($kpi);
-        
+
         // Aktuellen Zeitraum als Standardwert vorschlagen
         $currentPeriod = $kpi->getCurrentPeriod();
         $kpiValue->setPeriod($currentPeriod);
-        
+
         $form = $this->createForm(KPIValueType::class, $kpiValue);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $submittedPeriod = $kpiValue->getPeriod();
-            
+
             // Prüfen ob bereits ein Wert für diesen Zeitraum existiert
             $existingValue = $this->kpiValueRepository->findByKpiAndPeriod($kpi, $submittedPeriod);
-            
+
             if ($existingValue) {
-                $this->addFlash('warning', 'Für den Zeitraum "' . $submittedPeriod . '" existiert bereits ein Wert. Bitte bearbeiten Sie den bestehenden Wert oder wählen Sie einen anderen Zeitraum.');
+                $this->addFlash('warning', 'Für den Zeitraum "'.$submittedPeriod.'" existiert bereits ein Wert. Bitte bearbeiten Sie den bestehenden Wert oder wählen Sie einen anderen Zeitraum.');
+
                 return $this->redirectToRoute('app_kpi_show', ['id' => $kpi->getId()]);
             }
-            
+
             $this->entityManager->persist($kpiValue);
             $this->entityManager->flush();
 
@@ -181,17 +182,17 @@ class KPIController extends AbstractController
             $uploadedFiles = $form->get('uploadedFiles')->getData();
             if ($uploadedFiles) {
                 $uploadStats = $this->fileUploadService->handleFileUploads($uploadedFiles, $kpiValue);
-                
+
                 if ($uploadStats['uploaded'] > 0) {
                     $this->addFlash('success', "{$uploadStats['uploaded']} Datei(en) erfolgreich hochgeladen.");
                 }
-                
+
                 if ($uploadStats['failed'] > 0) {
                     foreach ($uploadStats['errors'] as $error) {
                         $this->addFlash('warning', $error);
                     }
                 }
-                
+
                 $this->entityManager->flush();
             }
 
@@ -210,13 +211,13 @@ class KPIController extends AbstractController
 
     /**
      * KPI-Wert bearbeiten
-     * User Story 8: KPI-Wertliste und nachträgliche Bearbeitung
+     * User Story 8: KPI-Wertliste und nachträgliche Bearbeitung.
      */
     #[Route('/value/{id}/edit', name: 'app_kpi_value_edit', methods: ['GET', 'POST'])]
     public function editValue(Request $request, KPIValue $kpiValue): Response
     {
         $this->denyAccessUnlessGranted('edit', $kpiValue->getKpi());
-        
+
         $form = $this->createForm(KPIValueType::class, $kpiValue);
         $form->handleRequest($request);
 
@@ -238,18 +239,18 @@ class KPIController extends AbstractController
 
     /**
      * KPI-Wert löschen
-     * User Story 8: KPI-Wertliste und nachträgliche Bearbeitung
+     * User Story 8: KPI-Wertliste und nachträgliche Bearbeitung.
      */
     #[Route('/value/{id}/delete', name: 'app_kpi_value_delete', methods: ['POST'])]
     public function deleteValue(Request $request, KPIValue $kpiValue): Response
     {
         $kpi = $kpiValue->getKpi();
         $this->denyAccessUnlessGranted('delete', $kpi);
-        
+
         if ($this->isCsrfTokenValid('delete'.$kpiValue->getId(), $request->request->get('_token'))) {
             $this->entityManager->remove($kpiValue);
             $this->entityManager->flush();
-            
+
             $this->addFlash('success', 'KPI-Wert wurde gelöscht.');
         }
 

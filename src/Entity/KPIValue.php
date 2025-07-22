@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * KPI-Wert Entity für die Speicherung der erfassten Werte
+ * KPI-Wert Entity für die Speicherung der erfassten Werte.
  */
 #[ORM\Entity(repositoryClass: KPIValueRepository::class)]
 class KPIValue
@@ -26,7 +26,7 @@ class KPIValue
     private ?string $value = null;
 
     /**
-     * Zeitraumbezug (z.B. "2024-01", "2024-W05", "2024-Q1")
+     * Zeitraumbezug (z.B. "2024-01", "2024-W05", "2024-Q1").
      */
     #[ORM\Column(length: 20)]
     #[Assert\NotBlank(message: 'Der Zeitraum ist erforderlich.')]
@@ -46,14 +46,14 @@ class KPIValue
     private ?\DateTimeImmutable $updatedAt = null;
 
     /**
-     * KPI zu der dieser Wert gehört
+     * KPI zu der dieser Wert gehört.
      */
     #[ORM\ManyToOne(inversedBy: 'values')]
     #[ORM\JoinColumn(nullable: false)]
     private ?KPI $kpi = null;
 
     /**
-     * Dateien die zu diesem Wert gehören
+     * Dateien die zu diesem Wert gehören.
      */
     #[ORM\OneToMany(mappedBy: 'kpiValue', targetEntity: KPIFile::class, orphanRemoval: true)]
     private Collection $files;
@@ -77,11 +77,12 @@ class KPIValue
     public function setValue(string $value): static
     {
         $this->value = $value;
+
         return $this;
     }
 
     /**
-     * Gibt den Wert als Float zurück für Berechnungen
+     * Gibt den Wert als Float zurück für Berechnungen.
      */
     public function getValueAsFloat(): float
     {
@@ -96,6 +97,7 @@ class KPIValue
     public function setPeriod(string $period): static
     {
         $this->period = $period;
+
         return $this;
     }
 
@@ -107,6 +109,7 @@ class KPIValue
     public function setComment(?string $comment): static
     {
         $this->comment = $comment;
+
         return $this;
     }
 
@@ -118,6 +121,7 @@ class KPIValue
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -129,6 +133,7 @@ class KPIValue
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -140,6 +145,7 @@ class KPIValue
     public function setKpi(?KPI $kpi): static
     {
         $this->kpi = $kpi;
+
         return $this;
     }
 
@@ -173,7 +179,7 @@ class KPIValue
     }
 
     /**
-     * Formatiert den Zeitraum für die Anzeige
+     * Formatiert den Zeitraum für die Anzeige.
      */
     public function getFormattedPeriod(): string
     {
@@ -190,39 +196,40 @@ class KPIValue
                 '01' => 'Januar', '02' => 'Februar', '03' => 'März',
                 '04' => 'April', '05' => 'Mai', '06' => 'Juni',
                 '07' => 'Juli', '08' => 'August', '09' => 'September',
-                '10' => 'Oktober', '11' => 'November', '12' => 'Dezember'
+                '10' => 'Oktober', '11' => 'November', '12' => 'Dezember',
             ];
-            
+
             // Prüfen ob der Monat im Array existiert
             if (isset($monthNames[$month])) {
-                return $monthNames[$month] . ' ' . $year;
-            } else {
-                return 'Monat ' . $month . ' ' . $year;
+                return $monthNames[$month].' '.$year;
             }
+
+            return 'Monat '.$month.' '.$year;
         }
-        
+
         if (preg_match('/^(\d{4})-W(\d{2})$/', $this->period, $matches)) {
-            return 'KW ' . ltrim($matches[2], '0') . '/' . $matches[1];
+            return 'KW '.ltrim($matches[2], '0').'/'.$matches[1];
         }
-        
+
         if (preg_match('/^(\d{4})-Q(\d)$/', $this->period, $matches)) {
-            return 'Q' . $matches[2] . ' ' . $matches[1];
+            return 'Q'.$matches[2].' '.$matches[1];
         }
-        
+
         return $this->period;
     }
 
     /**
-     * Markiert den Eintrag als aktualisiert
+     * Markiert den Eintrag als aktualisiert.
      */
     public function markAsUpdated(): static
     {
         $this->updatedAt = new \DateTimeImmutable();
+
         return $this;
     }
 
     public function __toString(): string
     {
-        return $this->value . ' (' . $this->getFormattedPeriod() . ')';
+        return $this->value.' ('.$this->getFormattedPeriod().')';
     }
 }
