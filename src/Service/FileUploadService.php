@@ -203,7 +203,7 @@ class FileUploadService
      */
     public function getUploadDirectory(): string
     {
-        return __DIR__.'/../../public/'.mb_rtrim($this->uploadDirectory, '/').'/';
+        return __DIR__.'/../../public/'.rtrim($this->uploadDirectory, '/').'/';
     }
 
     /**
