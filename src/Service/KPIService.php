@@ -105,7 +105,7 @@ class KPIService
     {
         $errors = [];
 
-        if (!$kpi->getName() || 0 === mb_strlen(trim($kpi->getName()))) {
+        if (!$kpi->getName() || 0 === mb_strlen(mb_trim($kpi->getName()))) {
             $errors[] = 'KPI-Name ist erforderlich.';
         }
 
