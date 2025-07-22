@@ -211,7 +211,7 @@ class FileUploadService
      */
     public function getUploadUrl(): string
     {
-        return '/'.mb_rtrim($this->uploadDirectory, '/').'/';
+        return '/'.rtrim($this->uploadDirectory, '/').'/';
     }
 
     /**
