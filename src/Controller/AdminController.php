@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Form\KPIAdminType;
 use App\Form\UserType;
 use App\Repository\KPIRepository;
+use App\Repository\KPIValueRepository;
 use App\Repository\UserRepository;
 use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -31,6 +32,7 @@ class AdminController extends AbstractController
         private KPIRepository $kpiRepository,
         private UserService $userService,
         private UserPasswordHasherInterface $passwordHasher,
+        private KPIValueRepository $kpiValueRepository,
     ) {
     }
 
@@ -160,9 +162,15 @@ class AdminController extends AbstractController
     public function kpis(): Response
     {
         $kpis = $this->kpiRepository->findAllWithUser();
+        $lastValues = [];
+
+        foreach ($kpis as $kpi) {
+            $lastValues[$kpi->getId()] = $this->kpiValueRepository->findLatestValueForKpi($kpi);
+        }
 
         return $this->render('admin/kpis/index.html.twig', [
             'kpis' => $kpis,
+            'last_values' => $lastValues,
         ]);
     }
 

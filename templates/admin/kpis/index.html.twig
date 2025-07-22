@@ -19,6 +19,7 @@
                 <th>Benutzer</th>
                 <th>Intervall</th>
                 <th>Erstellt</th>
+                <th>Letzter Wert</th>
                 <th></th>
             </tr>
         </thead>
@@ -33,6 +34,15 @@
                         </span>
                     </td>
                     <td>{{ kpi.createdAt|date('d.m.Y') }}</td>
+                    <td>
+                        {% set last_value = last_values[kpi.id] ?? null %}
+                        {% if last_value %}
+                            {{ last_value.value }}{% if kpi.unit %} {{ kpi.unit }}{% endif %}
+                            <br><small class="text-muted">{{ last_value.period }}</small>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
                     <td class="text-end">
                         <div class="btn-group btn-group-sm" role="group">
                             <a href="{{ path('app_admin_kpi_edit', {id: kpi.id}) }}" class="btn btn-outline-primary">
@@ -46,7 +56,7 @@
                 </tr>
             {% else %}
                 <tr>
-                    <td colspan="5" class="text-center text-muted">Keine KPIs gefunden.</td>
+                    <td colspan="6" class="text-center text-muted">Keine KPIs gefunden.</td>
                 </tr>
             {% endfor %}
         </tbody>
