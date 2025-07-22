@@ -95,15 +95,15 @@ class CreateUserCommand extends Command
                 $io->note("Erstelle neuen Benutzer '{$email}'...");
             }
 
-            $user->setEmail($email);
+            $user->setEmailWithValidation($email);
             $user->setFirstName($firstName);
             $user->setLastName($lastName);
 
             // Rollen setzen
             if ($isAdmin) {
-                $user->setRoles(['ROLE_ADMIN', 'ROLE_USER']);
+                $user->setRoles([User::ROLE_ADMIN, User::ROLE_USER]);
             } else {
-                $user->setRoles(['ROLE_USER']);
+                $user->setRoles([User::ROLE_USER]);
             }
 
             // Passwort hashen

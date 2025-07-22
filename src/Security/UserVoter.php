@@ -50,7 +50,7 @@ class UserVoter extends Voter
         }
 
         // Administratoren können alle Benutzer anzeigen
-        return in_array('ROLE_ADMIN', $currentUser->getRoles(), true);
+        return in_array(User::ROLE_ADMIN, $currentUser->getRoles(), true);
     }
 
     private function canEdit(User $targetUser, User $currentUser): bool
@@ -61,7 +61,7 @@ class UserVoter extends Voter
         }
 
         // Nur Administratoren können andere Benutzer bearbeiten
-        return in_array('ROLE_ADMIN', $currentUser->getRoles(), true);
+        return in_array(User::ROLE_ADMIN, $currentUser->getRoles(), true);
     }
 
     private function canDelete(User $targetUser, User $currentUser): bool
@@ -72,6 +72,6 @@ class UserVoter extends Voter
         }
 
         // Nur Administratoren können Benutzer löschen
-        return in_array('ROLE_ADMIN', $currentUser->getRoles(), true);
+        return in_array(User::ROLE_ADMIN, $currentUser->getRoles(), true);
     }
 }

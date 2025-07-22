@@ -92,10 +92,10 @@ class CreateAdminCommand extends Command
                 $io->note("Erstelle neuen Administrator '{$email}'...");
             }
 
-            $user->setEmail($email);
+            $user->setEmailWithValidation($email);
             $user->setFirstName($firstName);
             $user->setLastName($lastName);
-            $user->setRoles(['ROLE_ADMIN', 'ROLE_USER']);
+            $user->setRoles([User::ROLE_ADMIN, User::ROLE_USER]);
 
             // Passwort hashen
             $hashedPassword = $this->passwordHasher->hashPassword($user, $password);
