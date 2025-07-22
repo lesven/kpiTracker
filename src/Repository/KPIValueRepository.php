@@ -226,6 +226,20 @@ class KPIValueRepository extends ServiceEntityRepository
     }
 
     /**
+     * Findet den zuletzt erfassten Wert für eine KPI.
+     */
+    public function findLatestValueForKpi(KPI $kpi): ?KPIValue
+    {
+        return $this->createQueryBuilder('v')
+            ->andWhere('v.kpi = :kpi')
+            ->setParameter('kpi', $kpi)
+            ->orderBy('v.period', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
      * Zählt die Gesamtanzahl aller erfassten Werte.
      */
     public function countAll(): int
