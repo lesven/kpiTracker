@@ -114,6 +114,37 @@ make fix
 # oder: docker compose exec app ./vendor/bin/php-cs-fixer fix
 ```
 
+### Erweiterte System-Validierung
+```bash
+# Symfony-System nach Updates validieren
+docker compose exec app php bin/console doctrine:schema:validate
+docker compose exec app php bin/console debug:router
+docker compose exec app php bin/console debug:container
+docker compose exec app php bin/console lint:container
+
+# Sicherheitsprüfungen
+docker compose exec app composer audit
+docker compose exec app php bin/console security:check
+
+# Performance-Tests
+docker compose exec app php bin/console cache:warmup --env=prod
+docker compose exec app php bin/console debug:config framework
+
+# Funktionale Tests kritischer Features
+docker compose exec app ./vendor/bin/phpunit tests/Functional/ -v
+```
+
+### Test-Automation Script
+```bash
+# Vollständige Test-Suite ausführen
+./scripts/run-full-tests.sh
+
+# Oder manuell:
+docker compose exec app ./vendor/bin/phpunit --testsuite=unit
+docker compose exec app ./vendor/bin/phpunit --testsuite=integration
+docker compose exec app ./vendor/bin/phpunit --testsuite=functional
+```
+
 ### Datenbank-Management
 ```bash
 # Migration erstellen
@@ -243,6 +274,8 @@ Automatische Tests und Deployment sind in `.github/workflows/` konfiguriert.
 - [🏗️ Architektur-Übersicht](.github/docs/ARCHITEKTUR.md)
 - [👨‍💼 Admin-Anleitung](.github/docs/ADMIN_GUIDE.md)
 - [👤 Benutzer-Anleitung](.github/docs/USER_GUIDE.md)
+- [🔧 Symfony 7.1 Testing Guide](.github/docs/SYMFONY_71_TESTING.md)
+- [🚀 CI/CD Pipeline Dokumentation](.github/docs/CI_CD_PIPELINE.md)
 
 ## 🚀 Entwicklung
 
