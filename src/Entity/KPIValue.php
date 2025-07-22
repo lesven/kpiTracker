@@ -208,7 +208,7 @@ class KPIValue
         }
 
         if (preg_match('/^(\d{4})-W(\d{2})$/', $this->period, $matches)) {
-            return 'KW '.mb_ltrim($matches[2], '0').'/'.$matches[1];
+            return 'KW '.ltrim($matches[2], '0').'/'.$matches[1];
         }
 
         if (preg_match('/^(\d{4})-Q(\d)$/', $this->period, $matches)) {
