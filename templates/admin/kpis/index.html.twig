@@ -1,0 +1,57 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Alle KPIs - KPI Tracker{% endblock %}
+
+{% block page_title %}Alle KPIs{% endblock %}
+
+{% block page_actions %}
+    <a href="{{ path('app_admin_kpi_new') }}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle"></i> Neue KPI
+    </a>
+{% endblock %}
+
+{% block body %}
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Benutzer</th>
+                <th>KPI</th>
+                <th>Intervall</th>
+                <th>Einheit</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for kpi in kpis %}
+                <tr>
+                    <td>
+                        {{ kpi.user.email }}<br>
+                        <small class="text-muted">{{ kpi.user.firstName }} {{ kpi.user.lastName }}</small>
+                    </td>
+                    <td>{{ kpi.name }}</td>
+                    <td>{{ kpi.interval|trans }}</td>
+                    <td>{{ kpi.unit ?: '-' }}</td>
+                    <td class="text-end">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{{ path('app_admin_kpi_edit', {id: kpi.id}) }}" class="btn btn-outline-primary" title="Bearbeiten">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="post" action="{{ path('app_admin_kpi_delete', {id: kpi.id}) }}" onsubmit="return confirm('KPI wirklich l\xC3\xB6schen?');" style="display:inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ kpi.id) }}">
+                                <button class="btn btn-outline-danger" title="L\xC3\xB6schen">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted">Keine KPIs gefunden.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
