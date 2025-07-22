@@ -16,6 +16,11 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        api:
+            pattern: ^/api/
+            stateless: true
+            provider: app_user_provider
+            custom_authenticator: App\Security\ApiTokenAuthenticator
         main:
             lazy: true
             provider: app_user_provider
@@ -36,6 +41,8 @@ security:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         # Admin-Bereich nur für Administratoren
         - { path: ^/admin, roles: ROLE_ADMIN }
+        # API-Zugriffe mit Token authentifizieren
+        - { path: ^/api, roles: ROLE_USER }
         # Alle anderen Seiten für eingeloggte Benutzer
         - { path: ^/, roles: ROLE_USER }
 
