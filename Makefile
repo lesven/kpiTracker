@@ -44,6 +44,35 @@ build: ## Baut die Container neu
 test: ## Führt alle Tests aus
 	docker compose exec --workdir /var/www/html app ./vendor/bin/phpunit
 
+test-unit: ## Führt nur Unit-Tests aus
+	docker compose exec --workdir /var/www/html app ./vendor/bin/phpunit --testsuite=unit
+
+test-integration: ## Führt nur Integration-Tests aus
+	docker compose exec --workdir /var/www/html app ./vendor/bin/phpunit --testsuite=integration
+
+test-functional: ## Führt nur Functional-Tests aus
+	docker compose exec --workdir /var/www/html app ./vendor/bin/phpunit --testsuite=functional
+
+test-full: ## Führt vollständige Test-Suite aus (inkl. Validierung)
+	@chmod +x scripts/run-full-tests.sh
+	./scripts/run-full-tests.sh
+
+validate: ## Validiert Symfony-System (Schema, Container, etc.)
+	docker compose exec --workdir /var/www/html app php bin/console doctrine:schema:validate
+	docker compose exec --workdir /var/www/html app php bin/console debug:container
+	docker compose exec --workdir /var/www/html app php bin/console lint:container
+	docker compose exec --workdir /var/www/html app php bin/console lint:twig templates/
+
+security-check: ## Führt Sicherheitsprüfungen durch
+	docker compose exec --workdir /var/www/html app composer audit
+	docker compose exec --workdir /var/www/html app php bin/console security:check
+
+performance-test: ## Testet Performance-Basics
+	@echo "Teste Cache Warmup..."
+	docker compose exec --workdir /var/www/html app php bin/console cache:warmup --env=prod
+	@echo "Teste Response Time..."
+	@curl -w "@scripts/curl-format.txt" -o /dev/null -s http://localhost:8080/ || echo "Anwendung nicht erreichbar auf localhost:8080"
+
 coverage: ## Erstellt Test-Coverage-Report
 	docker compose exec --workdir /var/www/html app ./vendor/bin/phpunit --coverage-html coverage/
 
