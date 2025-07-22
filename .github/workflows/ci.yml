@@ -13,7 +13,7 @@ jobs:
     
     services:
       mysql:
-        image: mariadb:latest
+        image: mariadb:10.11
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: kpi_tracker_test
@@ -21,7 +21,7 @@ jobs:
           MYSQL_PASSWORD: symfony
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: --health-cmd="mysqladmin ping --silent" --health-interval=15s --health-timeout=10s --health-retries=5
 
     steps:
     - uses: actions/checkout@v4
@@ -44,6 +44,17 @@ jobs:
 
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
+
+    - name: Wait for MySQL
+      run: |
+        for i in {1..30}; do
+          if mysqladmin ping -h 127.0.0.1 -u symfony -psymfony --silent; then
+            echo "MySQL is ready"
+            break
+          fi
+          echo "Waiting for MySQL... ($i/30)"
+          sleep 2
+        done
 
     - name: Create Database
       env:
