@@ -41,6 +41,7 @@ class MailSettings
     public function setHost(string $host): self
     {
         $this->host = $host;
+
         return $this;
     }
 
@@ -52,6 +53,7 @@ class MailSettings
     public function setPort(int $port): self
     {
         $this->port = $port;
+
         return $this;
     }
 
@@ -63,6 +65,7 @@ class MailSettings
     public function setUsername(?string $username): self
     {
         $this->username = $username;
+
         return $this;
     }
 
@@ -74,6 +77,7 @@ class MailSettings
     public function setPassword(?string $password): self
     {
         $this->password = $password;
+
         return $this;
     }
 
@@ -85,6 +89,7 @@ class MailSettings
     public function setIgnoreCertificate(bool $ignore): self
     {
         $this->ignoreCertificate = $ignore;
+
         return $this;
     }
 }

@@ -3,15 +3,15 @@
 namespace App\Controller;
 
 use App\Entity\KPI;
+use App\Entity\MailSettings;
 use App\Entity\User;
 use App\Form\KPIAdminType;
-use App\Form\UserType;
 use App\Form\MailSettingsType;
+use App\Form\UserType;
 use App\Repository\KPIRepository;
 use App\Repository\KPIValueRepository;
-use App\Repository\UserRepository;
 use App\Repository\MailSettingsRepository;
-use App\Entity\MailSettings;
+use App\Repository\UserRepository;
 use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;

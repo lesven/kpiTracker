@@ -6,7 +6,6 @@ use App\Entity\KPI;
 use App\Entity\User;
 use App\Repository\KPIRepository;
 use Psr\Log\LoggerInterface;
-use App\Service\ConfigurableMailer;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
