@@ -53,11 +53,9 @@ class DashboardController extends AbstractController
             ];
         }
 
-        // Sortierung: Überfällige zuerst, dann bald fällige, dann aktuelle
-        usort($kpiData, function ($a, $b) {
-            $statusOrder = ['red' => 0, 'yellow' => 1, 'green' => 2];
-
-            return $statusOrder[$a['status']] <=> $statusOrder[$b['status']];
+        // Nach Fälligkeitsdatum sortieren (nächstes Fälligkeitsdatum zuerst)
+        usort($kpiData, static function (array $a, array $b): int {
+            return $a['next_due_date'] <=> $b['next_due_date'];
         });
 
         // Statistiken für Dashboard
