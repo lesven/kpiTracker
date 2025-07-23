@@ -181,8 +181,8 @@ class AdminController extends AbstractController
      * Exportiert alle KPI-Werte als Excel-Datei.
      */
     #[Route('/kpis/export', name: 'app_admin_kpi_export', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function exportKpis(): Response
-    {
         $values = $this->kpiValueRepository->findForAdminExport();
 
         $response = new StreamedResponse(function () use ($values) {
