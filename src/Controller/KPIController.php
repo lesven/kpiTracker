@@ -44,7 +44,10 @@ class KPIController extends AbstractController
     public function index(Request $request): Response
     {
         $sortParam = $request->query->get('sort');
-        $sort = $sortParam ?: $request->cookies->get(self::SORT_COOKIE, 'name');
+        $allowedSortValues = ['name', 'due'];
+        $sort = in_array($sortParam, $allowedSortValues, true) 
+            ? $sortParam 
+            : $request->cookies->get(self::SORT_COOKIE, 'name');
 
         /** @var User $user */
         $user = $this->getUser();
