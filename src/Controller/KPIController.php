@@ -54,7 +54,7 @@ class KPIController extends AbstractController
 
         $kpis = $this->kpiRepository->findByUser($user);
 
-        if ('due' === $sort) {
+        if (self::SORT_DUE === $sort) {
             usort($kpis, static fn (KPI $a, KPI $b) => 
                 ($a->getNextDueDate() ?? PHP_INT_MAX) <=> ($b->getNextDueDate() ?? PHP_INT_MAX)
             );
