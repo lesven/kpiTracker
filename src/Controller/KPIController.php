@@ -13,11 +13,11 @@ use App\Service\FileUploadService;
 use App\Service\KPIService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\HttpFoundation\Cookie;
 
 /**
  * KPI-Controller für Verwaltung von KPIs und Werten
@@ -32,7 +32,7 @@ class KPIController extends AbstractController
     public const SORT_DUE = 'due';
     public const SORT_STATUS = 'status';
     public const SORT_CREATED = 'created';
-    
+
     // Cookie für Sortierung
     private const SORT_COOKIE = 'kpi_sort';
 
@@ -66,8 +66,7 @@ class KPIController extends AbstractController
 
         // Spezielle Sortierung für Fälligkeitsdatum
         if (self::SORT_DUE === $sort) {
-            usort($kpis, static fn (KPI $a, KPI $b) =>
-                ($a->getNextDueDate() ?? PHP_INT_MAX) <=> ($b->getNextDueDate() ?? PHP_INT_MAX)
+            usort($kpis, static fn (KPI $a, KPI $b) => ($a->getNextDueDate() ?? PHP_INT_MAX) <=> ($b->getNextDueDate() ?? PHP_INT_MAX)
             );
         }
 
