@@ -68,6 +68,14 @@ class DashboardService
     /**
      * Zählt KPIs pro Status für Live-Updates.
      */
+    /**
+     * Provides a summary of KPI statuses for a given user.
+     *
+     * @param User $user The user whose KPIs are being summarized.
+     *
+     * @return array<string, int> An associative array with keys 'green', 'yellow', and 'red',
+     *                            representing the count of KPIs in each status.
+     */
     public function getStatusSummaryForUser(User $user): array
     {
         $kpis = $this->kpiRepository->findByUser($user);
