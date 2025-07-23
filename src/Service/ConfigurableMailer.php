@@ -33,7 +33,11 @@ class ConfigurableMailer
         );
 
         if ($settings->isIgnoreCertificate()) {
-            $dsn .= '?verify_peer=0&verify_peer_name=0';
+            // Log a warning about the security implications of ignoring certificates
+            trigger_error(
+                'Ignoring certificate validation creates a security risk. Consider using proper certificate validation.',
+                E_USER_WARNING
+            );
         }
 
         $transport = Transport::fromDsn($dsn);
