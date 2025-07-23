@@ -185,43 +185,120 @@ class AdminController extends AbstractController
 
     /**
      * Exportiert alle KPI-Werte als Excel-Datei.
+     * User Story 3: Administrator kann KPI-Daten exportieren.
      */
     #[Route('/kpis/export', name: 'app_admin_kpi_export', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
     public function exportKpis(): Response
     {
-        $values = $this->kpiValueRepository->findForAdminExport();
+        $kpiValues = $this->kpiValueRepository->findForAdminExport();
 
-        $response = new StreamedResponse(function () use ($values) {
-            $spreadsheet = new Spreadsheet();
-            $sheet = $spreadsheet->getActiveSheet();
+        return $this->createExcelResponse($kpiValues);
+    }
 
-            // Header
-            $sheet->fromArray([
-                'username', 'kpiName', 'kpiWert', 'kpiDatum', 'kpiEinheit',
-            ], null, 'A1');
-
-            $row = 2;
-            foreach ($values as $value) {
-                $kpi = $value->getKpi();
-                $user = $kpi ? $kpi->getUser() : null;
-
-                $sheet->setCellValue('A'.$row, $user ? $user->getEmail() : 'N/A');
-                $sheet->setCellValue('B'.$row, $kpi ? $kpi->getName() : 'N/A');
-                $sheet->setCellValue('C'.$row, $value->getValue());
-                $sheet->setCellValue('D'.$row, $value->getPeriod());
-                $sheet->setCellValue('E'.$row, $kpi ? $kpi->getUnit() : 'N/A');
-                ++$row;
-            }
-
-            $writer = new Xlsx($spreadsheet);
-            $writer->save('php://output');
+    /**
+     * Erstellt Excel-Response mit KPI-Daten.
+     */
+    private function createExcelResponse(array $kpiValues): StreamedResponse
+    {
+        $response = new StreamedResponse(function () use ($kpiValues) {
+            $this->generateExcelFile($kpiValues);
         });
 
-        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        $response->headers->set('Content-Disposition', 'attachment; filename="kpi_export.xlsx"');
+        $this->setExcelHeaders($response);
 
         return $response;
+    }
+
+    /**
+     * Generiert Excel-Datei mit KPI-Daten.
+     */
+    private function generateExcelFile(array $kpiValues): void
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $this->addExcelHeaders($sheet);
+        $this->addKpiDataToSheet($sheet, $kpiValues);
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+    }
+
+    /**
+     * Fügt Excel-Header hinzu.
+     */
+    private function addExcelHeaders($sheet): void
+    {
+        $headers = [
+            'Benutzer-Email',
+            'KPI Name',
+            'Wert',
+            'Periode',
+            'Einheit',
+        ];
+
+        $sheet->fromArray($headers, null, 'A1');
+    }
+
+    /**
+     * Fügt KPI-Daten zu Excel-Sheet hinzu.
+     */
+    private function addKpiDataToSheet($sheet, array $kpiValues): void
+    {
+        $currentRow = 2; // Start nach Header-Zeile
+
+        foreach ($kpiValues as $kpiValue) {
+            $rowData = $this->extractKpiValueData($kpiValue);
+            $this->addRowToSheet($sheet, $rowData, $currentRow);
+            ++$currentRow;
+        }
+    }
+
+    /**
+     * Extrahiert Daten aus KPIValue für Excel-Export.
+     */
+    private function extractKpiValueData($kpiValue): array
+    {
+        $kpi = $kpiValue->getKpi();
+        $user = $kpi?->getUser();
+
+        return [
+            'userEmail' => $user?->getEmail() ?? 'N/A',
+            'kpiName' => $kpi?->getName() ?? 'N/A',
+            'value' => $kpiValue->getValue(),
+            'period' => $kpiValue->getPeriod(),
+            'unit' => $kpi?->getUnit() ?? 'N/A',
+        ];
+    }
+
+    /**
+     * Fügt eine Datenzeile zum Excel-Sheet hinzu.
+     */
+    private function addRowToSheet($sheet, array $rowData, int $rowNumber): void
+    {
+        $sheet->setCellValue('A'.$rowNumber, $rowData['userEmail']);
+        $sheet->setCellValue('B'.$rowNumber, $rowData['kpiName']);
+        $sheet->setCellValue('C'.$rowNumber, $rowData['value']);
+        $sheet->setCellValue('D'.$rowNumber, $rowData['period']);
+        $sheet->setCellValue('E'.$rowNumber, $rowData['unit']);
+    }
+
+    /**
+     * Setzt HTTP-Headers für Excel-Download.
+     */
+    private function setExcelHeaders(StreamedResponse $response): void
+    {
+        $filename = sprintf('kpi_export_%s.xlsx', date('Y-m-d_H-i-s'));
+
+        $response->headers->set(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        );
+        $response->headers->set(
+            'Content-Disposition',
+            sprintf('attachment; filename="%s"', $filename)
+        );
     }
 
     /**
