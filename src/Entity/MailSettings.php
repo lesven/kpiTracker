@@ -28,6 +28,9 @@ class MailSettings
     #[ORM\Column(type: 'boolean')]
     private bool $ignoreCertificate = false;
 
+    #[ORM\Column(type: 'boolean')]
+    private bool $isDefault = false;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -89,6 +92,18 @@ class MailSettings
     public function setIgnoreCertificate(bool $ignore): self
     {
         $this->ignoreCertificate = $ignore;
+
+        return $this;
+    }
+
+    public function isDefault(): bool
+    {
+        return $this->isDefault;
+    }
+
+    public function setIsDefault(bool $isDefault): self
+    {
+        $this->isDefault = $isDefault;
 
         return $this;
     }

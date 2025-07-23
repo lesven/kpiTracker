@@ -50,6 +50,14 @@ class MailSettingsType extends AbstractType
                 'attr' => [
                     'class' => 'form-check-input',
                 ],
+            ])
+            ->add('isDefault', CheckboxType::class, [
+                'required' => false,
+                'label' => 'Standard-Konfiguration',
+                'help' => 'Diese Konfiguration als Standard verwenden',
+                'attr' => [
+                    'class' => 'form-check-input',
+                ],
             ]);
     }
 
