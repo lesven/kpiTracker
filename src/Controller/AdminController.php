@@ -196,11 +196,14 @@ class AdminController extends AbstractController
 
             $row = 2;
             foreach ($values as $value) {
-                $sheet->setCellValue('A'.$row, $value->getKpi()->getUser()->getEmail());
-                $sheet->setCellValue('B'.$row, $value->getKpi()->getName());
+                $kpi = $value->getKpi();
+                $user = $kpi ? $kpi->getUser() : null;
+
+                $sheet->setCellValue('A'.$row, $user ? $user->getEmail() : 'N/A');
+                $sheet->setCellValue('B'.$row, $kpi ? $kpi->getName() : 'N/A');
                 $sheet->setCellValue('C'.$row, $value->getValue());
                 $sheet->setCellValue('D'.$row, $value->getPeriod());
-                $sheet->setCellValue('E'.$row, $value->getKpi()->getUnit());
+                $sheet->setCellValue('E'.$row, $kpi ? $kpi->getUnit() : 'N/A');
                 ++$row;
             }
 
