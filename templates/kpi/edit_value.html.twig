@@ -20,7 +20,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+                {{ form_start(form, {'attr': form.uploadedFiles is defined ? {'enctype': 'multipart/form-data'} : {}}) }}
 
                 <div class="mb-3">
                     {{ form_label(form.period, null, {'label_attr': {'class': 'form-label'}}) }}
