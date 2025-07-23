@@ -94,8 +94,9 @@
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
-                                        <button class="dropdown-item text-danger" 
-                                                onclick="confirmDelete('{{ kpi.name }}', '{{ path('app_kpi_delete', {id: kpi.id}) }}')">
+                                        <button class="dropdown-item text-danger"
+                                                data-csrf-token="{{ csrf_token('delete' ~ kpi.id) }}"
+                                                onclick="confirmDelete('{{ kpi.name }}', '{{ path('app_kpi_delete', {id: kpi.id}) }}', this.dataset.csrfToken)">
                                             <i class="bi bi-trash"></i> Löschen
                                         </button>
                                     </li>
@@ -127,7 +128,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
                 <form id="deleteForm" method="post" style="display: inline;">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <input type="hidden" name="_token" id="deleteToken" value="">
                     <button type="submit" class="btn btn-danger">
                         <i class="bi bi-trash"></i> Löschen
                     </button>
@@ -141,10 +142,11 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        function confirmDelete(kpiName, deleteUrl) {
+        function confirmDelete(kpiName, deleteUrl, csrfToken) {
             document.getElementById('deleteKpiName').textContent = kpiName;
             document.getElementById('deleteForm').action = deleteUrl;
-            
+            document.getElementById('deleteToken').value = csrfToken;
+
             const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
             modal.show();
         }
