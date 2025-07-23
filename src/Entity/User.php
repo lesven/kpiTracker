@@ -96,20 +96,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Setzt die E-Mail-Adresse des Benutzers.
      *
      * @param string $email Die E-Mail-Adresse
+     *
      * @return static
      */
     public function setEmail(string $email): static
     {
         $email = trim($email);
-        
+
         // Bei leerem String - lass Symfony Validator das handhaben
-        if ($email === '') {
+        if ('' === $email) {
             $this->email = $email;
+
             return $this;
         }
-        
+
         // Normalisiere E-Mail (lowercase)
-        $this->email = strtolower($email);
+        $this->email = mb_strtolower($email);
 
         return $this;
     }
@@ -130,6 +132,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Jedem Benutzer wird automatisch ROLE_USER zugewiesen.
      *
      * @see UserInterface
+     *
      * @return array<string> Array der Benutzerrollen
      */
     public function getRoles(): array
@@ -145,6 +148,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Setzt die Rollen des Benutzers.
      *
      * @param array<string> $roles Array der Benutzerrollen
+     *
      * @return static
      */
     public function setRoles(array $roles): static
@@ -158,6 +162,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Gibt das gehashte Passwort zurück.
      *
      * @see PasswordAuthenticatedUserInterface
+     *
      * @return string|null Das gehashte Passwort
      */
     public function getPassword(): ?string
@@ -169,6 +174,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Setzt das gehashte Passwort.
      *
      * @param string $password Das gehashte Passwort
+     *
      * @return static
      */
     public function setPassword(string $password): static
@@ -202,6 +208,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Setzt das Erstellungsdatum des Benutzers.
      *
      * @param \DateTimeImmutable $createdAt Das Erstellungsdatum
+     *
      * @return static
      */
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
@@ -223,17 +230,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Setzt den Vornamen des Benutzers.
      *
      * @param string|null $firstName Der Vorname
+     *
      * @return static
      */
     public function setFirstName(?string $firstName): static
     {
-        if ($firstName === null) {
+        if (null === $firstName) {
             $this->firstName = null;
+
             return $this;
         }
-        
+
         $trimmed = trim($firstName);
-        $this->firstName = $trimmed !== '' ? $trimmed : null;
+        $this->firstName = '' !== $trimmed ? $trimmed : null;
 
         return $this;
     }
@@ -250,17 +259,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Setzt den Nachnamen des Benutzers.
      *
      * @param string|null $lastName Der Nachname
+     *
      * @return static
      */
     public function setLastName(?string $lastName): static
     {
-        if ($lastName === null) {
+        if (null === $lastName) {
             $this->lastName = null;
+
             return $this;
         }
-        
+
         $trimmed = trim($lastName);
-        $this->lastName = $trimmed !== '' ? $trimmed : null;
+        $this->lastName = '' !== $trimmed ? $trimmed : null;
 
         return $this;
     }
@@ -277,6 +288,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Setzt den API-Token des Benutzers.
      *
      * @param string|null $apiToken Der API-Token
+     *
      * @return static
      */
     public function setApiToken(?string $apiToken): static
@@ -312,6 +324,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Fügt einen KPI zu diesem Benutzer hinzu.
      *
      * @param KPI $kpi Der hinzuzufügende KPI
+     *
      * @return static
      */
     public function addKpi(KPI $kpi): static
@@ -319,7 +332,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if ($this->kpis->contains($kpi)) {
             return $this;
         }
-        
+
         $this->kpis->add($kpi);
         $kpi->setUser($this);
 
@@ -330,6 +343,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Entfernt einen KPI von diesem Benutzer.
      *
      * @param KPI $kpi Der zu entfernende KPI
+     *
      * @return static
      */
     public function removeKpi(KPI $kpi): static
@@ -337,7 +351,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if (!$this->kpis->removeElement($kpi)) {
             return $this;
         }
-        
+
         // Beziehung auf null setzen wenn entfernt
         if ($kpi->getUser() === $this) {
             $kpi->setUser(null);
@@ -360,6 +374,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Fügt eine Rolle zum Benutzer hinzu.
      *
      * @param string $role Die hinzuzufügende Rolle
+     *
      * @return static
      */
     public function addRole(string $role): static
@@ -375,12 +390,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Entfernt eine Rolle vom Benutzer.
      *
      * @param string $role Die zu entfernende Rolle
+     *
      * @return static
      */
     public function removeRole(string $role): static
     {
         $key = array_search($role, $this->roles, true);
-        if ($key !== false) {
+        if (false !== $key) {
             unset($this->roles[$key]);
             $this->roles = array_values($this->roles); // Re-index array
         }
@@ -392,6 +408,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Prüft ob der Benutzer eine bestimmte Rolle hat.
      *
      * @param string $role Die zu prüfende Rolle
+     *
      * @return bool
      */
     public function hasRole(string $role): bool
@@ -406,9 +423,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getFullName(): string
     {
-        $fullName = trim(($this->firstName ?? '') . ' ' . ($this->lastName ?? ''));
-        
-        return $fullName !== '' ? $fullName : $this->email ?? 'Unbekannt';
+        $fullName = trim(($this->firstName ?? '').' '.($this->lastName ?? ''));
+
+        return '' !== $fullName ? $fullName : $this->email ?? 'Unbekannt';
     }
 
     /**
@@ -418,7 +435,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function hasApiToken(): bool
     {
-        return $this->apiToken !== null;
+        return null !== $this->apiToken;
     }
 
     /**
@@ -438,22 +455,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Diese Methode sollte in Commands verwendet werden.
      *
      * @param string $email Die E-Mail-Adresse
-     * @return static
+     *
      * @throws \InvalidArgumentException Wenn E-Mail ungültig ist
+     *
+     * @return static
      */
     public function setEmailWithValidation(string $email): static
     {
         $email = trim($email);
-        
-        if ($email === '') {
+
+        if ('' === $email) {
             throw new \InvalidArgumentException('E-Mail-Adresse darf nicht leer sein.');
         }
-        
+
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('Ungültige E-Mail-Adresse.');
         }
-        
-        $this->email = strtolower($email);
+
+        $this->email = mb_strtolower($email);
 
         return $this;
     }
@@ -465,7 +484,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function hasValidEmail(): bool
     {
-        return $this->email !== null && filter_var($this->email, FILTER_VALIDATE_EMAIL) !== false;
+        return null !== $this->email && false !== filter_var($this->email, FILTER_VALIDATE_EMAIL);
     }
 
     /**
