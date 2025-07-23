@@ -31,5 +31,5 @@ RUN mkdir -p /var/www/html/var/cache /var/www/html/var/log /var/www/html/var/ses
 # Port freigeben
 EXPOSE 9000
 
-# PHP-FPM starten
+# Start PHP-FPM as the default command for the container
 CMD ["php-fpm"]
