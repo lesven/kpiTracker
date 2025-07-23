@@ -75,6 +75,12 @@ docker compose exec app php bin/console app:create-user admin@example.com --admi
 ### 5. Anwendung aufrufen
 Die Anwendung ist unter `http://localhost:8080` erreichbar.
 
+#### 📧 E-Mail-Testing mit MailHog
+MailHog ist für lokales E-Mail-Testing integriert:
+- **Web-Interface**: `http://localhost:8025` - Hier werden alle gesendeten E-Mails angezeigt
+- **SMTP-Server**: `localhost:1025` - Automatisch in der Anwendung konfiguriert
+- Alle E-Mails (Erinnerungen, Registrierung, etc.) werden von MailHog abgefangen
+
 ## 🛠️ Lokale Entwicklung
 
 ### Entwicklung mit Docker
