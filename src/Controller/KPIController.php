@@ -52,7 +52,9 @@ class KPIController extends AbstractController
         $kpis = $this->kpiRepository->findByUser($user);
 
         if ('due' === $sort) {
-            usort($kpis, static fn (KPI $a, KPI $b) => $a->getNextDueDate() <=> $b->getNextDueDate());
+            usort($kpis, static fn (KPI $a, KPI $b) => 
+                ($a->getNextDueDate() ?? PHP_INT_MAX) <=> ($b->getNextDueDate() ?? PHP_INT_MAX)
+            );
         }
 
         $response = $this->render('kpi/index.html.twig', [
