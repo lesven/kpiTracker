@@ -11,9 +11,12 @@ use App\Repository\KPIValueRepository;
 use App\Repository\UserRepository;
 use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -172,6 +175,46 @@ class AdminController extends AbstractController
             'kpis' => $kpis,
             'last_values' => $lastValues,
         ]);
+    }
+
+    /**
+     * Exportiert alle KPI-Werte als Excel-Datei.
+     */
+    #[Route('/kpis/export', name: 'app_admin_kpi_export', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function exportKpis(): Response
+        $values = $this->kpiValueRepository->findForAdminExport();
+
+        $response = new StreamedResponse(function () use ($values) {
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            // Header
+            $sheet->fromArray([
+                'username', 'kpiName', 'kpiWert', 'kpiDatum', 'kpiEinheit',
+            ], null, 'A1');
+
+            $row = 2;
+            foreach ($values as $value) {
+                $kpi = $value->getKpi();
+                $user = $kpi ? $kpi->getUser() : null;
+
+                $sheet->setCellValue('A'.$row, $user ? $user->getEmail() : 'N/A');
+                $sheet->setCellValue('B'.$row, $kpi ? $kpi->getName() : 'N/A');
+                $sheet->setCellValue('C'.$row, $value->getValue());
+                $sheet->setCellValue('D'.$row, $value->getPeriod());
+                $sheet->setCellValue('E'.$row, $kpi ? $kpi->getUnit() : 'N/A');
+                ++$row;
+            }
+
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        });
+
+        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $response->headers->set('Content-Disposition', 'attachment; filename="kpi_export.xlsx"');
+
+        return $response;
     }
 
     /**

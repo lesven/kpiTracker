@@ -2,15 +2,21 @@ FROM php:8.2-fpm
 
 # Notwendige Pakete und Extensions installieren
 RUN apt-get update && apt-get install -y \
-    unzip \
-    git \
     curl \
-    && docker-php-ext-install pdo_mysql \
+    git \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    libzip-dev \
+    unzip \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd pdo_mysql zip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Node.js installieren
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs
+    && apt-get install -y nodejs \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Composer installieren
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -25,6 +31,5 @@ RUN mkdir -p /var/www/html/var/cache /var/www/html/var/log /var/www/html/var/ses
 # Port freigeben
 EXPOSE 9000
 
-# PHP-FPM starten
-CMD ["php-fpm"]
+# Start PHP-FPM as the default command for the container
 CMD ["php-fpm"]
