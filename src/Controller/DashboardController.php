@@ -3,9 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Repository\KPIRepository;
-use App\Repository\KPIValueRepository;
-use App\Service\KPIStatusService;
+use App\Service\DashboardService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -18,10 +16,11 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class DashboardController extends AbstractController
 {
+    /**
+     * Konstruktor injiziert den DashboardService.
+     */
     public function __construct(
-        private KPIRepository $kpiRepository,
-        private KPIValueRepository $kpiValueRepository,
-        private KPIStatusService $kpiStatusService,
+        private DashboardService $dashboardService,
     ) {
     }
 
@@ -35,46 +34,8 @@ class DashboardController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        // Alle KPIs des Benutzers mit Status laden
-        $userKpis = $this->kpiRepository->findByUser($user);
-        $kpiData = [];
-
-        foreach ($userKpis as $kpi) {
-            $status = $this->kpiStatusService->getKpiStatus($kpi);
-            $latestValue = $this->kpiValueRepository->findByKPI($kpi)[0] ?? null;
-
-            $kpiData[] = [
-                'kpi' => $kpi,
-                'status' => $status,
-                'latest_value' => $latestValue,
-                'is_due_soon' => $this->kpiStatusService->isDueSoon($kpi),
-                'is_overdue' => $this->kpiStatusService->isOverdue($kpi),
-                'next_due_date' => $kpi->getNextDueDate(),
-            ];
-        }
-
-        // Nach Fälligkeitsdatum sortieren (nächstes Fälligkeitsdatum zuerst)
-        usort($kpiData, static function (array $a, array $b): int {
-            if ($a['next_due_date'] === null && $b['next_due_date'] === null) {
-                return 0;
-            }
-            if ($a['next_due_date'] === null) {
-                return 1;
-            }
-            if ($b['next_due_date'] === null) {
-                return -1;
-            }
-            return $a['next_due_date'] <=> $b['next_due_date'];
-        });
-
-        // Statistiken für Dashboard
-        $stats = [
-            'total_kpis' => count($userKpis),
-            'overdue_count' => count(array_filter($kpiData, fn ($item) => 'red' === $item['status'])),
-            'due_soon_count' => count(array_filter($kpiData, fn ($item) => 'yellow' === $item['status'])),
-            'up_to_date_count' => count(array_filter($kpiData, fn ($item) => 'green' === $item['status'])),
-            'recent_values' => $this->kpiValueRepository->findRecentByUser($user, 5),
-        ];
+        $kpiData = $this->dashboardService->getKpiDataForUser($user);
+        $stats = $this->dashboardService->getDashboardStats($user, $kpiData);
 
         return $this->render('dashboard/index.html.twig', [
             'kpi_data' => $kpiData,
@@ -92,17 +53,7 @@ class DashboardController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        $userKpis = $this->kpiRepository->findByUser($user);
-        $statusSummary = [
-            'green' => 0,
-            'yellow' => 0,
-            'red' => 0,
-        ];
-
-        foreach ($userKpis as $kpi) {
-            $status = $this->kpiStatusService->getKpiStatus($kpi);
-            ++$statusSummary[$status];
-        }
+        $statusSummary = $this->dashboardService->getStatusSummaryForUser($user);
 
         return $this->json([
             'success' => true,
