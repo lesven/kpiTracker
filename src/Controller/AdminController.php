@@ -326,11 +326,11 @@ class AdminController extends AbstractController
 
         if ($request->isMethod('POST')) {
             $testEmail = $request->request->get('test_email', '');
-            
+
             if (filter_var($testEmail, FILTER_VALIDATE_EMAIL)) {
                 try {
                     $success = $this->reminderService->sendTestEmail($testEmail);
-                    
+
                     if ($success) {
                         $this->addFlash('success', "Test-E-Mail wurde erfolgreich an {$testEmail} gesendet. Überprüfen Sie MailHog unter http://localhost:8025");
                         $result = ['success' => true, 'email' => $testEmail];
@@ -339,7 +339,7 @@ class AdminController extends AbstractController
                         $result = ['success' => false, 'email' => $testEmail];
                     }
                 } catch (\Exception $e) {
-                    $this->addFlash('error', 'Fehler: ' . $e->getMessage());
+                    $this->addFlash('error', 'Fehler: '.$e->getMessage());
                     $result = ['success' => false, 'email' => $testEmail, 'error' => $e->getMessage()];
                 }
             } else {
@@ -364,7 +364,7 @@ class AdminController extends AbstractController
         if ($this->isCsrfTokenValid('send_reminders', $request->request->get('_token'))) {
             try {
                 $stats = $this->reminderService->sendDueReminders();
-                
+
                 $message = sprintf(
                     'Erinnerungen versendet: %d erfolgreich, %d fehlgeschlagen, %d übersprungen, %d Eskalationen',
                     $stats['sent'],
@@ -372,14 +372,14 @@ class AdminController extends AbstractController
                     $stats['skipped'],
                     $stats['escalations']
                 );
-                
+
                 if ($stats['sent'] > 0 || $stats['escalations'] > 0) {
                     $this->addFlash('success', $message);
                 } else {
-                    $this->addFlash('info', 'Keine Erinnerungen zu versenden. ' . $message);
+                    $this->addFlash('info', 'Keine Erinnerungen zu versenden. '.$message);
                 }
             } catch (\Exception $e) {
-                $this->addFlash('error', 'Fehler beim Senden der Erinnerungen: ' . $e->getMessage());
+                $this->addFlash('error', 'Fehler beim Senden der Erinnerungen: '.$e->getMessage());
             }
         } else {
             $this->addFlash('error', 'Ungültiger CSRF-Token.');

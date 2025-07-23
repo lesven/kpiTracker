@@ -20,15 +20,16 @@ class ConfigurableMailer
     {
         // Versuche zuerst Default-Konfiguration zu finden
         $settings = $this->settingsRepository->findOneBy(['isDefault' => true]);
-        
+
         // Falls keine Default-Konfiguration vorhanden, nimm die erste verfügbare
         if (!$settings) {
             $settings = $this->settingsRepository->findOneBy([]);
         }
-        
+
         // Falls gar keine Konfiguration vorhanden, verwende Standard-Mailer
         if (!$settings) {
             $this->defaultMailer->send($email);
+
             return;
         }
 
