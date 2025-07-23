@@ -20,7 +20,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                {{ form_start(form) }}
+                {{ form_start(form, {'csrf_protection': true}) }}
 
                 <div class="mb-3">
                     {{ form_label(form.name, null, {'label_attr': {'class': 'form-label'}}) }}
