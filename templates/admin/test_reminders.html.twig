@@ -73,7 +73,7 @@
                                         <div class="alert alert-danger">
                                             <i class="fas fa-exclamation-triangle"></i>
                                             Fehler beim Senden an <strong>{{ result.email }}</strong>
-                                            {% if result.error %}
+                                            {% if result.error is defined %}
                                                 <br><small>{{ result.error }}</small>
                                             {% endif %}
                                         </div>
