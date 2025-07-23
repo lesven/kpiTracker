@@ -18,7 +18,7 @@ class ConfigurableMailer
 
     public function send(Email $email): void
     {
-        $settings = $this->settingsRepository->findOneBy([]);
+        $settings = $this->settingsRepository->findOneBy(['isDefault' => true]);
         if (!$settings) {
             $this->defaultMailer->send($email);
             return;
