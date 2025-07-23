@@ -104,8 +104,8 @@
                                                    class="btn btn-outline-primary btn-sm" title="Bearbeiten">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
-                                                <button class="btn btn-outline-danger btn-sm" 
-                                                        onclick="confirmDeleteValue('{{ value.getFormattedPeriod() }}', '{{ path('app_kpi_value_delete', {id: value.id}) }}')"
+                                                <button class="btn btn-outline-danger btn-sm"
+                                                        onclick="confirmDeleteValue('{{ value.getFormattedPeriod() }}', '{{ path('app_kpi_value_delete', {id: value.id}) }}', '{{ csrf_token('delete' ~ value.id) }}')"
                                                         title="Löschen">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
@@ -214,7 +214,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
                 <form id="deleteValueForm" method="post" style="display: inline;">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <input type="hidden" name="_token" id="deleteValueToken" value="">
                     <button type="submit" class="btn btn-danger">
                         <i class="bi bi-trash"></i> Löschen
                     </button>
@@ -228,9 +228,10 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        function confirmDeleteValue(period, deleteUrl) {
+        function confirmDeleteValue(period, deleteUrl, csrfToken) {
             document.getElementById('deleteValuePeriod').textContent = period;
             document.getElementById('deleteValueForm').action = deleteUrl;
+            document.getElementById('deleteValueToken').value = csrfToken;
             
             const modal = new bootstrap.Modal(document.getElementById('deleteValueModal'));
             modal.show();

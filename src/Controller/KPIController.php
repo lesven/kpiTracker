@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\HttpFoundation\Cookie;
 
 /**
  * KPI-Controller für Verwaltung von KPIs und Werten
@@ -31,6 +32,9 @@ class KPIController extends AbstractController
     public const SORT_DUE = 'due';
     public const SORT_STATUS = 'status';
     public const SORT_CREATED = 'created';
+    
+    // Cookie für Sortierung
+    private const SORT_COOKIE = 'kpi_sort';
 
     public function __construct(
         private EntityManagerInterface $entityManager,
@@ -48,16 +52,36 @@ class KPIController extends AbstractController
     #[Route('/', name: 'app_kpi_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
+        $sortParam = $request->query->get('sort');
+        $allowedSortValues = [self::SORT_NAME, self::SORT_DUE];
+        $sort = in_array($sortParam, $allowedSortValues, true)
+            ? $sortParam
+            : $request->cookies->get(self::SORT_COOKIE, self::SORT_NAME);
+
         /** @var User $user */
         $user = $this->getUser();
 
-        $sortBy = $request->query->get('sort', self::SORT_NAME);
-        $kpis = $this->kpiRepository->findByUser($user, $sortBy);
+        // KPIs laden und sortieren
+        $kpis = $this->kpiRepository->findByUser($user, $sort);
 
-        return $this->render('kpi/index.html.twig', [
+        // Spezielle Sortierung für Fälligkeitsdatum
+        if (self::SORT_DUE === $sort) {
+            usort($kpis, static fn (KPI $a, KPI $b) =>
+                ($a->getNextDueDate() ?? PHP_INT_MAX) <=> ($b->getNextDueDate() ?? PHP_INT_MAX)
+            );
+        }
+
+        $response = $this->render('kpi/index.html.twig', [
             'kpis' => $kpis,
-            'current_sort' => $sortBy,
+            'current_sort' => $sort,
         ]);
+
+        // Cookie setzen wenn Sortierung explizit gewählt wurde
+        if ($sortParam) {
+            $response->headers->setCookie(new Cookie(self::SORT_COOKIE, $sort, strtotime('+1 year')));
+        }
+
+        return $response;
     }
 
     /**

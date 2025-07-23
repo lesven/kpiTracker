@@ -48,7 +48,7 @@
                             <a href="{{ path('app_admin_kpi_edit', {id: kpi.id}) }}" class="btn btn-outline-primary">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <button type="button" class="btn btn-outline-danger" onclick="confirmDelete('{{ kpi.name }}', '{{ path('app_admin_kpi_delete', {id: kpi.id}) }}')">
+                            <button type="button" class="btn btn-outline-danger" data-kpi-name="{{ kpi.name }}" data-delete-url="{{ path('app_admin_kpi_delete', {id: kpi.id}) }}" data-csrf-token="{{ csrf_token('delete' ~ kpi.id) }}" onclick="confirmDelete(this)">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>
@@ -76,7 +76,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
                 <form id="deleteForm" method="post" style="display:inline;">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <input type="hidden" name="_token" id="deleteToken" value="">
                     <button type="submit" class="btn btn-danger">
                         <i class="bi bi-trash"></i> Löschen
                     </button>
@@ -90,9 +90,10 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        function confirmDelete(kpiName, deleteUrl) {
+        function confirmDelete(kpiName, deleteUrl, csrfToken) {
             document.getElementById('deleteKpiName').textContent = kpiName;
             document.getElementById('deleteForm').action = deleteUrl;
+            document.getElementById('deleteToken').value = csrfToken;
             const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
             modal.show();
         }

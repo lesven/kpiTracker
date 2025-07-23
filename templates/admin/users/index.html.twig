@@ -40,7 +40,11 @@
                             <a href="{{ path('app_admin_user_edit', {id: user.id}) }}" class="btn btn-outline-primary">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <button type="button" class="btn btn-outline-danger" onclick="confirmDelete('{{ user.email }}', '{{ path('app_admin_user_delete', {id: user.id}) }}')">
+                            <button type="button" class="btn btn-outline-danger" 
+                                data-user-email="{{ user.email }}" 
+                                data-delete-url="{{ path('app_admin_user_delete', {id: user.id}) }}" 
+                                data-csrf-token="{{ csrf_token('delete' ~ user.id) }}" 
+                                onclick="confirmDelete(this)">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>
@@ -68,7 +72,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
                 <form id="deleteForm" method="post" style="display:inline;">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <input type="hidden" name="_token" id="deleteToken" value="">
                     <button type="submit" class="btn btn-danger">
                         <i class="bi bi-trash"></i> Löschen
                     </button>
@@ -82,9 +86,10 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        function confirmDelete(userEmail, deleteUrl) {
+        function confirmDelete(userEmail, deleteUrl, csrfToken) {
             document.getElementById('deleteUserEmail').textContent = userEmail;
             document.getElementById('deleteForm').action = deleteUrl;
+            document.getElementById('deleteToken').value = csrfToken;
             const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
             modal.show();
         }
