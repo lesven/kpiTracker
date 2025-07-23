@@ -95,7 +95,8 @@
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <button class="dropdown-item text-danger"
-                                                onclick="confirmDelete('{{ kpi.name }}', '{{ path('app_kpi_delete', {id: kpi.id}) }}', '{{ csrf_token('delete' ~ kpi.id) }}')">
+                                                data-csrf-token="{{ csrf_token('delete' ~ kpi.id) }}"
+                                                onclick="confirmDelete('{{ kpi.name }}', '{{ path('app_kpi_delete', {id: kpi.id}) }}', this.dataset.csrfToken)">
                                             <i class="bi bi-trash"></i> Löschen
                                         </button>
                                     </li>
