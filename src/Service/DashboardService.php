@@ -107,6 +107,10 @@ class DashboardService
 
     /**
      * Vergleichsfunktion für die Sortierung nach Fälligkeitsdatum.
+     *
+     * @param array<string, mixed> $a Array representing a KPI entry, must include 'next_due_date' as DateTimeInterface|null.
+     * @param array<string, mixed> $b Array representing a KPI entry, must include 'next_due_date' as DateTimeInterface|null.
+     * @return int Comparison result: -1 if $a < $b, 1 if $a > $b, 0 if equal.
      */
     private function compareDueDate(array $a, array $b): int
     {
