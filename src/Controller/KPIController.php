@@ -73,7 +73,7 @@ class KPIController extends AbstractController
 
         $response = $this->render('kpi/index.html.twig', [
             'kpis' => $kpis,
-            'current_sort' => $sort,
+            'sort' => $sort,
         ]);
 
         // Cookie setzen wenn Sortierung explizit gewählt wurde
