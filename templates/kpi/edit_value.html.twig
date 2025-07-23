@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Wert bearbeiten für {{ kpi.name }} - KPI Tracker{% endblock %}
+
+{% block page_title %}Wert bearbeiten: {{ kpi.name }}{% endblock %}
+
+{% block page_actions %}
+    <a href="{{ path('app_kpi_show', {id: kpi.id}) }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Zurück zu KPI
+    </a>
+{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-pencil"></i> KPI-Wert bearbeiten
+                </h5>
+            </div>
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+
+                <div class="mb-3">
+                    {{ form_label(form.period, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.period, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_help(form.period) }}
+                    {{ form_errors(form.period) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.value, null, {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="input-group">
+                        {{ form_widget(form.value, {'attr': {'class': 'form-control', 'autofocus': true}}) }}
+                        {% if kpi.unit %}
+                            <span class="input-group-text">{{ kpi.unit }}</span>
+                        {% endif %}
+                    </div>
+                    {{ form_help(form.value) }}
+                    {{ form_errors(form.value) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.comment, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.comment, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_help(form.comment) }}
+                    {{ form_errors(form.comment) }}
+                </div>
+
+                <div class="mb-4">
+                    {{ form_label(form.uploadedFiles, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.uploadedFiles, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_help(form.uploadedFiles) }}
+                    {{ form_errors(form.uploadedFiles) }}
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{{ path('app_kpi_show', {id: kpi.id}) }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Abbrechen
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Speichern
+                    </button>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
