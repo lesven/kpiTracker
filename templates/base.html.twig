@@ -72,9 +72,15 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-white {{ app.request.get('_route') starts with 'app_admin_kpis' ? 'active bg-primary' : '' }}" 
+                                    <a class="nav-link text-white {{ app.request.get('_route') starts with 'app_admin_kpis' ? 'active bg-primary' : '' }}"
                                        href="{{ path('app_admin_kpis') }}">
                                         <i class="bi bi-graph-up"></i> Alle KPIs
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white {{ app.request.get('_route') starts with 'app_admin_mail_settings' ? 'active bg-primary' : '' }}"
+                                       href="{{ path('app_admin_mail_settings') }}">
+                                        <i class="bi bi-envelope"></i> Mail-Einstellungen
                                     </a>
                                 </li>
                             {% endif %}

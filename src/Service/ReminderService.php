@@ -6,7 +6,6 @@ use App\Entity\KPI;
 use App\Entity\User;
 use App\Repository\KPIRepository;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
@@ -18,7 +17,7 @@ use Twig\Environment;
 class ReminderService
 {
     public function __construct(
-        private MailerInterface $mailer,
+        private ConfigurableMailer $mailer,
         private Environment $twig,
         private UrlGeneratorInterface $urlGenerator,
         private KPIStatusService $kpiStatusService,

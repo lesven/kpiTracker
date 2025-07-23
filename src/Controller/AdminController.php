@@ -3,11 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\KPI;
+use App\Entity\MailSettings;
 use App\Entity\User;
 use App\Form\KPIAdminType;
+use App\Form\MailSettingsType;
 use App\Form\UserType;
 use App\Repository\KPIRepository;
 use App\Repository\KPIValueRepository;
+use App\Repository\MailSettingsRepository;
 use App\Repository\UserRepository;
 use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -36,6 +39,7 @@ class AdminController extends AbstractController
         private UserService $userService,
         private UserPasswordHasherInterface $passwordHasher,
         private KPIValueRepository $kpiValueRepository,
+        private MailSettingsRepository $mailSettingsRepository,
     ) {
     }
 
@@ -284,5 +288,27 @@ class AdminController extends AbstractController
         }
 
         return $this->redirectToRoute('app_admin_kpis');
+    }
+
+    #[Route('/settings/mail', name: 'app_admin_mail_settings', methods: ['GET', 'POST'])]
+    public function mailSettings(Request $request): Response
+    {
+        $settings = $this->mailSettingsRepository->findOneBy([]) ?? new MailSettings();
+
+        $form = $this->createForm(MailSettingsType::class, $settings);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->persist($settings);
+            $this->entityManager->flush();
+
+            $this->addFlash('success', 'E-Mail-Einstellungen wurden gespeichert.');
+
+            return $this->redirectToRoute('app_admin_mail_settings');
+        }
+
+        return $this->render('admin/settings/mail.html.twig', [
+            'form' => $form,
+        ]);
     }
 }
