@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\HttpFoundation\Cookie;
 
 /**
  * KPI-Controller für Verwaltung von KPIs und Werten
@@ -26,6 +27,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class KPIController extends AbstractController
 {
+    private const SORT_COOKIE = 'kpi_sort';
     public function __construct(
         private EntityManagerInterface $entityManager,
         private KPIRepository $kpiRepository,
@@ -39,16 +41,30 @@ class KPIController extends AbstractController
      * Liste aller KPIs des Benutzers.
      */
     #[Route('/', name: 'app_kpi_index', methods: ['GET'])]
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $sortParam = $request->query->get('sort');
+        $sort = $sortParam ?: $request->cookies->get(self::SORT_COOKIE, 'name');
+
         /** @var User $user */
         $user = $this->getUser();
 
         $kpis = $this->kpiRepository->findByUser($user);
 
-        return $this->render('kpi/index.html.twig', [
+        if ('due' === $sort) {
+            usort($kpis, static fn (KPI $a, KPI $b) => $a->getNextDueDate() <=> $b->getNextDueDate());
+        }
+
+        $response = $this->render('kpi/index.html.twig', [
             'kpis' => $kpis,
+            'sort' => $sort,
         ]);
+
+        if ($sortParam) {
+            $response->headers->setCookie(new Cookie(self::SORT_COOKIE, $sort, strtotime('+1 year')));
+        }
+
+        return $response;
     }
 
     /**
