@@ -91,7 +91,17 @@ class DashboardService
     }
 
     /**
-     * Erstellt das Array für eine einzelne KPI.
+     * Creates an array representation for a single KPI.
+     *
+     * @param KPI $kpi The KPI entity to process.
+     * 
+     * @return array<string, mixed> An associative array containing:
+     *                              - 'kpi' (KPI): The KPI entity.
+     *                              - 'status' (string): The status of the KPI (e.g., 'green', 'yellow', 'red').
+     *                              - 'latest_value' (mixed): The latest value associated with the KPI.
+     *                              - 'is_due_soon' (bool): Whether the KPI is due soon.
+     *                              - 'is_overdue' (bool): Whether the KPI is overdue.
+     *                              - 'next_due_date' (\DateTimeInterface|null): The next due date of the KPI, or null if not applicable.
      */
     private function createKpiEntry(KPI $kpi): array
     {
