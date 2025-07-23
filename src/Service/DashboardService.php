@@ -47,6 +47,12 @@ class DashboardService
      * Erstellt Statistiken für das Dashboard.
      *
      * @param array<int, array<string, mixed>> $kpiData
+     * @return array<string, mixed> An array containing:
+     *                              - 'total_kpis' (int): Total number of KPIs.
+     *                              - 'overdue_count' (int): Count of overdue KPIs.
+     *                              - 'due_soon_count' (int): Count of KPIs due soon.
+     *                              - 'up_to_date_count' (int): Count of up-to-date KPIs.
+     *                              - 'recent_values' (array): Recent KPI values.
      */
     public function getDashboardStats(User $user, array $kpiData): array
     {
