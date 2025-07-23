@@ -226,26 +226,6 @@
                 </dl>
             </div>
         </div>
-        
-        <!-- Actions -->
-        <div class="card mt-3">
-            <div class="card-header">
-                <h5 class="mb-0">System-Aktionen</h5>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <button class="btn btn-outline-info btn-sm" onclick="sendTestReminder()">
-                        <i class="bi bi-envelope"></i> Test-Erinnerung senden
-                    </button>
-                    <button class="btn btn-outline-warning btn-sm" onclick="cleanupFiles()">
-                        <i class="bi bi-trash"></i> Verwaiste Dateien bereinigen
-                    </button>
-                    <a href="{{ path('app_dashboard') }}" class="btn btn-outline-secondary btn-sm">
-                        <i class="bi bi-speedometer2"></i> Zum Dashboard
-                    </a>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 {% endblock %}
