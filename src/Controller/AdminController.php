@@ -12,6 +12,7 @@ use App\Repository\KPIRepository;
 use App\Repository\KPIValueRepository;
 use App\Repository\MailSettingsRepository;
 use App\Repository\UserRepository;
+use App\Service\ReminderService;
 use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -40,6 +41,7 @@ class AdminController extends AbstractController
         private UserPasswordHasherInterface $passwordHasher,
         private KPIValueRepository $kpiValueRepository,
         private MailSettingsRepository $mailSettingsRepository,
+        private ReminderService $reminderService,
     ) {
     }
 
@@ -310,5 +312,79 @@ class AdminController extends AbstractController
         return $this->render('admin/settings/mail.html.twig', [
             'form' => $form,
         ]);
+    }
+
+    /**
+     * Test-Erinnerungen senden
+     * Ermöglicht Administratoren das Testen der E-Mail-Erinnerungsfunktionalität.
+     */
+    #[Route('/test-reminders', name: 'app_admin_test_reminders', methods: ['GET', 'POST'])]
+    public function testReminders(Request $request): Response
+    {
+        $testEmail = '';
+        $result = null;
+
+        if ($request->isMethod('POST')) {
+            $testEmail = $request->request->get('test_email', '');
+            
+            if (filter_var($testEmail, FILTER_VALIDATE_EMAIL)) {
+                try {
+                    $success = $this->reminderService->sendTestEmail($testEmail);
+                    
+                    if ($success) {
+                        $this->addFlash('success', "Test-E-Mail wurde erfolgreich an {$testEmail} gesendet. Überprüfen Sie MailHog unter http://localhost:8025");
+                        $result = ['success' => true, 'email' => $testEmail];
+                    } else {
+                        $this->addFlash('error', 'Fehler beim Senden der Test-E-Mail. Überprüfen Sie die Logs.');
+                        $result = ['success' => false, 'email' => $testEmail];
+                    }
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Fehler: ' . $e->getMessage());
+                    $result = ['success' => false, 'email' => $testEmail, 'error' => $e->getMessage()];
+                }
+            } else {
+                $this->addFlash('error', 'Bitte geben Sie eine gültige E-Mail-Adresse ein.');
+                $result = ['success' => false, 'email' => $testEmail, 'error' => 'Ungültige E-Mail-Adresse'];
+            }
+        }
+
+        return $this->render('admin/test_reminders.html.twig', [
+            'test_email' => $testEmail,
+            'result' => $result,
+        ]);
+    }
+
+    /**
+     * Alle fälligen Erinnerungen senden (manueller Trigger)
+     * Ermöglicht Administratoren das manuelle Auslösen aller Erinnerungen.
+     */
+    #[Route('/send-all-reminders', name: 'app_admin_send_all_reminders', methods: ['POST'])]
+    public function sendAllReminders(Request $request): Response
+    {
+        if ($this->isCsrfTokenValid('send_reminders', $request->request->get('_token'))) {
+            try {
+                $stats = $this->reminderService->sendDueReminders();
+                
+                $message = sprintf(
+                    'Erinnerungen versendet: %d erfolgreich, %d fehlgeschlagen, %d übersprungen, %d Eskalationen',
+                    $stats['sent'],
+                    $stats['failed'],
+                    $stats['skipped'],
+                    $stats['escalations']
+                );
+                
+                if ($stats['sent'] > 0 || $stats['escalations'] > 0) {
+                    $this->addFlash('success', $message);
+                } else {
+                    $this->addFlash('info', 'Keine Erinnerungen zu versenden. ' . $message);
+                }
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Fehler beim Senden der Erinnerungen: ' . $e->getMessage());
+            }
+        } else {
+            $this->addFlash('error', 'Ungültiger CSRF-Token.');
+        }
+
+        return $this->redirectToRoute('app_admin_test_reminders');
     }
 }
