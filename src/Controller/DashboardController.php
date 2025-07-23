@@ -55,6 +55,15 @@ class DashboardController extends AbstractController
 
         // Nach Fälligkeitsdatum sortieren (nächstes Fälligkeitsdatum zuerst)
         usort($kpiData, static function (array $a, array $b): int {
+            if ($a['next_due_date'] === null && $b['next_due_date'] === null) {
+                return 0;
+            }
+            if ($a['next_due_date'] === null) {
+                return 1;
+            }
+            if ($b['next_due_date'] === null) {
+                return -1;
+            }
             return $a['next_due_date'] <=> $b['next_due_date'];
         });
 
