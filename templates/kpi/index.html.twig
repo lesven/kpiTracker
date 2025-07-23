@@ -5,6 +5,12 @@
 {% block page_title %}Meine KPIs{% endblock %}
 
 {% block page_actions %}
+    <form method="get" id="sortForm" class="me-2">
+        <select name="sort" class="form-select form-select-sm" onchange="document.getElementById('sortForm').submit();">
+            <option value="name"{% if sort == 'name' %} selected{% endif %}>Alphabetisch</option>
+            <option value="due"{% if sort == 'due' %} selected{% endif %}>Nach Fälligkeit</option>
+        </select>
+    </form>
     <a href="{{ path('app_kpi_new') }}" class="btn btn-primary btn-sm">
         <i class="bi bi-plus-circle"></i> Neue KPI
     </a>
