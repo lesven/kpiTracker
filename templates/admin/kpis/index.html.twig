@@ -48,7 +48,7 @@
                             <a href="{{ path('app_admin_kpi_edit', {id: kpi.id}) }}" class="btn btn-outline-primary">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <button type="button" class="btn btn-outline-danger" onclick="confirmDelete('{{ kpi.name }}', '{{ path('app_admin_kpi_delete', {id: kpi.id}) }}', '{{ csrf_token('delete' ~ kpi.id) }}')">
+                            <button type="button" class="btn btn-outline-danger" data-kpi-name="{{ kpi.name }}" data-delete-url="{{ path('app_admin_kpi_delete', {id: kpi.id}) }}" data-csrf-token="{{ csrf_token('delete' ~ kpi.id) }}" onclick="confirmDelete(this)">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>
