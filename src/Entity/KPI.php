@@ -347,7 +347,7 @@ class KPI
      * Formatiert Zeiträume für eindeutige Periode-Identifikation:
      * - weekly: Y-W (z.B. "2024-W23")
      * - monthly: Y-m (z.B. "2024-7")
-     * - quarterly: Y-Q* (z.B. "2024-Q2")
+     * - quarterly: Y-Q* (z.B. "2024-Q2").
      */
     public function getCurrentPeriod(): string
     {
@@ -356,7 +356,7 @@ class KPI
         return match ($this->interval) {
             self::INTERVAL_WEEKLY => $now->format('Y-W'),
             self::INTERVAL_MONTHLY => $now->format('Y-m'),
-            self::INTERVAL_QUARTERLY => $now->format('Y') . '-Q' . ceil($now->format('n') / 3),
+            self::INTERVAL_QUARTERLY => $now->format('Y').'-Q'.ceil($now->format('n') / 3),
             default => $now->format('Y-m-d'),
         };
     }

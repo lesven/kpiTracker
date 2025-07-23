@@ -26,6 +26,12 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class KPIController extends AbstractController
 {
+    // Sortierungs-Konstanten für KPI-Listen
+    public const SORT_NAME = 'name';
+    public const SORT_DUE = 'due';
+    public const SORT_STATUS = 'status';
+    public const SORT_CREATED = 'created';
+
     public function __construct(
         private EntityManagerInterface $entityManager,
         private KPIRepository $kpiRepository,
@@ -37,17 +43,20 @@ class KPIController extends AbstractController
 
     /**
      * Liste aller KPIs des Benutzers.
+     * Unterstützt optionale Sortierung nach verschiedenen Kriterien.
      */
     #[Route('/', name: 'app_kpi_index', methods: ['GET'])]
-    public function index(): Response
+    public function index(Request $request): Response
     {
         /** @var User $user */
         $user = $this->getUser();
 
-        $kpis = $this->kpiRepository->findByUser($user);
+        $sortBy = $request->query->get('sort', self::SORT_NAME);
+        $kpis = $this->kpiRepository->findByUser($user, $sortBy);
 
         return $this->render('kpi/index.html.twig', [
             'kpis' => $kpis,
+            'current_sort' => $sortBy,
         ]);
     }
 

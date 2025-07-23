@@ -47,6 +47,7 @@ class DashboardService
      * Erstellt Statistiken für das Dashboard.
      *
      * @param array<int, array<string, mixed>> $kpiData
+     *
      * @return array<string, mixed> An array containing:
      *                              - 'total_kpis' (int): Total number of KPIs.
      *                              - 'overdue_count' (int): Count of overdue KPIs.
@@ -71,10 +72,10 @@ class DashboardService
     /**
      * Provides a summary of KPI statuses for a given user.
      *
-     * @param User $user The user whose KPIs are being summarized.
+     * @param User $user the user whose KPIs are being summarized
      *
-     * @return array<string, int> An associative array with keys 'green', 'yellow', and 'red',
-     *                            representing the count of KPIs in each status.
+     * @return array<string, int> an associative array with keys 'green', 'yellow', and 'red',
+     *                            representing the count of KPIs in each status
      */
     public function getStatusSummaryForUser(User $user): array
     {
@@ -93,8 +94,8 @@ class DashboardService
     /**
      * Creates an array representation for a single KPI.
      *
-     * @param KPI $kpi The KPI entity to process.
-     * 
+     * @param KPI $kpi the KPI entity to process
+     *
      * @return array<string, mixed> An associative array containing:
      *                              - 'kpi' (KPI): The KPI entity.
      *                              - 'status' (string): The status of the KPI (e.g., 'green', 'yellow', 'red').
@@ -118,9 +119,10 @@ class DashboardService
     /**
      * Vergleichsfunktion für die Sortierung nach Fälligkeitsdatum.
      *
-     * @param array<string, mixed> $a Array representing a KPI entry, must include 'next_due_date' as DateTimeInterface|null.
-     * @param array<string, mixed> $b Array representing a KPI entry, must include 'next_due_date' as DateTimeInterface|null.
-     * @return int Comparison result: -1 if $a < $b, 1 if $a > $b, 0 if equal.
+     * @param array<string, mixed> $a array representing a KPI entry, must include 'next_due_date' as DateTimeInterface|null
+     * @param array<string, mixed> $b array representing a KPI entry, must include 'next_due_date' as DateTimeInterface|null
+     *
+     * @return int comparison result: -1 if $a < $b, 1 if $a > $b, 0 if equal
      */
     private function compareDueDate(array $a, array $b): int
     {

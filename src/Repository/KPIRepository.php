@@ -21,17 +21,37 @@ class KPIRepository extends ServiceEntityRepository
 
     /**
      * Findet alle KPIs eines bestimmten Benutzers.
+     * Unterstützt optionale Sortierung nach verschiedenen Kriterien.
      *
      * @return KPI[]
      */
-    public function findByUser(User $user): array
+    public function findByUser(User $user, string $sortBy = 'name'): array
     {
-        return $this->createQueryBuilder('k')
+        $qb = $this->createQueryBuilder('k')
             ->andWhere('k.user = :user')
-            ->setParameter('user', $user)
-            ->orderBy('k.name', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->setParameter('user', $user);
+
+        // Sortierung basierend auf dem Parameter
+        switch ($sortBy) {
+            case 'due':
+                // Sortierung nach Fälligkeitsdatum (berechnet)
+                $qb->orderBy('k.interval', 'ASC')
+                   ->addOrderBy('k.createdAt', 'ASC');
+                break;
+            case 'status':
+                // Sortierung nach Status (wird in der Anwendung berechnet)
+                $qb->orderBy('k.name', 'ASC');
+                break;
+            case 'created':
+                $qb->orderBy('k.createdAt', 'DESC');
+                break;
+            case 'name':
+            default:
+                $qb->orderBy('k.name', 'ASC');
+                break;
+        }
+
+        return $qb->getQuery()->getResult();
     }
 
     /**
