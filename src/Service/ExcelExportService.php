@@ -123,7 +123,7 @@ class ExcelExportService
      */
     private function generateExportFilename(): string
     {
-        $timestamp = date('Y-m-d_H-i-s');
+        $timestamp = (new \DateTimeImmutable())->format('Y-m-d_H-i-s');
         
         return sprintf('%s_%s.xlsx', self::EXPORT_FILENAME_PREFIX, $timestamp);
     }
