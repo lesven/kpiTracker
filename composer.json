@@ -10,6 +10,7 @@
         "doctrine/doctrine-bundle": "^2.11",
         "doctrine/doctrine-migrations-bundle": "^3.3",
         "doctrine/orm": "^2.17",
+        "jimdo/prometheus_client_php": "^0.6.0",
         "phpoffice/phpspreadsheet": "^3.0",
         "symfony/asset": "7.3.*",
         "symfony/console": "7.3.*",
