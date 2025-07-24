@@ -12,11 +12,10 @@ use App\Repository\KPIRepository;
 use App\Repository\KPIValueRepository;
 use App\Repository\MailSettingsRepository;
 use App\Repository\UserRepository;
+use App\Service\ExcelExportService;
 use App\Service\ReminderService;
 use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -42,6 +41,7 @@ class AdminController extends AbstractController
         private KPIValueRepository $kpiValueRepository,
         private MailSettingsRepository $mailSettingsRepository,
         private ReminderService $reminderService,
+        private ExcelExportService $excelExportService,
     ) {
     }
 
@@ -193,112 +193,7 @@ class AdminController extends AbstractController
     {
         $kpiValues = $this->kpiValueRepository->findForAdminExport();
 
-        return $this->createExcelResponse($kpiValues);
-    }
-
-    /**
-     * Erstellt Excel-Response mit KPI-Daten.
-     */
-    private function createExcelResponse(array $kpiValues): StreamedResponse
-    {
-        $response = new StreamedResponse(function () use ($kpiValues) {
-            $this->generateExcelFile($kpiValues);
-        });
-
-        $this->setExcelHeaders($response);
-
-        return $response;
-    }
-
-    /**
-     * Generiert Excel-Datei mit KPI-Daten.
-     */
-    private function generateExcelFile(array $kpiValues): void
-    {
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-
-        $this->addExcelHeaders($sheet);
-        $this->addKpiDataToSheet($sheet, $kpiValues);
-
-        $writer = new Xlsx($spreadsheet);
-        $writer->save('php://output');
-    }
-
-    /**
-     * Fügt Excel-Header hinzu.
-     */
-    private function addExcelHeaders($sheet): void
-    {
-        $headers = [
-            'Benutzer-Email',
-            'KPI Name',
-            'Wert',
-            'Periode',
-            'Einheit',
-        ];
-
-        $sheet->fromArray($headers, null, 'A1');
-    }
-
-    /**
-     * Fügt KPI-Daten zu Excel-Sheet hinzu.
-     */
-    private function addKpiDataToSheet($sheet, array $kpiValues): void
-    {
-        $currentRow = 2; // Start nach Header-Zeile
-
-        foreach ($kpiValues as $kpiValue) {
-            $rowData = $this->extractKpiValueData($kpiValue);
-            $this->addRowToSheet($sheet, $rowData, $currentRow);
-            ++$currentRow;
-        }
-    }
-
-    /**
-     * Extrahiert Daten aus KPIValue für Excel-Export.
-     */
-    private function extractKpiValueData($kpiValue): array
-    {
-        $kpi = $kpiValue->getKpi();
-        $user = $kpi?->getUser();
-
-        return [
-            'userEmail' => $user?->getEmail() ?? 'N/A',
-            'kpiName' => $kpi?->getName() ?? 'N/A',
-            'value' => $kpiValue->getValue(),
-            'period' => $kpiValue->getPeriod(),
-            'unit' => $kpi?->getUnit() ?? 'N/A',
-        ];
-    }
-
-    /**
-     * Fügt eine Datenzeile zum Excel-Sheet hinzu.
-     */
-    private function addRowToSheet($sheet, array $rowData, int $rowNumber): void
-    {
-        $sheet->setCellValue('A'.$rowNumber, $rowData['userEmail']);
-        $sheet->setCellValue('B'.$rowNumber, $rowData['kpiName']);
-        $sheet->setCellValue('C'.$rowNumber, $rowData['value']);
-        $sheet->setCellValue('D'.$rowNumber, $rowData['period']);
-        $sheet->setCellValue('E'.$rowNumber, $rowData['unit']);
-    }
-
-    /**
-     * Setzt HTTP-Headers für Excel-Download.
-     */
-    private function setExcelHeaders(StreamedResponse $response): void
-    {
-        $filename = sprintf('kpi_export_%s.xlsx', date('Y-m-d_H-i-s'));
-
-        $response->headers->set(
-            'Content-Type',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        );
-        $response->headers->set(
-            'Content-Disposition',
-            sprintf('attachment; filename="%s"', $filename)
-        );
+        return $this->excelExportService->createKpiExportResponse($kpiValues);
     }
 
     /**
