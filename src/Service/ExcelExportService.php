@@ -95,7 +95,7 @@ class ExcelExportService
     /**
      * Schreibt eine Datenzeile in das Excel-Sheet.
      */
-    private function writeRowToSheet($sheet, array $rowData, int $rowNumber): void
+    private function writeRowToSheet(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, array $rowData, int $rowNumber): void
     {
         $columns = ['A', 'B', 'C', 'D', 'E'];
 
