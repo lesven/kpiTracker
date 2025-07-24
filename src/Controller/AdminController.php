@@ -3,23 +3,19 @@
 namespace App\Controller;
 
 use App\Entity\KPI;
-use App\Entity\MailSettings;
 use App\Entity\User;
 use App\Form\KPIAdminType;
 use App\Form\MailSettingsType;
 use App\Form\UserType;
-use App\Repository\KPIRepository;
 use App\Repository\KPIValueRepository;
-use App\Repository\MailSettingsRepository;
 use App\Repository\UserRepository;
+use App\Service\AdminService;
 use App\Service\ExcelExportService;
-use App\Service\ReminderService;
 use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -34,13 +30,10 @@ class AdminController extends AbstractController
     public function __construct(
         private EntityManagerInterface $entityManager,
         private UserRepository $userRepository,
-        private KPIRepository $kpiRepository,
         private UserService $userService,
-        private UserPasswordHasherInterface $passwordHasher,
         private KPIValueRepository $kpiValueRepository,
-        private MailSettingsRepository $mailSettingsRepository,
-        private ReminderService $reminderService,
         private ExcelExportService $excelExportService,
+        private AdminService $adminService,
     ) {
     }
 
@@ -50,16 +43,7 @@ class AdminController extends AbstractController
     #[Route('/', name: 'app_admin_dashboard')]
     public function dashboard(): Response
     {
-        $stats = [
-            'total_users' => $this->userRepository->countUsers(),
-            'total_admins' => $this->userRepository->countAdmins(),
-            'total_kpis' => $this->kpiRepository->countAll(),
-            'recent_users' => $this->userRepository->findCreatedBetween(
-                new \DateTimeImmutable('-30 days'),
-                new \DateTimeImmutable()
-            ),
-            'kpis_by_user' => $this->kpiRepository->countKpisByUser(),
-        ];
+        $stats = $this->adminService->getDashboardStats();
 
         return $this->render('admin/dashboard.html.twig', [
             'stats' => $stats,
@@ -91,13 +75,8 @@ class AdminController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Temporäres Passwort hashen
             $plainPassword = $form->get('plainPassword')->getData();
-            $hashedPassword = $this->passwordHasher->hashPassword($user, $plainPassword);
-            $user->setPassword($hashedPassword);
-
-            $this->entityManager->persist($user);
-            $this->entityManager->flush();
+            $this->adminService->createUser($user, $plainPassword);
 
             $this->addFlash('success', 'Benutzer "'.$user->getEmail().'" wurde erfolgreich erstellt.');
 
@@ -120,14 +99,8 @@ class AdminController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Neues Passwort setzen falls eingegeben
             $plainPassword = $form->get('plainPassword')->getData();
-            if ($plainPassword) {
-                $hashedPassword = $this->passwordHasher->hashPassword($user, $plainPassword);
-                $user->setPassword($hashedPassword);
-            }
-
-            $this->entityManager->flush();
+            $this->adminService->updateUser($user, $plainPassword);
 
             $this->addFlash('success', 'Benutzer wurde erfolgreich aktualisiert.');
 
@@ -169,12 +142,7 @@ class AdminController extends AbstractController
     #[Route('/kpis', name: 'app_admin_kpis')]
     public function kpis(): Response
     {
-        $kpis = $this->kpiRepository->findAllWithUser();
-        $lastValues = [];
-
-        foreach ($kpis as $kpi) {
-            $lastValues[$kpi->getId()] = $this->kpiValueRepository->findLatestValueForKpi($kpi);
-        }
+        [$kpis, $lastValues] = $this->adminService->getKpisWithLastValues();
 
         return $this->render('admin/kpis/index.html.twig', [
             'kpis' => $kpis,
@@ -266,14 +234,13 @@ class AdminController extends AbstractController
     #[Route('/settings/mail', name: 'app_admin_mail_settings', methods: ['GET', 'POST'])]
     public function mailSettings(Request $request): Response
     {
-        $settings = $this->mailSettingsRepository->findOneBy([]) ?? new MailSettings();
+        $settings = $this->adminService->getMailSettings();
 
         $form = $this->createForm(MailSettingsType::class, $settings);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->entityManager->persist($settings);
-            $this->entityManager->flush();
+            $this->adminService->saveMailSettings($settings);
 
             $this->addFlash('success', 'E-Mail-Einstellungen wurden gespeichert.');
 
@@ -300,7 +267,7 @@ class AdminController extends AbstractController
 
             if (filter_var($testEmail, FILTER_VALIDATE_EMAIL)) {
                 try {
-                    $success = $this->reminderService->sendTestEmail($testEmail);
+                    $success = $this->adminService->sendTestReminder($testEmail);
 
                     if ($success) {
                         $this->addFlash('success', "Test-E-Mail wurde erfolgreich an {$testEmail} gesendet. Überprüfen Sie MailHog unter http://localhost:8025");
@@ -334,7 +301,7 @@ class AdminController extends AbstractController
     {
         if ($this->isCsrfTokenValid('send_reminders', $request->request->get('_token'))) {
             try {
-                $stats = $this->reminderService->sendDueReminders();
+                $stats = $this->adminService->sendAllReminders();
 
                 $message = sprintf(
                     'Erinnerungen versendet: %d erfolgreich, %d fehlgeschlagen, %d übersprungen, %d Eskalationen',

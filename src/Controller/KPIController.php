@@ -9,8 +9,8 @@ use App\Form\KPIType;
 use App\Form\KPIValueType;
 use App\Repository\KPIRepository;
 use App\Repository\KPIValueRepository;
-use App\Service\FileUploadService;
 use App\Service\KPIService;
+use App\Service\KPIValueService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Cookie;
@@ -41,7 +41,7 @@ class KPIController extends AbstractController
         private KPIRepository $kpiRepository,
         private KPIValueRepository $kpiValueRepository,
         private KPIService $kpiService,
-        private FileUploadService $fileUploadService,
+        private KPIValueService $kpiValueService,
     ) {
     }
 
@@ -196,36 +196,24 @@ class KPIController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $submittedPeriod = $kpiValue->getPeriod();
+            $uploadedFiles = $form->get('uploadedFiles')->getData();
+            $result = $this->kpiValueService->addValue($kpiValue, $uploadedFiles);
 
-            // Prüfen ob bereits ein Wert für diesen Zeitraum existiert
-            $existingValue = $this->kpiValueRepository->findByKpiAndPeriod($kpi, $submittedPeriod);
-
-            if ($existingValue) {
-                $this->addFlash('warning', 'Für den Zeitraum "'.$submittedPeriod.'" existiert bereits ein Wert. Bitte bearbeiten Sie den bestehenden Wert oder wählen Sie einen anderen Zeitraum.');
+            if ('duplicate' === $result['status']) {
+                $period = $kpiValue->getPeriod();
+                $this->addFlash('warning', 'Für den Zeitraum "'.$period.'" existiert bereits ein Wert. Bitte bearbeiten Sie den bestehenden Wert oder wählen Sie einen anderen Zeitraum.');
 
                 return $this->redirectToRoute('app_kpi_show', ['id' => $kpi->getId()]);
             }
 
-            $this->entityManager->persist($kpiValue);
-            $this->entityManager->flush();
-
-            // Datei-Uploads verarbeiten
-            $uploadedFiles = $form->get('uploadedFiles')->getData();
-            if ($uploadedFiles) {
-                $uploadStats = $this->fileUploadService->handleFileUploads($uploadedFiles, $kpiValue);
-
-                if ($uploadStats['uploaded'] > 0) {
-                    $this->addFlash('success', "{$uploadStats['uploaded']} Datei(en) erfolgreich hochgeladen.");
+            $stats = $result['upload'];
+            if (!empty($stats['uploaded'])) {
+                $this->addFlash('success', "{$stats['uploaded']} Datei(en) erfolgreich hochgeladen.");
+            }
+            if (!empty($stats['failed'])) {
+                foreach ($stats['errors'] as $error) {
+                    $this->addFlash('warning', $error);
                 }
-
-                if ($uploadStats['failed'] > 0) {
-                    foreach ($uploadStats['errors'] as $error) {
-                        $this->addFlash('warning', $error);
-                    }
-                }
-
-                $this->entityManager->flush();
             }
 
             $this->addFlash('success', 'KPI-Wert wurde erfolgreich gespeichert.');
