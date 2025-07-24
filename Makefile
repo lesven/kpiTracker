@@ -28,7 +28,8 @@ install: ## Installiert alle Abhängigkeiten
 	docker compose exec --workdir /var/www/html app php bin/console doctrine:database:create --if-not-exists || echo "Fehler bei Datenbank-Erstellung"
 	docker compose exec --workdir /var/www/html app php bin/console doctrine:migrations:migrate --no-interaction || echo "Fehler bei Migration"
 	@echo "Installation abgeschlossen!"
-
+	docker compose exec --workdir /var/www/html app ./vendor/bin/php-cs-fixer fix --dry-run --diff --allow-risky=yes
+	@echo "CS Fixer abgeschlossen!"
 start: ## Startet die Container
 	docker compose up -d
 

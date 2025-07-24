@@ -100,7 +100,7 @@ class ExcelExportService
         $columns = ['A', 'B', 'C', 'D', 'E'];
 
         foreach ($rowData as $index => $value) {
-            $sheet->setCellValue($columns[$index] . $rowNumber, $value);
+            $sheet->setCellValue($columns[$index].$rowNumber, $value);
         }
     }
 
@@ -124,7 +124,7 @@ class ExcelExportService
     private function generateExportFilename(): string
     {
         $timestamp = (new \DateTimeImmutable())->format('Y-m-d_H-i-s');
-        
+
         return sprintf('%s_%s.xlsx', self::EXPORT_FILENAME_PREFIX, $timestamp);
     }
 }
