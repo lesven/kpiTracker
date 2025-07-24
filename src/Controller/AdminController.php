@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\KPI;
-use App\Entity\MailSettings;
 use App\Entity\User;
 use App\Form\KPIAdminType;
 use App\Form\MailSettingsType;

@@ -3,8 +3,8 @@
 namespace App\Service;
 
 use App\Entity\KPIValue;
-use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\KPIValueRepository;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * Service für das Erstellen und Bearbeiten von KPI-Werten.
@@ -21,8 +21,8 @@ class KPIValueService
     /**
      * Speichert einen neuen KPI-Wert und verarbeitet optionale Datei-Uploads.
      *
-     * @param KPIValue    $kpiValue      zu speichernder Wert
-     * @param array|null  $uploadedFiles hochgeladene Dateien
+     * @param KPIValue   $kpiValue      zu speichernder Wert
+     * @param array|null $uploadedFiles hochgeladene Dateien
      *
      * @return array Ergebnisdaten und Upload-Statistiken
      */
@@ -49,4 +49,3 @@ class KPIValueService
         return ['status' => 'success', 'upload' => $uploadStats];
     }
 }
-

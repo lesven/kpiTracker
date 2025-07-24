@@ -2,9 +2,9 @@
 
 namespace App\Service;
 
+use App\Entity\KPI;
 use App\Entity\MailSettings;
 use App\Entity\User;
-use App\Entity\KPI;
 use App\Repository\KPIRepository;
 use App\Repository\KPIValueRepository;
 use App\Repository\MailSettingsRepository;
@@ -120,4 +120,3 @@ class AdminService
         return $this->mailSettingsRepository->findOneBy([]) ?? new MailSettings();
     }
 }
-
