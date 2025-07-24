@@ -48,7 +48,7 @@ class ExcelExportService
     /**
      * Fügt Excel-Header für KPI-Export hinzu.
      */
-    private function addKpiHeaders($sheet): void
+    private function addKpiHeaders(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): void
     {
         $headers = [
             'Benutzer-Email',
