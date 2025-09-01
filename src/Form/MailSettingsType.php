@@ -11,6 +11,11 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * Formular-Typ für die Konfiguration von SMTP-Mailservern.
+ *
+ * Ermöglicht die Eingabe und Bearbeitung von Mailserver-Einstellungen für Reminder und Systemmails.
+ */
 class MailSettingsType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void

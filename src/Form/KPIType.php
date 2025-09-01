@@ -12,8 +12,9 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * Formular für KPI-Erstellung und -Bearbeitung
- * User Story 3: Benutzer kann KPI anlegen.
+ * Formular-Typ für die Erstellung und Bearbeitung von KPIs durch Benutzer.
+ *
+ * User Story 3: Benutzer kann eigene KPIs anlegen und bearbeiten.
  */
 class KPIType extends AbstractType
 {

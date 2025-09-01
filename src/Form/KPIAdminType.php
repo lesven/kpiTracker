@@ -13,7 +13,9 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * Admin-Formular für KPI-Erstellung mit Benutzerauswahl
+ * Formular-Typ für die KPI-Erstellung durch Administratoren.
+ *
+ * Ermöglicht die Auswahl eines Benutzers und die Anlage einer KPI für diesen.
  * User Story 4: Administrator kann KPIs für Benutzer anlegen.
  */
 class KPIAdminType extends AbstractType

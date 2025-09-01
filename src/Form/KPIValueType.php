@@ -11,8 +11,9 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * Formular für KPI-Wert-Erfassung
- * User Story 5: Benutzer kann KPI-Werte erfassen.
+ * Formular-Typ für die Erfassung von KPI-Werten.
+ *
+ * User Story 5: Benutzer kann Werte für KPIs erfassen und Dateien anhängen.
  */
 class KPIValueType extends AbstractType
 {

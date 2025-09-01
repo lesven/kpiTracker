@@ -13,8 +13,9 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * Formular für Benutzerverwaltung durch Administratoren
- * User Story 2: Administrator kann Benutzer anlegen.
+ * Formular-Typ für die Benutzerverwaltung durch Administratoren.
+ *
+ * User Story 2: Administrator kann neue Benutzer anlegen und bearbeiten.
  */
 class UserType extends AbstractType
 {
