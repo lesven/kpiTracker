@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\KPI;
 use App\Entity\KPIValue;
+use App\Domain\ValueObject\Period;
 use App\Entity\User;
 use App\Form\KPIType;
 use App\Form\KPIValueType;
@@ -214,7 +215,7 @@ class KPIController extends AbstractController
 
         // Aktuellen Zeitraum als Standardwert vorschlagen
         $currentPeriod = $kpi->getCurrentPeriod();
-        $kpiValue->setPeriod($currentPeriod);
+        $kpiValue->setPeriod(new Period($currentPeriod));
 
         $form = $this->createForm(KPIValueType::class, $kpiValue);
         $form->handleRequest($request);

@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\KPIValueRepository;
+use App\Domain\ValueObject\Period;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -38,18 +39,15 @@ class KPIValue
     /**
      * Zeitraumbezug (z.B. "2024-01", "2024-W05", "2024-Q1").
      */
-    #[ORM\Column(length: 20)]
-    #[Assert\NotBlank(message: 'Der Zeitraum ist erforderlich.')]
-    #[Assert\Regex(
-        pattern: '/^(\d{4})-(\d{2}|\w\d{2}|Q\d)$/',
-        message: 'Ungültiges Zeitraum-Format. Verwenden Sie: YYYY-MM, YYYY-WXX oder YYYY-QX'
-    )]
+    #[ORM\Embedded(class: Period::class, columnPrefix: false)]
+    #[Assert\NotNull(message: 'Der Zeitraum ist erforderlich.')]
+    #[Assert\Valid]
     /**
      * Zeitraumbezug (z.B. "2024-01", "2024-W05", "2024-Q1").
      *
-     * @var string|null
+     * @var Period|null
      */
-    private ?string $period = null;
+    private ?Period $period = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     /**
@@ -158,9 +156,9 @@ class KPIValue
     /**
      * Gibt den Zeitraumbezug zurück.
      *
-     * @return string|null
+     * @return Period|null
      */
-    public function getPeriod(): ?string
+    public function getPeriod(): ?Period
     {
         return $this->period;
     }
@@ -168,11 +166,11 @@ class KPIValue
     /**
      * Setzt den Zeitraumbezug.
      *
-     * @param string $period
+     * @param Period $period
      *
      * @return static
      */
-    public function setPeriod(string $period): static
+    public function setPeriod(Period $period): static
     {
         $this->period = $period;
 
@@ -335,39 +333,7 @@ class KPIValue
      */
     public function getFormattedPeriod(): string
     {
-        // Sicherheitscheck für leeren/null Zeitraum
-        if (empty($this->period)) {
-            return 'Unbekannter Zeitraum';
-        }
-
-        // Beispiele: "2024-01" -> "Januar 2024", "2024-W05" -> "KW 5/2024"
-        if (preg_match('/^(\d{4})-(\d{2})$/', $this->period, $matches)) {
-            $year = $matches[1];
-            $month = $matches[2];
-            $monthNames = [
-                '01' => 'Januar', '02' => 'Februar', '03' => 'März',
-                '04' => 'April', '05' => 'Mai', '06' => 'Juni',
-                '07' => 'Juli', '08' => 'August', '09' => 'September',
-                '10' => 'Oktober', '11' => 'November', '12' => 'Dezember',
-            ];
-
-            // Prüfen ob der Monat im Array existiert
-            if (isset($monthNames[$month])) {
-                return $monthNames[$month].' '.$year;
-            }
-
-            return 'Monat '.$month.' '.$year;
-        }
-
-        if (preg_match('/^(\d{4})-W(\d{2})$/', $this->period, $matches)) {
-            return 'KW '.ltrim($matches[2], '0').'/'.$matches[1];
-        }
-
-        if (preg_match('/^(\d{4})-Q(\d)$/', $this->period, $matches)) {
-            return 'Q'.$matches[2].' '.$matches[1];
-        }
-
-        return $this->period;
+        return $this->period?->format() ?? 'Unbekannter Zeitraum';
     }
 
     /**

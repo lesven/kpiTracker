@@ -7,6 +7,8 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\CallbackTransformer;
+use App\Domain\ValueObject\Period;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -59,6 +61,12 @@ class KPIValueType extends AbstractType
                 ],
                 'help' => 'Optional: Dateien als Beleg oder zusätzliche Information anhängen',
             ]);
+
+        $builder->get('period')
+            ->addModelTransformer(new CallbackTransformer(
+                fn (?Period $period) => $period?->__toString(),
+                fn (?string $periodString) => $periodString ? new Period($periodString) : null
+            ));
     }
 
     public function configureOptions(OptionsResolver $resolver): void

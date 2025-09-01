@@ -14,6 +14,7 @@ class KPIStatusServiceTest extends TestCase
     {
         $repo = $this->createMock(KPIValueRepository::class);
         $kpi = $this->createMock(KPI::class);
+        $kpi->method('getCurrentPeriod')->willReturn('2024-01');
         $repo->method('findByKpiAndPeriod')->willReturn(null);
         $service = new KPIStatusService($repo);
         $result = $service->getKpiStatus($kpi);

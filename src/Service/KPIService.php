@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\KPI;
 use App\Repository\KPIValueRepository;
+use App\Domain\ValueObject\Period;
 
 /**
  * Service-Klasse für das Management und die Business-Logik von KPIs.
@@ -31,7 +32,7 @@ class KPIService
      */
     public function hasCurrentValue(KPI $kpi): bool
     {
-        $currentPeriod = $kpi->getCurrentPeriod();
+        $currentPeriod = new Period($kpi->getCurrentPeriod());
         $existingValue = $this->kpiValueRepository->findByKpiAndPeriod($kpi, $currentPeriod);
 
         return null !== $existingValue;

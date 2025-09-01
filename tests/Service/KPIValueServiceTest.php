@@ -4,6 +4,7 @@ namespace App\Tests\Service;
 
 use App\Entity\KPI;
 use App\Entity\KPIValue;
+use App\Domain\ValueObject\Period;
 use App\Repository\KPIValueRepository;
 use App\Service\FileUploadService;
 use App\Service\KPIValueService;
@@ -20,7 +21,7 @@ class KPIValueServiceTest extends TestCase
         $kpiValue = $this->createMock(KPIValue::class);
         $kpi = $this->createMock(KPI::class);
         $kpiValue->method('getKpi')->willReturn($kpi);
-        $kpiValue->method('getPeriod')->willReturn('2024-01');
+        $kpiValue->method('getPeriod')->willReturn(new Period('2024-01'));
         $repo->method('findByKpiAndPeriod')->willReturn(null);
         $em->expects($this->once())->method('persist')->with($kpiValue);
         $em->expects($this->once())->method('flush');
@@ -41,7 +42,7 @@ class KPIValueServiceTest extends TestCase
         $kpi = $this->createMock(KPI::class);
 
         $kpiValue->method('getKpi')->willReturn($kpi);
-        $kpiValue->method('getPeriod')->willReturn('2024-01');
+        $kpiValue->method('getPeriod')->willReturn(new Period('2024-01'));
         $repo->method('findByKpiAndPeriod')->willReturn($existingValue);
 
         $service = new KPIValueService($em, $repo, $uploadService);
@@ -62,7 +63,7 @@ class KPIValueServiceTest extends TestCase
         $kpi = $this->createMock(KPI::class);
 
         $kpiValue->method('getKpi')->willReturn($kpi);
-        $kpiValue->method('getPeriod')->willReturn('2024-01');
+        $kpiValue->method('getPeriod')->willReturn(new Period('2024-01'));
         $repo->method('findByKpiAndPeriod')->willReturn(null);
 
         $uploadService->expects($this->once())

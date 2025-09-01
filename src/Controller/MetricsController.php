@@ -35,7 +35,7 @@ class MetricsController extends AbstractController
             $kpi = $value->getKpi();
             $gauge->set((float) $value->getValue(), [
                 (string) $kpi->getId(),
-                $value->getPeriod(),
+                (string) $value->getPeriod(),
                 $kpi->getName(),
             ]);
         }

@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Domain\ValueObject\KpiInterval;
+use App\Domain\ValueObject\Period;
 use App\Entity\KPI;
 use App\Repository\KPIValueRepository;
 
@@ -27,7 +28,7 @@ class KPIStatusService
      */
     public function getKpiStatus(KPI $kpi): string
     {
-        $currentPeriod = $kpi->getCurrentPeriod();
+        $currentPeriod = new Period($kpi->getCurrentPeriod());
 
         // Prüfen ob bereits ein Wert für den aktuellen Zeitraum existiert
         $existingValue = $this->kpiValueRepository->findByKpiAndPeriod($kpi, $currentPeriod);
@@ -121,7 +122,7 @@ class KPIStatusService
 
         foreach ($kpis as $kpi) {
             $daysOverdue = $this->getDaysOverdue($kpi);
-            $currentPeriod = $kpi->getCurrentPeriod();
+            $currentPeriod = new Period($kpi->getCurrentPeriod());
 
             // Prüfen ob bereits Wert für aktuellen Zeitraum erfasst
             $hasValue = null !== $this->kpiValueRepository->findByKpiAndPeriod($kpi, $currentPeriod);

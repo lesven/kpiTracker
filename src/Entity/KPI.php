@@ -462,7 +462,7 @@ class KPI
     public function hasValueForPeriod(string $period): bool
     {
         foreach ($this->values as $value) {
-            if ($value->getPeriod() === $period) {
+            if ((string) $value->getPeriod() === $period) {
                 return true;
             }
         }
