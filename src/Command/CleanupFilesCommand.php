@@ -19,6 +19,11 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class CleanupFilesCommand extends Command
 {
+    /**
+     * CleanupFilesCommand constructor.
+     *
+     * @param FileUploadService $fileUploadService Service zum Bereinigen von hochgeladenen Dateien
+     */
     public function __construct(
         private FileUploadService $fileUploadService,
     ) {
@@ -38,7 +43,7 @@ class CleanupFilesCommand extends Command
 
         $io->title('Dateisystem-Wartung');
 
-        try {
+    try {
             $io->text('Starte Bereinigung verwaister Dateien...');
 
             $stats = $this->fileUploadService->cleanupOrphanedFiles();

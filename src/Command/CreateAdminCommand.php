@@ -23,6 +23,12 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 )]
 class CreateAdminCommand extends Command
 {
+    /**
+     * CreateAdminCommand constructor.
+     *
+     * @param EntityManagerInterface $entityManager Doctrine EntityManager zum Persistieren von Benutzern
+     * @param UserPasswordHasherInterface $passwordHasher Passwort-Hasher für die sichere Speicherung
+     */
     public function __construct(
         private EntityManagerInterface $entityManager,
         private UserPasswordHasherInterface $passwordHasher,
@@ -32,6 +38,11 @@ class CreateAdminCommand extends Command
 
     protected function configure(): void
     {
+        /**
+         * Konfiguriert den Symfony Console Command.
+         *
+         * Fügt Argumente und Optionen hinzu, die beim Aufruf des Commands verwendet werden können.
+         */
         $this
             ->setDescription('Erstellt einen neuen Administrator-Benutzer')
             ->setHelp('Dieser Command erstellt einen neuen Benutzer mit Administrator-Rechten.')
@@ -44,6 +55,19 @@ class CreateAdminCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+    /**
+     * Führt die Erstellung oder Aktualisierung eines Administrator-Benutzers aus.
+     *
+     * Erwartet als Argument die E-Mail und optional ein Passwort. Überprüft E-Mail-Format,
+     * hasht das Passwort und persistiert den Benutzer in der Datenbank.
+     *
+     * Gibt Command::SUCCESS bei Erfolg und Command::FAILURE bei Fehlern zurück.
+     *
+     * @param InputInterface $input Konsolen-Eingabe
+     * @param OutputInterface $output Konsolen-Ausgabe
+     *
+     * @return int Exit-Code
+     */
         $io = new SymfonyStyle($input, $output);
 
         $email = $input->getArgument('email');
@@ -136,6 +160,13 @@ class CreateAdminCommand extends Command
      */
     private function generatePassword(int $length = 12): string
     {
+    /**
+     * Generiert ein zufälliges, sicheres Passwort.
+     *
+     * @param int $length Länge des Passworts (Standard: 12)
+     * @return string Das generierte Passwort
+     * @throws \Exception Bei einem Fehler von random_int
+     */
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*';
         $password = '';
 

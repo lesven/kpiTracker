@@ -9,7 +9,7 @@ services:
       - SYMFONY_ENV=dev
     depends_on:
       - db
-      - mailhog
+      
   web:
     image: nginx:alpine
     container_name: symfony_web
@@ -28,19 +28,8 @@ services:
       MYSQL_DATABASE: kpi_tracker
       MYSQL_USER: symfony
       MYSQL_PASSWORD: symfony
-    ports:
-      - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
-
-  mailhog:
-    image: mailhog/mailhog
-    container_name: symfony_mailhog
-    ports:
-      - "8025:8025"  # Web UI
-      - "1025:1025"  # SMTP Server
-    environment:
-      - MH_HOSTNAME=mailhog
 
 ###> doctrine/doctrine-bundle ###
   database:
