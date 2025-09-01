@@ -38,7 +38,9 @@ class AdminController extends AbstractController
     }
 
     /**
-     * Admin-Dashboard mit System-Übersicht.
+     * Zeigt das Admin-Dashboard mit Systemstatistiken.
+     *
+     * @return Response Die gerenderte Dashboard-Seite
      */
     #[Route('/', name: 'app_admin_dashboard')]
     public function dashboard(): Response
@@ -51,7 +53,9 @@ class AdminController extends AbstractController
     }
 
     /**
-     * Benutzerverwaltung - Liste aller Benutzer.
+     * Zeigt die Benutzerverwaltung mit einer Liste aller Benutzer.
+     *
+     * @return Response Die gerenderte Benutzerliste
      */
     #[Route('/users', name: 'app_admin_users')]
     public function users(): Response
@@ -64,8 +68,10 @@ class AdminController extends AbstractController
     }
 
     /**
-     * Neuen Benutzer anlegen
-     * User Story 2: Administrator kann Benutzer anlegen.
+     * Legt einen neuen Benutzer an (User Story 2).
+     *
+     * @param Request $request HTTP-Request mit Formulardaten
+     * @return Response Die Seite zum Anlegen eines Benutzers oder Redirect nach Erfolg
      */
     #[Route('/users/new', name: 'app_admin_user_new', methods: ['GET', 'POST'])]
     public function newUser(Request $request): Response
@@ -90,7 +96,11 @@ class AdminController extends AbstractController
     }
 
     /**
-     * Benutzer bearbeiten.
+     * Bearbeitet einen bestehenden Benutzer.
+     *
+     * @param Request $request HTTP-Request mit Formulardaten
+     * @param User $user Zu bearbeitender Benutzer
+     * @return Response Die Seite zum Bearbeiten oder Redirect nach Erfolg
      */
     #[Route('/users/{id}/edit', name: 'app_admin_user_edit', methods: ['GET', 'POST'])]
     public function editUser(Request $request, User $user): Response
@@ -114,7 +124,11 @@ class AdminController extends AbstractController
     }
 
     /**
-     * Benutzer löschen (DSGVO-konform).
+     * Löscht einen Benutzer DSGVO-konform inkl. aller zugehörigen Daten.
+     *
+     * @param Request $request HTTP-Request mit CSRF-Token
+     * @param User $user Zu löschender Benutzer
+     * @return Response Redirect zur Benutzerliste
      */
     #[Route('/users/{id}/delete', name: 'app_admin_user_delete', methods: ['POST'])]
     public function deleteUser(Request $request, User $user): Response
@@ -137,7 +151,9 @@ class AdminController extends AbstractController
     }
 
     /**
-     * KPI-Verwaltung - Alle KPIs aller Benutzer.
+     * Zeigt alle KPIs aller Benutzer für die Admin-Verwaltung.
+     *
+     * @return Response Die gerenderte KPI-Liste
      */
     #[Route('/kpis', name: 'app_admin_kpis')]
     public function kpis(): Response
@@ -151,8 +167,9 @@ class AdminController extends AbstractController
     }
 
     /**
-     * Exportiert alle KPI-Werte als Excel-Datei.
-     * User Story 3: Administrator kann KPI-Daten exportieren.
+     * Exportiert alle KPI-Werte als Excel-Datei (User Story 3).
+     *
+     * @return Response Die Excel-Export-Datei als Download
      */
     #[Route('/kpis/export', name: 'app_admin_kpi_export', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
@@ -164,8 +181,10 @@ class AdminController extends AbstractController
     }
 
     /**
-     * KPI für Benutzer anlegen
-     * User Story 4: Administrator kann KPIs für Benutzer anlegen.
+     * Legt eine neue KPI für einen Benutzer an (User Story 4).
+     *
+     * @param Request $request HTTP-Request mit Formulardaten
+     * @return Response Die Seite zum Anlegen einer KPI oder Redirect nach Erfolg
      */
     #[Route('/kpis/new', name: 'app_admin_kpi_new', methods: ['GET', 'POST'])]
     public function newKpi(Request $request): Response
@@ -190,7 +209,11 @@ class AdminController extends AbstractController
     }
 
     /**
-     * Admin-KPI bearbeiten.
+     * Bearbeitet eine bestehende KPI als Admin.
+     *
+     * @param Request $request HTTP-Request mit Formulardaten
+     * @param KPI $kpi Zu bearbeitende KPI
+     * @return Response Die Seite zum Bearbeiten oder Redirect nach Erfolg
      */
     #[Route('/kpis/{id}/edit', name: 'app_admin_kpi_edit', methods: ['GET', 'POST'])]
     public function editKpi(Request $request, KPI $kpi): Response
@@ -213,7 +236,11 @@ class AdminController extends AbstractController
     }
 
     /**
-     * Admin-KPI löschen.
+     * Löscht eine KPI als Admin.
+     *
+     * @param Request $request HTTP-Request mit CSRF-Token
+     * @param KPI $kpi Zu löschende KPI
+     * @return Response Redirect zur KPI-Liste
      */
     #[Route('/kpis/{id}/delete', name: 'app_admin_kpi_delete', methods: ['POST'])]
     public function deleteKpi(Request $request, KPI $kpi): Response
@@ -231,6 +258,12 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('app_admin_kpis');
     }
 
+    /**
+     * Zeigt und speichert die E-Mail-Einstellungen für Erinnerungen.
+     *
+     * @param Request $request HTTP-Request mit Formulardaten
+     * @return Response Die Seite mit dem Einstellungsformular oder Redirect nach Erfolg
+     */
     #[Route('/settings/mail', name: 'app_admin_mail_settings', methods: ['GET', 'POST'])]
     public function mailSettings(Request $request): Response
     {
@@ -253,8 +286,10 @@ class AdminController extends AbstractController
     }
 
     /**
-     * Test-Erinnerungen senden
-     * Ermöglicht Administratoren das Testen der E-Mail-Erinnerungsfunktionalität.
+     * Sendet Test-Erinnerungen per E-Mail (nur für Admins).
+     *
+     * @param Request $request HTTP-Request mit Test-E-Mail-Adresse
+     * @return Response Die Testseite mit Ergebnis
      */
     #[Route('/test-reminders', name: 'app_admin_test_reminders', methods: ['GET', 'POST'])]
     public function testReminders(Request $request): Response
@@ -293,8 +328,10 @@ class AdminController extends AbstractController
     }
 
     /**
-     * Alle fälligen Erinnerungen senden (manueller Trigger)
-     * Ermöglicht Administratoren das manuelle Auslösen aller Erinnerungen.
+     * Sendet alle fälligen Erinnerungen manuell (Admin-Trigger).
+     *
+     * @param Request $request HTTP-Request mit CSRF-Token
+     * @return Response Redirect zur Testseite
      */
     #[Route('/send-all-reminders', name: 'app_admin_send_all_reminders', methods: ['POST'])]
     public function sendAllReminders(Request $request): Response
