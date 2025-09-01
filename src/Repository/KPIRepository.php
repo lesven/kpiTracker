@@ -8,7 +8,9 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository für KPI-Entity.
+ * Repository-Klasse für die Verwaltung von KPI-Entities.
+ *
+ * Bietet Methoden zum Finden, Filtern und Sortieren von KPIs nach Benutzer und Intervall.
  *
  * @extends ServiceEntityRepository<KPI>
  */

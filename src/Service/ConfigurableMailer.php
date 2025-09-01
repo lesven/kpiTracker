@@ -8,6 +8,11 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mime\Email;
 
+/**
+ * Service-Klasse für konfigurierbaren Mailversand.
+ *
+ * Ermöglicht den Versand von E-Mails über verschiedene SMTP-Konfigurationen.
+ */
 class ConfigurableMailer
 {
     public function __construct(

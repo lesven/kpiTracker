@@ -7,7 +7,9 @@ use App\Repository\KPIValueRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * Service für das Erstellen und Bearbeiten von KPI-Werten.
+ * Service-Klasse für das Erstellen und Bearbeiten von KPI-Werten.
+ *
+ * Bietet Methoden zur Speicherung und zum Upload von Dateien zu KPI-Werten.
  */
 class KPIValueService
 {

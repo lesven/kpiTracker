@@ -7,7 +7,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Service für Excel-Export von KPI-Daten.
+ * Service-Klasse für den Export von KPI-Daten als Excel-Datei.
+ *
  * User Story 3: Administrator kann KPI-Daten exportieren.
  */
 class ExcelExportService

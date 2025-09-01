@@ -7,6 +7,10 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * Repository-Klasse für die Verwaltung von MailSettings-Entities.
+ *
+ * Bietet Methoden zum Finden und Verwalten von Mailserver-Konfigurationen.
+ *
  * @extends ServiceEntityRepository<MailSettings>
  */
 class MailSettingsRepository extends ServiceEntityRepository

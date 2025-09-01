@@ -13,7 +13,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
- * Service mit Hilfsfunktionen für Administratoren.
+ * Service-Klasse mit Hilfsfunktionen für Administratoren.
+ *
+ * Bietet Methoden für Benutzer-, KPI- und Mailserververwaltung sowie Dashboard-Statistiken.
  */
 class AdminService
 {

@@ -7,8 +7,9 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 /**
- * Security Voter für Benutzer-Zugriffskontrolle
- * Stellt sicher dass nur Administratoren andere Benutzer verwalten können.
+ * Security-Voter für die Zugriffskontrolle auf Benutzer-Entities.
+ *
+ * Stellt sicher, dass nur Administratoren andere Benutzer verwalten können und Benutzer ihr eigenes Profil bearbeiten dürfen.
  */
 class UserVoter extends Voter
 {

@@ -11,7 +11,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
- * Service für Datei-Upload-Handling
+ * Service-Klasse für das Handling von Datei-Uploads zu KPI-Werten.
+ *
  * User Story 5: Benutzer kann KPI-Werte mit Dateien erfassen.
  */
 class FileUploadService

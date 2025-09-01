@@ -9,7 +9,9 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository für KPIValue-Entity.
+ * Repository-Klasse für die Verwaltung von KPIValue-Entities.
+ *
+ * Bietet Methoden zum Finden und Filtern von KPI-Werten nach KPI und Zeitraum.
  *
  * @extends ServiceEntityRepository<KPIValue>
  */

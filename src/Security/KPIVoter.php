@@ -8,8 +8,9 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 /**
- * Security Voter für KPI-Zugriffskontrolle
- * Stellt sicher dass Benutzer nur ihre eigenen KPIs verwalten können.
+ * Security-Voter für die Zugriffskontrolle auf KPI-Entities.
+ *
+ * Stellt sicher, dass Benutzer nur ihre eigenen KPIs verwalten können und Administratoren Vollzugriff haben.
  */
 class KPIVoter extends Voter
 {

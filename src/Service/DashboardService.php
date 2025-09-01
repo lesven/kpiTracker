@@ -8,7 +8,9 @@ use App\Repository\KPIRepository;
 use App\Repository\KPIValueRepository;
 
 /**
- * Service zur Aufbereitung der Dashboard-Daten.
+ * Service-Klasse zur Aufbereitung und Berechnung von Dashboard-Daten.
+ *
+ * Liefert KPI-Daten und Statistiken für Benutzer-Dashboards.
  */
 class DashboardService
 {

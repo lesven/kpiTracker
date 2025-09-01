@@ -6,8 +6,9 @@ use App\Entity\KPI;
 use App\Repository\KPIValueRepository;
 
 /**
- * Service für KPI-Management und Business Logic
- * Zentraler Service für KPI-bezogene Operationen.
+ * Service-Klasse für das Management und die Business-Logik von KPIs.
+ *
+ * Zentraler Service für KPI-bezogene Operationen und Statusberechnung.
  */
 class KPIService
 {

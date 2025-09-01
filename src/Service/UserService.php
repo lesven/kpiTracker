@@ -7,8 +7,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Service für Benutzerverwaltung und DSGVO-konforme Löschung
- * User Story 2: Administrator kann Benutzer anlegen (mit DSGVO-Löschung).
+ * Service-Klasse für die Benutzerverwaltung und DSGVO-konforme Löschung.
+ *
+ * User Story 2: Administrator kann Benutzer anlegen und DSGVO-konform löschen.
  */
 class UserService
 {

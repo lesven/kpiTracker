@@ -11,8 +11,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
 
 /**
- * Service für E-Mail-Erinnerungen
- * User Stories 6, 7: Reminder für fällige KPI-Einträge und Eskalation.
+ * Service-Klasse für das Versenden von E-Mail-Erinnerungen und Eskalationen.
+ *
+ * User Stories 6, 7: Reminder für fällige KPI-Einträge und Eskalation an Administratoren.
  */
 class ReminderService
 {

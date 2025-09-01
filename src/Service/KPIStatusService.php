@@ -6,8 +6,9 @@ use App\Entity\KPI;
 use App\Repository\KPIValueRepository;
 
 /**
- * Service für KPI-Status-Berechnungen und Business Logic
- * User Story 9: KPI-Dashboard mit Ampellogik.
+ * Service-Klasse für die Berechnung des KPI-Status und Business-Logik.
+ *
+ * User Story 9: KPI-Dashboard mit Ampellogik (grün, gelb, rot).
  */
 class KPIStatusService
 {

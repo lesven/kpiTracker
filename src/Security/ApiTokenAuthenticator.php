@@ -13,6 +13,11 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 
+/**
+ * Authenticator für API-Token-basierte Authentifizierung.
+ *
+ * Ermöglicht die Anmeldung über einen API-Token im Authorization-Header.
+ */
 class ApiTokenAuthenticator extends AbstractAuthenticator
 {
     public function __construct(private UserRepository $userRepository)
