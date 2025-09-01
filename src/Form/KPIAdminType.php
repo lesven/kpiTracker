@@ -2,6 +2,7 @@
 
 namespace App\Form;
 
+use App\Domain\ValueObject\DecimalValue;
 use App\Domain\ValueObject\KpiInterval;
 use App\Entity\KPI;
 use App\Entity\User;
@@ -10,6 +11,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -82,9 +84,17 @@ class KPIAdminType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => 'z.B. 100000, 95, ...',
+                    'pattern' => '[0-9]+([,\\.][0-9]+)?',
+                    'title' => 'Bitte geben Sie eine gültige Zahl ein',
                 ],
                 'help' => 'Angestrebter Zielwert (optional)',
             ]);
+
+        $builder->get('target')
+            ->addModelTransformer(new CallbackTransformer(
+                fn (?DecimalValue $value) => $value?->format() ?? '',
+                fn (?string $value) => $value !== null && $value !== '' ? new DecimalValue($value) : null
+            ));
     }
 
     public function configureOptions(OptionsResolver $resolver): void

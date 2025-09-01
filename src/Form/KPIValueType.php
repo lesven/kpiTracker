@@ -2,13 +2,14 @@
 
 namespace App\Form;
 
+use App\Domain\ValueObject\DecimalValue;
+use App\Domain\ValueObject\Period;
 use App\Entity\KPIValue;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\CallbackTransformer;
-use App\Domain\ValueObject\Period;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -61,6 +62,12 @@ class KPIValueType extends AbstractType
                 ],
                 'help' => 'Optional: Dateien als Beleg oder zusätzliche Information anhängen',
             ]);
+
+        $builder->get('value')
+            ->addModelTransformer(new CallbackTransformer(
+                fn (?DecimalValue $value) => $value?->format() ?? '',
+                fn (?string $value) => $value !== null && $value !== '' ? new DecimalValue($value) : null
+            ));
 
         $builder->get('period')
             ->addModelTransformer(new CallbackTransformer(

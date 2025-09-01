@@ -2,8 +2,9 @@
 
 namespace App\Entity;
 
-use App\Repository\KPIValueRepository;
+use App\Domain\ValueObject\DecimalValue;
 use App\Domain\ValueObject\Period;
+use App\Repository\KPIValueRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -26,15 +27,15 @@ class KPIValue
      */
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    #[Assert\NotBlank(message: 'Der Wert ist erforderlich.')]
-    #[Assert\Type(type: 'numeric', message: 'Der Wert muss eine Zahl sein.')]
+    #[ORM\Embedded(class: DecimalValue::class, columnPrefix: false)]
+    #[Assert\NotNull(message: 'Der Wert ist erforderlich.')]
+    #[Assert\Valid]
     /**
-     * Erfasster Wert als String (Decimal).
+     * Erfasster Wert.
      *
-     * @var string|null
+     * @var DecimalValue|null
      */
-    private ?string $value = null;
+    private ?DecimalValue $value = null;
 
     /**
      * Zeitraumbezug (z.B. "2024-01", "2024-W05", "2024-Q1").
@@ -117,11 +118,11 @@ class KPIValue
     }
 
     /**
-     * Gibt den erfassten Wert als String zurück.
+     * Gibt den erfassten Wert zurück.
      *
-     * @return string|null
+     * @return DecimalValue|null
      */
-    public function getValue(): ?string
+    public function getValue(): ?DecimalValue
     {
         return $this->value;
     }
@@ -129,11 +130,11 @@ class KPIValue
     /**
      * Setzt den erfassten Wert.
      *
-     * @param string $value
+     * @param DecimalValue $value
      *
      * @return static
      */
-    public function setValue(string $value): static
+    public function setValue(DecimalValue $value): static
     {
         $this->value = $value;
 
@@ -143,14 +144,9 @@ class KPIValue
     /**
      * Gibt den Wert als Float zurück für Berechnungen.
      */
-    /**
-     * Gibt den Wert als Float zurück für Berechnungen.
-     *
-     * @return float
-     */
     public function getValueAsFloat(): float
     {
-        return (float) $this->value;
+        return $this->value->toFloat();
     }
 
     /**
@@ -358,6 +354,6 @@ class KPIValue
      */
     public function __toString(): string
     {
-        return $this->value.' ('.$this->getFormattedPeriod().')';
+        return (string) $this->value.' ('.$this->getFormattedPeriod().')';
     }
 }

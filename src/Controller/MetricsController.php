@@ -33,7 +33,7 @@ class MetricsController extends AbstractController
         $values = $repository->findForAdminExport();
         foreach ($values as $value) {
             $kpi = $value->getKpi();
-            $gauge->set((float) $value->getValue(), [
+            $gauge->set($value->getValueAsFloat(), [
                 (string) $kpi->getId(),
                 (string) $value->getPeriod(),
                 $kpi->getName(),

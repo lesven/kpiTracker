@@ -33,7 +33,7 @@ class KPIValueRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('v')
             ->andWhere('v.kpi = :kpi')
             ->setParameter('kpi', $kpi)
-            ->orderBy('v.period', 'DESC')
+            ->orderBy('v.period.value', 'DESC')
             ->getQuery()
             ->getResult();
     }
@@ -45,7 +45,7 @@ class KPIValueRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('v')
             ->andWhere('v.kpi = :kpi')
-            ->andWhere('v.period = :period')
+            ->andWhere('v.period.value = :period')
             ->setParameter('kpi', $kpi)
             ->setParameter('period', (string) $period)
             ->getQuery()
@@ -119,7 +119,7 @@ class KPIValueRepository extends ServiceEntityRepository
             ->andWhere('k.user = :user')
             ->setParameter('user', $user)
             ->orderBy('k.name', 'ASC')
-            ->addOrderBy('v.period', 'ASC')
+            ->addOrderBy('v.period.value', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -137,7 +137,7 @@ class KPIValueRepository extends ServiceEntityRepository
             ->addSelect('k', 'u')
             ->orderBy('u.email', 'ASC')
             ->addOrderBy('k.name', 'ASC')
-            ->addOrderBy('v.period', 'ASC')
+            ->addOrderBy('v.period.value', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -236,7 +236,7 @@ class KPIValueRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('v')
             ->andWhere('v.kpi = :kpi')
             ->setParameter('kpi', $kpi)
-            ->orderBy('v.period', 'DESC')
+            ->orderBy('v.period.value', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
