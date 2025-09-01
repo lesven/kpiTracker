@@ -2,6 +2,7 @@
 
 namespace App\Tests\Service;
 
+use App\Domain\ValueObject\KpiInterval;
 use App\Service\KPIStatusService;
 use App\Entity\KPI;
 use App\Repository\KPIValueRepository;
@@ -39,7 +40,7 @@ class KPIStatusServiceTest extends TestCase
         $kpi = $this->createMock(KPI::class);
         
         $kpi->method('getCurrentPeriod')->willReturn('2024-01');
-        $kpi->method('getInterval')->willReturn('monthly');
+        $kpi->method('getInterval')->willReturn(KpiInterval::MONTHLY);
         $repo->method('findByKpiAndPeriod')->willReturn(null);
         
         $service = new KPIStatusService($repo);

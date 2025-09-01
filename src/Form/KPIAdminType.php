@@ -2,6 +2,7 @@
 
 namespace App\Form;
 
+use App\Domain\ValueObject\KpiInterval;
 use App\Entity\KPI;
 use App\Entity\User;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -56,10 +57,11 @@ class KPIAdminType extends AbstractType
             ->add('interval', ChoiceType::class, [
                 'label' => 'Intervall',
                 'choices' => [
-                    'Wöchentlich' => 'weekly',
-                    'Monatlich' => 'monthly',
-                    'Quartalsweise' => 'quarterly',
+                    'Wöchentlich' => KpiInterval::WEEKLY,
+                    'Monatlich' => KpiInterval::MONTHLY,
+                    'Quartalsweise' => KpiInterval::QUARTERLY,
                 ],
+                'choice_value' => fn (?KpiInterval $choice) => $choice?->value,
                 'attr' => [
                     'class' => 'form-select',
                 ],

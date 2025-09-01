@@ -2,8 +2,8 @@
 
 namespace App\Form;
 
+use App\Domain\ValueObject\KpiInterval;
 use App\Entity\KPI;
-use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -42,10 +42,11 @@ class KPIType extends AbstractType
             ->add('interval', ChoiceType::class, [
                 'label' => 'Intervall',
                 'choices' => [
-                    'Wöchentlich' => 'weekly',
-                    'Monatlich' => 'monthly',
-                    'Quartalsweise' => 'quarterly',
+                    'Wöchentlich' => KpiInterval::WEEKLY,
+                    'Monatlich' => KpiInterval::MONTHLY,
+                    'Quartalsweise' => KpiInterval::QUARTERLY,
                 ],
+                'choice_value' => fn (?KpiInterval $choice) => $choice?->value,
                 'attr' => [
                     'class' => 'form-select',
                 ],

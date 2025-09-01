@@ -96,10 +96,8 @@
                         <br><small>{{ reminder.kpi.description }}</small>
                     {% endif %}
                     <br><em>{{ reminder.message }}</em>
-                    <br><strong>Intervall:</strong> 
-                    {% if reminder.kpi.interval == 'weekly' %}Wöchentlich
-                    {% elseif reminder.kpi.interval == 'monthly' %}Monatlich
-                    {% else %}Quartalsweise{% endif %}
+                    <br><strong>Intervall:</strong>
+                    {{ reminder.kpi.interval.label }}
                     {% if reminder.kpi.unit or reminder.kpi.target %}
                         <br><small>
                             {% if reminder.kpi.target %}Ziel: {{ reminder.kpi.target }}{% endif %}

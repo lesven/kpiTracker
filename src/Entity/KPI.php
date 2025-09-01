@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Domain\ValueObject\KpiInterval;
 use App\Repository\KPIRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -22,15 +23,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: KPIRepository::class)]
 class KPI
 {
-    /**
-     * Intervall-Konstanten für die Erfassungshäufigkeit.
-     *
-     * @var string
-     */
-    public const INTERVAL_WEEKLY = 'weekly';
-    public const INTERVAL_MONTHLY = 'monthly';
-    public const INTERVAL_QUARTERLY = 'quarterly';
-
     /**
      * Status-Konstanten für die Dashboard-Anzeige.
      *
@@ -78,17 +70,14 @@ class KPI
      * Intervall für die KPI-Erfassung (weekly, monthly, quarterly).
      * Bestimmt wie oft neue Werte für diesen KPI erfasst werden müssen.
      */
-    #[ORM\Column(name: '`interval`', length: 20)]
-    #[Assert\Choice(
-        choices: [self::INTERVAL_WEEKLY, self::INTERVAL_MONTHLY, self::INTERVAL_QUARTERLY],
-        message: 'Bitte wählen Sie ein gültiges Intervall aus.'
-    )]
+    #[ORM\Column(name: '`interval`', enumType: KpiInterval::class)]
+    #[Assert\NotNull(message: 'Bitte wählen Sie ein gültiges Intervall aus.')]
     /**
      * Intervall für die KPI-Erfassung (weekly, monthly, quarterly).
      *
-     * @var string|null
+     * @var KpiInterval|null
      */
-    private ?string $interval = null;
+    private ?KpiInterval $interval = null;
 
     /**
      * Optionale Beschreibung des KPIs für zusätzliche Informationen.
@@ -227,9 +216,9 @@ class KPI
     /**
      * Gibt das Erfassungsintervall zurück (weekly, monthly, quarterly).
      *
-     * @return string|null
+     * @return KpiInterval|null
      */
-    public function getInterval(): ?string
+    public function getInterval(): ?KpiInterval
     {
         return $this->interval;
     }
@@ -237,13 +226,7 @@ class KPI
     /**
      * Setzt das Erfassungsintervall für den KPI.
      */
-    /**
-     * Setzt das Erfassungsintervall für den KPI.
-     *
-     * @param string $interval
-     * @return static
-     */
-    public function setInterval(string $interval): static
+    public function setInterval(KpiInterval $interval): static
     {
         $this->interval = $interval;
 
@@ -408,9 +391,9 @@ class KPI
         $now = $this->getCurrentDateTime();
 
         return match ($this->interval) {
-            self::INTERVAL_WEEKLY => $now->modify('next monday'),
-            self::INTERVAL_MONTHLY => $now->modify('first day of next month'),
-            self::INTERVAL_QUARTERLY => $this->getNextQuarterStart(),
+            KpiInterval::WEEKLY => $now->modify('next monday'),
+            KpiInterval::MONTHLY => $now->modify('first day of next month'),
+            KpiInterval::QUARTERLY => $this->getNextQuarterStart(),
             default => $now->modify('+1 week'),
         };
     }
@@ -547,9 +530,9 @@ class KPI
         $now = $this->getCurrentDateTime();
 
         return match ($this->interval) {
-            self::INTERVAL_WEEKLY => $now->format('Y-W'),
-            self::INTERVAL_MONTHLY => $now->format('Y-m'),
-            self::INTERVAL_QUARTERLY => $now->format('Y').'-Q'.ceil($now->format('n') / 3),
+            KpiInterval::WEEKLY => $now->format('Y-W'),
+            KpiInterval::MONTHLY => $now->format('Y-m'),
+            KpiInterval::QUARTERLY => $now->format('Y').'-Q'.ceil($now->format('n') / 3),
             default => $now->format('Y-m-d'),
         };
     }

@@ -110,7 +110,7 @@ class KPIService
             $errors[] = 'KPI-Name ist erforderlich.';
         }
 
-        if (!in_array($kpi->getInterval(), ['weekly', 'monthly', 'quarterly'], true)) {
+        if (null === $kpi->getInterval()) {
             $errors[] = 'Ungültiges Intervall gewählt.';
         }
 
