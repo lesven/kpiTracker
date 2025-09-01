@@ -145,8 +145,5 @@ class DecimalValueFunctionalTest extends WebTestCase
     {
         parent::tearDown();
 
-        // Close the entity manager to avoid memory leaks
-        $this->entityManager->close();
-        $this->entityManager = null;
     }
 }
