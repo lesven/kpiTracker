@@ -18,6 +18,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[UniqueEntity(fields: ['email'], message: 'Diese E-Mail-Adresse wird bereits verwendet.')]
+/**
+ * Entity für die Verwaltung von Benutzern im KPI-Tracker.
+ *
+ * Implementiert Symfony Security Interface für Authentifizierung und Rollenverwaltung.
+ */
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     // Konstanten für Benutzerrollen
@@ -30,45 +35,94 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /**
+     * Eindeutige ID des Benutzers (Auto-Increment).
+     *
+     * @var int|null
+     */
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
     #[Assert\NotBlank(message: 'E-Mail-Adresse ist erforderlich.')]
     #[Assert\Email(message: 'Bitte geben Sie eine gültige E-Mail-Adresse ein.')]
+    /**
+     * E-Mail-Adresse des Benutzers (unique).
+     *
+     * @var string|null
+     */
     private ?string $email = null;
 
     /**
      * Benutzerrollen (ROLE_USER, ROLE_ADMIN).
      */
     #[ORM\Column]
+    /**
+     * Benutzerrollen (ROLE_USER, ROLE_ADMIN).
+     *
+     * @var array<string>
+     */
     private array $roles = [];
 
     /**
      * Gehashtes Passwort.
      */
     #[ORM\Column]
+    /**
+     * Gehashtes Passwort des Benutzers.
+     *
+     * @var string|null
+     */
     private ?string $password = null;
 
     #[ORM\Column]
+    /**
+     * Zeitpunkt der Erstellung des Benutzers.
+     * Wird automatisch beim Anlegen gesetzt.
+     *
+     * @var \DateTimeImmutable|null
+     */
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(length: 100, nullable: true)]
+    /**
+     * Vorname des Benutzers (optional).
+     *
+     * @var string|null
+     */
     private ?string $firstName = null;
 
     #[ORM\Column(length: 100, nullable: true)]
+    /**
+     * Nachname des Benutzers (optional).
+     *
+     * @var string|null
+     */
     private ?string $lastName = null;
 
     #[ORM\Column(length: 80, nullable: true, unique: true)]
+    /**
+     * API-Token für externe Authentifizierung (optional).
+     *
+     * @var string|null
+     */
     private ?string $apiToken = null;
 
     /**
      * KPIs die diesem Benutzer zugeordnet sind.
      */
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: KPI::class, orphanRemoval: true)]
+    /**
+     * KPIs die diesem Benutzer zugeordnet sind.
+     *
+     * @var Collection<int, KPI>
+     */
     private Collection $kpis;
 
     /**
      * Konstruktor - initialisiert Collections und setzt Erstellungsdatum.
+     */
+    /**
+     * Konstruktor initialisiert die KPI-Collection und setzt Erstellungsdatum.
      */
     public function __construct()
     {

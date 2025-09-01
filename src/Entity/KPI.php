@@ -22,17 +22,29 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: KPIRepository::class)]
 class KPI
 {
-    // Intervall-Konstanten
+    /**
+     * Intervall-Konstanten für die Erfassungshäufigkeit.
+     *
+     * @var string
+     */
     public const INTERVAL_WEEKLY = 'weekly';
     public const INTERVAL_MONTHLY = 'monthly';
     public const INTERVAL_QUARTERLY = 'quarterly';
 
-    // Status-Konstanten für Dashboard
+    /**
+     * Status-Konstanten für die Dashboard-Anzeige.
+     *
+     * @var string
+     */
     public const STATUS_GREEN = 'green';
     public const STATUS_YELLOW = 'yellow';
     public const STATUS_RED = 'red';
 
-    // Konfiguration für Status-Berechnung
+    /**
+     * Schwellenwert in Tagen für gelben Status (Warnung).
+     *
+     * @var int
+     */
     public const DAYS_WARNING_THRESHOLD = 3;
 
     /**
@@ -41,6 +53,11 @@ class KPI
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /**
+     * Eindeutige ID des KPIs (Auto-Increment).
+     *
+     * @var int|null
+     */
     private ?int $id = null;
 
     /**
@@ -50,6 +67,11 @@ class KPI
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'KPI-Name ist erforderlich.')]
     #[Assert\Length(max: 255, maxMessage: 'Der KPI-Name darf maximal {{ limit }} Zeichen lang sein.')]
+    /**
+     * Name des KPIs (z.B. "Umsatz", "Kundenanzahl").
+     *
+     * @var string|null
+     */
     private ?string $name = null;
 
     /**
@@ -61,12 +83,22 @@ class KPI
         choices: [self::INTERVAL_WEEKLY, self::INTERVAL_MONTHLY, self::INTERVAL_QUARTERLY],
         message: 'Bitte wählen Sie ein gültiges Intervall aus.'
     )]
+    /**
+     * Intervall für die KPI-Erfassung (weekly, monthly, quarterly).
+     *
+     * @var string|null
+     */
     private ?string $interval = null;
 
     /**
      * Optionale Beschreibung des KPIs für zusätzliche Informationen.
      */
     #[ORM\Column(type: 'text', nullable: true)]
+    /**
+     * Optionale Beschreibung des KPIs für zusätzliche Informationen.
+     *
+     * @var string|null
+     */
     private ?string $description = null;
 
     /**
@@ -74,6 +106,12 @@ class KPI
      * Optional für bessere Darstellung der Werte.
      */
     #[ORM\Column(length: 50, nullable: true)]
+    /**
+     * Maßeinheit des KPIs (z.B. "€", "%", "Stück").
+     * Optional für bessere Darstellung der Werte.
+     *
+     * @var string|null
+     */
     private ?string $unit = null;
 
     /**
@@ -81,6 +119,12 @@ class KPI
      * Wird als String gespeichert um deutsche Zahlenformate zu unterstützen.
      */
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    /**
+     * Zielwert für den KPI als Decimal-String.
+     * Wird als String gespeichert um deutsche Zahlenformate zu unterstützen.
+     *
+     * @var string|null
+     */
     private ?string $target = null;
 
     /**
@@ -88,6 +132,12 @@ class KPI
      * Wird automatisch beim Anlegen gesetzt.
      */
     #[ORM\Column]
+    /**
+     * Zeitpunkt der Erstellung des KPIs.
+     * Wird automatisch beim Anlegen gesetzt.
+     *
+     * @var \DateTimeImmutable|null
+     */
     private ?\DateTimeImmutable $createdAt = null;
 
     /**
@@ -96,6 +146,12 @@ class KPI
      */
     #[ORM\ManyToOne(inversedBy: 'kpis')]
     #[ORM\JoinColumn(nullable: false)]
+    /**
+     * Benutzer dem diese KPI zugeordnet ist.
+     * Jeder KPI gehört zu genau einem Benutzer (ManyToOne).
+     *
+     * @var User|null
+     */
     private ?User $user = null;
 
     /**
@@ -103,8 +159,17 @@ class KPI
      * Ein KPI kann mehrere Werte haben (OneToMany), orphanRemoval löscht Werte beim KPI-Löschen.
      */
     #[ORM\OneToMany(mappedBy: 'kpi', targetEntity: KPIValue::class, orphanRemoval: true)]
+    /**
+     * Alle Werte die für diese KPI erfasst wurden.
+     * Ein KPI kann mehrere Werte haben (OneToMany), orphanRemoval löscht Werte beim KPI-Löschen.
+     *
+     * @var Collection<int, KPIValue>
+     */
     private Collection $values;
 
+    /**
+     * Konstruktor initialisiert die Values-Collection und setzt createdAt.
+     */
     /**
      * Konstruktor initialisiert die Values-Collection und setzt createdAt.
      */
@@ -117,6 +182,11 @@ class KPI
     /**
      * Gibt die eindeutige ID des KPIs zurück.
      */
+    /**
+     * Gibt die eindeutige ID des KPIs zurück.
+     *
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
@@ -125,6 +195,11 @@ class KPI
     /**
      * Gibt den Namen des KPIs zurück.
      */
+    /**
+     * Gibt den Namen des KPIs zurück.
+     *
+     * @return string|null
+     */
     public function getName(): ?string
     {
         return $this->name;
@@ -132,6 +207,12 @@ class KPI
 
     /**
      * Setzt den Namen des KPIs.
+     */
+    /**
+     * Setzt den Namen des KPIs.
+     *
+     * @param string $name
+     * @return static
      */
     public function setName(string $name): static
     {
@@ -143,6 +224,11 @@ class KPI
     /**
      * Gibt das Erfassungsintervall zurück (weekly, monthly, quarterly).
      */
+    /**
+     * Gibt das Erfassungsintervall zurück (weekly, monthly, quarterly).
+     *
+     * @return string|null
+     */
     public function getInterval(): ?string
     {
         return $this->interval;
@@ -150,6 +236,12 @@ class KPI
 
     /**
      * Setzt das Erfassungsintervall für den KPI.
+     */
+    /**
+     * Setzt das Erfassungsintervall für den KPI.
+     *
+     * @param string $interval
+     * @return static
      */
     public function setInterval(string $interval): static
     {
@@ -161,6 +253,11 @@ class KPI
     /**
      * Gibt die optionale Beschreibung des KPIs zurück.
      */
+    /**
+     * Gibt die optionale Beschreibung des KPIs zurück.
+     *
+     * @return string|null
+     */
     public function getDescription(): ?string
     {
         return $this->description;
@@ -168,6 +265,12 @@ class KPI
 
     /**
      * Setzt die Beschreibung des KPIs.
+     */
+    /**
+     * Setzt die Beschreibung des KPIs.
+     *
+     * @param string|null $description
+     * @return static
      */
     public function setDescription(?string $description): static
     {
@@ -179,6 +282,11 @@ class KPI
     /**
      * Gibt das Erstellungsdatum zurück.
      */
+    /**
+     * Gibt das Erstellungsdatum zurück.
+     *
+     * @return \DateTimeImmutable|null
+     */
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
@@ -186,6 +294,12 @@ class KPI
 
     /**
      * Setzt das Erstellungsdatum (hauptsächlich für Tests).
+     */
+    /**
+     * Setzt das Erstellungsdatum (hauptsächlich für Tests).
+     *
+     * @param \DateTimeImmutable $createdAt
+     * @return static
      */
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
@@ -197,6 +311,11 @@ class KPI
     /**
      * Gibt den zugehörigen Benutzer zurück.
      */
+    /**
+     * Gibt den zugehörigen Benutzer zurück.
+     *
+     * @return User|null
+     */
     public function getUser(): ?User
     {
         return $this->user;
@@ -204,6 +323,12 @@ class KPI
 
     /**
      * Setzt den zugehörigen Benutzer für diesen KPI.
+     */
+    /**
+     * Setzt den zugehörigen Benutzer für diesen KPI.
+     *
+     * @param User|null $user
+     * @return static
      */
     public function setUser(?User $user): static
     {
@@ -217,6 +342,11 @@ class KPI
      *
      * @return Collection<int, KPIValue>
      */
+    /**
+     * Gibt alle KPI-Werte als Collection zurück.
+     *
+     * @return Collection<int, KPIValue>
+     */
     public function getValues(): Collection
     {
         return $this->values;
@@ -225,6 +355,13 @@ class KPI
     /**
      * Fügt einen neuen KPI-Wert hinzu (idempotent).
      * Setzt automatisch die Rückreferenz auf diesen KPI.
+     */
+    /**
+     * Fügt einen neuen KPI-Wert hinzu (idempotent).
+     * Setzt automatisch die Rückreferenz auf diesen KPI.
+     *
+     * @param KPIValue $value
+     * @return static
      */
     public function addValue(KPIValue $value): static
     {
@@ -240,6 +377,13 @@ class KPI
      * Entfernt einen KPI-Wert (defensive Programmierung).
      * Entfernt auch die Rückreferenz falls gesetzt.
      */
+    /**
+     * Entfernt einen KPI-Wert (defensive Programmierung).
+     * Entfernt auch die Rückreferenz falls gesetzt.
+     *
+     * @param KPIValue $value
+     * @return static
+     */
     public function removeValue(KPIValue $value): static
     {
         if ($this->values->removeElement($value) && $value->getKpi() === $this) {
@@ -252,6 +396,12 @@ class KPI
     /**
      * Berechnet das nächste Fälligkeitsdatum basierend auf dem Intervall.
      * Verwendet für Dashboard-Status und Reminder-System.
+     */
+    /**
+     * Berechnet das nächste Fälligkeitsdatum basierend auf dem Intervall.
+     * Verwendet für Dashboard-Status und Reminder-System.
+     *
+     * @return \DateTimeImmutable
      */
     public function getNextDueDate(): \DateTimeImmutable
     {
@@ -269,6 +419,12 @@ class KPI
      * Gibt das aktuelle DateTime-Objekt zurück.
      * Zentrale Methode für Testbarkeit und konsistente Zeitbehandlung.
      */
+    /**
+     * Gibt das aktuelle DateTime-Objekt zurück.
+     * Zentrale Methode für Testbarkeit und konsistente Zeitbehandlung.
+     *
+     * @return \DateTimeImmutable
+     */
     private function getCurrentDateTime(): \DateTimeImmutable
     {
         return new \DateTimeImmutable();
@@ -277,6 +433,12 @@ class KPI
     /**
      * Ermittelt den Beginn des nächsten Quartals.
      * Hilfsmethode für getNextDueDate() bei quarterly-Intervall.
+     */
+    /**
+     * Ermittelt den Beginn des nächsten Quartals.
+     * Hilfsmethode für getNextDueDate() bei quarterly-Intervall.
+     *
+     * @return \DateTimeImmutable
      */
     private function getNextQuarterStart(): \DateTimeImmutable
     {
@@ -300,6 +462,13 @@ class KPI
      * Prüft ob ein Wert für einen bestimmten Zeitraum bereits existiert.
      * Verhindert doppelte Einträge für denselben Zeitraum.
      */
+    /**
+     * Prüft ob ein Wert für einen bestimmten Zeitraum bereits existiert.
+     * Verhindert doppelte Einträge für denselben Zeitraum.
+     *
+     * @param string $period
+     * @return bool
+     */
     public function hasValueForPeriod(string $period): bool
     {
         foreach ($this->values as $value) {
@@ -319,6 +488,16 @@ class KPI
      * - yellow: Fällig innerhalb von 3 Tagen
      * - red: Überfällig
      */
+    /**
+     * Holt den aktuellen Status für das Dashboard (green, yellow, red).
+     * Implementiert die Business Logic für KPI-Status basierend auf User Story 9.
+     *
+     * - green: Wert für aktuellen Zeitraum existiert
+     * - yellow: Fällig innerhalb von 3 Tagen
+     * - red: Überfällig
+     *
+     * @return string
+     */
     public function getStatus(): string
     {
         $currentPeriod = $this->getCurrentPeriod();
@@ -332,6 +511,11 @@ class KPI
 
     /**
      * Prüft ob das Fälligkeitsdatum nahe ist (innerhalb der Warning-Schwelle).
+     */
+    /**
+     * Prüft ob das Fälligkeitsdatum nahe ist (innerhalb der Warning-Schwelle).
+     *
+     * @return bool
      */
     private function isCloseToDeadline(): bool
     {
@@ -349,6 +533,15 @@ class KPI
      * - monthly: Y-m (z.B. "2024-7")
      * - quarterly: Y-Q* (z.B. "2024-Q2").
      */
+    /**
+     * Ermittelt den aktuellen Zeitraum basierend auf dem Intervall.
+     * Formatiert Zeiträume für eindeutige Periode-Identifikation:
+     * - weekly: Y-W (z.B. "2024-W23")
+     * - monthly: Y-m (z.B. "2024-7")
+     * - quarterly: Y-Q* (z.B. "2024-Q2").
+     *
+     * @return string
+     */
     public function getCurrentPeriod(): string
     {
         $now = $this->getCurrentDateTime();
@@ -364,6 +557,11 @@ class KPI
     /**
      * Gibt die Maßeinheit des KPIs zurück.
      */
+    /**
+     * Gibt die Maßeinheit des KPIs zurück.
+     *
+     * @return string|null
+     */
     public function getUnit(): ?string
     {
         return $this->unit;
@@ -371,6 +569,12 @@ class KPI
 
     /**
      * Setzt die Maßeinheit des KPIs.
+     */
+    /**
+     * Setzt die Maßeinheit des KPIs.
+     *
+     * @param string|null $unit
+     * @return static
      */
     public function setUnit(?string $unit): static
     {
@@ -382,6 +586,11 @@ class KPI
     /**
      * Gibt den Zielwert als String zurück (wie in DB gespeichert).
      */
+    /**
+     * Gibt den Zielwert als String zurück (wie in DB gespeichert).
+     *
+     * @return string|null
+     */
     public function getTarget(): ?string
     {
         return $this->target;
@@ -389,6 +598,12 @@ class KPI
 
     /**
      * Setzt den Zielwert des KPIs.
+     */
+    /**
+     * Setzt den Zielwert des KPIs.
+     *
+     * @param string|null $target
+     * @return static
      */
     public function setTarget(?string $target): static
     {
@@ -401,6 +616,13 @@ class KPI
      * Gibt den Zielwert als Float zurück für Berechnungen.
      * Unterstützt deutsche Zahlenformate (Komma als Dezimaltrennzeichen).
      * Gibt null zurück bei ungültigen oder leeren Werten.
+     */
+    /**
+     * Gibt den Zielwert als Float zurück für Berechnungen.
+     * Unterstützt deutsche Zahlenformate (Komma als Dezimaltrennzeichen).
+     * Gibt null zurück bei ungültigen oder leeren Werten.
+     *
+     * @return float|null
      */
     public function getTargetAsFloat(): ?float
     {
@@ -416,6 +638,11 @@ class KPI
 
     /**
      * String-Repräsentation für Formulare und Debug-Ausgaben.
+     */
+    /**
+     * String-Repräsentation für Formulare und Debug-Ausgaben.
+     *
+     * @return string
      */
     public function __toString(): string
     {
