@@ -42,4 +42,32 @@ class AdminServiceTest extends TestCase
         $service = new AdminService($em, $userRepo, $kpiRepo, $kpiValueRepo, $mailRepo, $hasher, $reminder);
         $service->createUser($user, 'plain');
     }
+
+    public function testGetDashboardStatsReturnsArrayWithExpectedKeys(): void
+    {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $userRepo = $this->createMock(UserRepository::class);
+        $kpiRepo = $this->createMock(KPIRepository::class);
+        $kpiValueRepo = $this->createMock(KPIValueRepository::class);
+        $mailRepo = $this->createMock(MailSettingsRepository::class);
+        $hasher = $this->createMock(UserPasswordHasherInterface::class);
+        $reminder = $this->createMock(ReminderService::class);
+
+        $userRepo->method('countUsers')->willReturn(10);
+        $userRepo->method('countAdmins')->willReturn(2);
+        $kpiRepo->method('countAll')->willReturn(25);
+        $userRepo->method('findCreatedBetween')->willReturn([]);
+        $kpiRepo->method('countKpisByUser')->willReturn([]);
+
+        $service = new AdminService($em, $userRepo, $kpiRepo, $kpiValueRepo, $mailRepo, $hasher, $reminder);
+        $stats = $service->getDashboardStats();
+
+        $this->assertIsArray($stats);
+        $this->assertArrayHasKey('total_users', $stats);
+        $this->assertArrayHasKey('total_admins', $stats);
+        $this->assertArrayHasKey('total_kpis', $stats);
+        $this->assertEquals(10, $stats['total_users']);
+        $this->assertEquals(2, $stats['total_admins']);
+        $this->assertEquals(25, $stats['total_kpis']);
+    }
 }

@@ -24,4 +24,25 @@ class ConfigurableMailerTest extends TestCase
         $mailer = new ConfigurableMailer($settingsRepo, $defaultMailer);
         $mailer->send($email);
     }
+
+    public function testSendUsesDefaultSettingsWhenNoneConfigured(): void
+    {
+        $settingsRepo = $this->createMock(MailSettingsRepository::class);
+        $defaultMailer = $this->createMock(MailerInterface::class);
+        $email = $this->createMock(Email::class);
+
+        // Zuerst null für isDefault = true, dann null für alle Settings
+        $settingsRepo->method('findOneBy')
+            ->willReturnCallback(function($criteria) {
+                // Simuliere aufeinanderfolgende Aufrufe ohne withConsecutive
+                return null;
+            });
+
+        $defaultMailer->expects($this->once())
+            ->method('send')
+            ->with($email);
+
+        $mailer = new ConfigurableMailer($settingsRepo, $defaultMailer);
+        $mailer->send($email);
+    }
 }
