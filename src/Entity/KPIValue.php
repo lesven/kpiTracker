@@ -28,12 +28,6 @@ class KPIValue
     private ?int $id = null;
 
     #[ORM\Embedded(class: DecimalValue::class, columnPrefix: false)]
-    #[ORM\AttributeOverrides([
-        new ORM\AttributeOverride(
-            name: 'value',
-            column: new ORM\Column(name: 'value', type: 'decimal', precision: 10, scale: 2, nullable: false)
-        ),
-    ])]
     #[Assert\NotNull(message: 'Der Wert ist erforderlich.')]
     #[Assert\Valid]
     /**

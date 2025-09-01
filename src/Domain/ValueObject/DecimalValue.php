@@ -10,19 +10,19 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Embeddable]
 final class DecimalValue
 {
-    private const PATTERN = '/^-?\d+([,.]\d{1,2})?$/';
-
     #[ORM\Column(name: 'value', type: 'decimal', precision: 10, scale: 2)]
     private string $value;
 
     public function __construct(string $value)
     {
-        $normalized = str_replace(',', '.', $value);
-        if (!preg_match(self::PATTERN, $value) || !is_numeric($normalized)) {
+        $normalized = str_replace(',', '.', trim($value));
+        
+        if (!is_numeric($normalized)) {
             throw new \InvalidArgumentException(sprintf('Ungültiger Dezimalwert "%s"', $value));
         }
 
-        $this->value = number_format((float) $normalized, 2, '.', '');
+        $float = (float) $normalized;
+        $this->value = number_format($float, 2, '.', '');
     }
 
     public static function fromString(string $value): self

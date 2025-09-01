@@ -108,13 +108,7 @@ class KPI
     /**
      * Zielwert für den KPI.
      */
-    #[ORM\Embedded(class: DecimalValue::class, columnPrefix: false)]
-    #[ORM\AttributeOverrides([
-        new ORM\AttributeOverride(
-            name: 'value',
-            column: new ORM\Column(name: 'target', type: 'decimal', precision: 10, scale: 2, nullable: true)
-        ),
-    ])]
+    #[ORM\Embedded(class: DecimalValue::class, columnPrefix: 'target_')]
     #[Assert\Valid]
     /**
      * Zielwert für den KPI.

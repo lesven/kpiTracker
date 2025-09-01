@@ -32,6 +32,7 @@ class ApiController extends AbstractController
             $data[] = [
                 'timestamp' => $value->getCreatedAt()->getTimestamp() * 1000,
                 'value' => $value->getValueAsFloat(),
+                'value_formatted' => $value->getValue()?->format(),
                 'period' => $value->getPeriod()?->value(),
                 'formatted_period' => $value->getFormattedPeriod(),
             ];
@@ -40,6 +41,8 @@ class ApiController extends AbstractController
         return $this->json([
             'kpi' => $kpi->getName(),
             'unit' => $kpi->getUnit(),
+            'target' => $kpi->getTargetAsFloat(),
+            'target_formatted' => $kpi->getTarget()?->format(),
             'interval' => $kpi->getInterval()?->value,
             'interval_label' => $kpi->getInterval()?->label(),
             'data' => $data,
