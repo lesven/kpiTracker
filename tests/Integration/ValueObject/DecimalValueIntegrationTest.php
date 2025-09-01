@@ -168,8 +168,4 @@ class DecimalValueIntegrationTest extends KernelTestCase
         $this->assertStringContainsString('September 2024', $stringRepresentation);
     }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-    }
 }
