@@ -36,13 +36,14 @@ class CreateAdminCommand extends Command
         parent::__construct();
     }
 
+    /**
+     * Konfiguriert den Symfony Console Command.
+     *
+     * Fügt Argumente und Optionen hinzu, die beim Aufruf des Commands verwendet werden können.
+     */
     protected function configure(): void
     {
-        /**
-         * Konfiguriert den Symfony Console Command.
-         *
-         * Fügt Argumente und Optionen hinzu, die beim Aufruf des Commands verwendet werden können.
-         */
+        
         $this
             ->setDescription('Erstellt einen neuen Administrator-Benutzer')
             ->setHelp('Dieser Command erstellt einen neuen Benutzer mit Administrator-Rechten.')
@@ -52,9 +53,6 @@ class CreateAdminCommand extends Command
             ->addOption('last-name', 'l', InputOption::VALUE_REQUIRED, 'Nachname des Administrators')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Überschreibt existierenden Benutzer');
     }
-
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
     /**
      * Führt die Erstellung oder Aktualisierung eines Administrator-Benutzers aus.
      *
@@ -68,6 +66,9 @@ class CreateAdminCommand extends Command
      *
      * @return int Exit-Code
      */
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+    
         $io = new SymfonyStyle($input, $output);
 
         $email = $input->getArgument('email');
@@ -161,11 +162,13 @@ class CreateAdminCommand extends Command
     private function generatePassword(int $length = 12): string
     {
     /**
-     * Generiert ein zufälliges, sicheres Passwort.
+     * Generiert ein sicheres, zufälliges Passwort für Administratoren.
      *
-     * @param int $length Länge des Passworts (Standard: 12)
+     * Das Passwort enthält Zahlen, Buchstaben und Sonderzeichen und erfüllt die Mindestlänge.
+     *
+     * @param int $length Die gewünschte Passwortlänge (Standard: 12)
      * @return string Das generierte Passwort
-     * @throws \Exception Bei einem Fehler von random_int
+     * @throws \Exception Falls random_int fehlschlägt
      */
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*';
         $password = '';
