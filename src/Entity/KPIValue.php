@@ -132,6 +132,7 @@ class KPIValue
      * Setzt den erfassten Wert.
      *
      * @param string $value
+     *
      * @return static
      */
     public function setValue(string $value): static
@@ -168,6 +169,7 @@ class KPIValue
      * Setzt den Zeitraumbezug.
      *
      * @param string $period
+     *
      * @return static
      */
     public function setPeriod(string $period): static
@@ -191,6 +193,7 @@ class KPIValue
      * Setzt den Kommentar zum Wert.
      *
      * @param string|null $comment
+     *
      * @return static
      */
     public function setComment(?string $comment): static
@@ -214,6 +217,7 @@ class KPIValue
      * Setzt das Erstellungsdatum des Werts.
      *
      * @param \DateTimeImmutable $createdAt
+     *
      * @return static
      */
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
@@ -237,6 +241,7 @@ class KPIValue
      * Setzt das Aktualisierungsdatum des Werts.
      *
      * @param \DateTimeImmutable|null $updatedAt
+     *
      * @return static
      */
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
@@ -260,6 +265,7 @@ class KPIValue
      * Setzt die zugehörige KPI.
      *
      * @param KPI|null $kpi
+     *
      * @return static
      */
     public function setKpi(?KPI $kpi): static
@@ -287,6 +293,7 @@ class KPIValue
      * Setzt automatisch die Rückreferenz.
      *
      * @param KPIFile $file
+     *
      * @return static
      */
     public function addFile(KPIFile $file): static
@@ -304,6 +311,7 @@ class KPIValue
      * Entfernt auch die Rückreferenz falls gesetzt.
      *
      * @param KPIFile $file
+     *
      * @return static
      */
     public function removeFile(KPIFile $file): static

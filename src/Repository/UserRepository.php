@@ -15,6 +15,7 @@ use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
  * Implementiert PasswordUpgraderInterface für automatische Passwort-Upgrades und bietet Methoden zur Benutzersuche und -verwaltung.
  *
  * @extends ServiceEntityRepository<User>
+ *
  * @implements PasswordUpgraderInterface<User>
  */
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface

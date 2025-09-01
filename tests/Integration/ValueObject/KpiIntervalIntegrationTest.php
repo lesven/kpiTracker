@@ -39,9 +39,9 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         $kpi->setUser($user);
         $kpi->setInterval(KpiInterval::WEEKLY);
 
-        $this->assertEquals(KpiInterval::WEEKLY, $kpi->getInterval());
-        $this->assertEquals('weekly', $kpi->getInterval()->value);
-        $this->assertEquals('Wöchentlich', $kpi->getInterval()->label());
+        $this->assertSame(KpiInterval::WEEKLY, $kpi->getInterval());
+        $this->assertSame('weekly', $kpi->getInterval()->value);
+        $this->assertSame('Wöchentlich', $kpi->getInterval()->label());
     }
 
     /**
@@ -63,11 +63,11 @@ class KpiIntervalIntegrationTest extends KernelTestCase
 
         foreach ($intervals as $interval) {
             $kpi = new KPI();
-            $kpi->setName('Test KPI ' . $interval->value);
+            $kpi->setName('Test KPI '.$interval->value);
             $kpi->setUser($user);
             $kpi->setInterval($interval);
 
-            $this->assertEquals($interval, $kpi->getInterval());
+            $this->assertSame($interval, $kpi->getInterval());
             $this->assertIsString($kpi->getInterval()->label());
         }
     }
@@ -88,7 +88,7 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         $weeklyKpi->setName('Weekly KPI');
         $weeklyKpi->setUser($user);
         $weeklyKpi->setInterval(KpiInterval::WEEKLY);
-        
+
         $weeklyPeriod = $weeklyKpi->getCurrentPeriod();
         $this->assertMatchesRegularExpression('/^\d{4}-\d{2}$/', $weeklyPeriod); // Format: YYYY-WW (ohne W-Prefix)
 
@@ -97,7 +97,7 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         $monthlyKpi->setName('Monthly KPI');
         $monthlyKpi->setUser($user);
         $monthlyKpi->setInterval(KpiInterval::MONTHLY);
-        
+
         $monthlyPeriod = $monthlyKpi->getCurrentPeriod();
         $this->assertMatchesRegularExpression('/^\d{4}-\d{2}$/', $monthlyPeriod);
 
@@ -106,7 +106,7 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         $quarterlyKpi->setName('Quarterly KPI');
         $quarterlyKpi->setUser($user);
         $quarterlyKpi->setInterval(KpiInterval::QUARTERLY);
-        
+
         $quarterlyPeriod = $quarterlyKpi->getCurrentPeriod();
         $this->assertMatchesRegularExpression('/^\d{4}-Q[1-4]$/', $quarterlyPeriod);
     }
@@ -130,12 +130,12 @@ class KpiIntervalIntegrationTest extends KernelTestCase
 
         foreach ($intervals as $interval) {
             $kpi = new KPI();
-            $kpi->setName('Test KPI ' . $interval->value);
+            $kpi->setName('Test KPI '.$interval->value);
             $kpi->setUser($user);
             $kpi->setInterval($interval);
 
             $dueDate = $kpi->getNextDueDate();
-            
+
             $this->assertInstanceOf(\DateTimeImmutable::class, $dueDate);
             $this->assertGreaterThan(new \DateTimeImmutable(), $dueDate);
         }
@@ -166,9 +166,9 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         $json = json_encode($data);
         $decoded = json_decode($json, true);
 
-        $this->assertEquals('Test KPI', $decoded['name']);
-        $this->assertEquals('monthly', $decoded['interval']);
-        $this->assertEquals('Monatlich', $decoded['interval_label']);
+        $this->assertSame('Test KPI', $decoded['name']);
+        $this->assertSame('monthly', $decoded['interval']);
+        $this->assertSame('Monatlich', $decoded['interval_label']);
     }
 
     /**
@@ -227,10 +227,10 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         foreach (KpiInterval::cases() as $interval) {
             $kpi->setInterval($interval);
             $period = $kpi->getCurrentPeriod();
-            
+
             // Periode sollte nie leer sein
             $this->assertNotEmpty($period);
-            
+
             // Periode sollte das aktuelle Jahr enthalten
             $currentYear = date('Y');
             $this->assertStringStartsWith($currentYear, $period);

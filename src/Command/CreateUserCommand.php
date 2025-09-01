@@ -26,7 +26,7 @@ class CreateUserCommand extends Command
     /**
      * CreateUserCommand constructor.
      *
-     * @param EntityManagerInterface $entityManager Doctrine EntityManager zum Persistieren von Benutzern
+     * @param EntityManagerInterface      $entityManager  Doctrine EntityManager zum Persistieren von Benutzern
      * @param UserPasswordHasherInterface $passwordHasher Passwort-Hasher für die sichere Speicherung
      */
     public function __construct(
@@ -38,11 +38,11 @@ class CreateUserCommand extends Command
 
     protected function configure(): void
     {
-    /**
-     * Konfiguriert den CreateUser-Command mit benötigten Argumenten und Optionen.
-     *
-     * Das Passwort-Argument muss genau 16 Zeichen lang sein (Akzeptanzkriterium).
-     */
+        /*
+         * Konfiguriert den CreateUser-Command mit benötigten Argumenten und Optionen.
+         *
+         * Das Passwort-Argument muss genau 16 Zeichen lang sein (Akzeptanzkriterium).
+         */
         $this
             ->setDescription('Erstellt einen neuen Benutzer per Shell-Command')
             ->setHelp('Dieser Command erstellt einen neuen Benutzer mit den angegebenen Daten.')
@@ -56,16 +56,17 @@ class CreateUserCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-    /**
-     * Führt die Erstellung oder Aktualisierung eines Benutzers aus.
-     *
-     * Validiert E-Mail und Passwort, setzt Rollen, hasht das Passwort und speichert den Benutzer.
-     * Bei Erfolg wird Command::SUCCESS zurückgegeben, sonst Command::FAILURE.
-     *
-     * @param InputInterface $input Konsolen-Eingabe
-     * @param OutputInterface $output Konsolen-Ausgabe
-     * @return int Exit-Code
-     */
+        /**
+         * Führt die Erstellung oder Aktualisierung eines Benutzers aus.
+         *
+         * Validiert E-Mail und Passwort, setzt Rollen, hasht das Passwort und speichert den Benutzer.
+         * Bei Erfolg wird Command::SUCCESS zurückgegeben, sonst Command::FAILURE.
+         *
+         * @param InputInterface  $input  Konsolen-Eingabe
+         * @param OutputInterface $output Konsolen-Ausgabe
+         *
+         * @return int Exit-Code
+         */
         $io = new SymfonyStyle($input, $output);
 
         $email = $input->getArgument('email');
@@ -169,15 +170,16 @@ class CreateUserCommand extends Command
      */
     private function isValidEmailFormat(string $email): bool
     {
-    /**
-     * Prüft, ob eine E-Mail einem gängigen Format entspricht und ob die Domain existiert.
-     *
-     * Diese Methode erweitert die PHP-Filter-Validierung um zusätzliche Sicherheitsprüfungen
-     * (z. B. keine Doppel-Punkte, Domain-Teil enthält Punkt, DNS-Lookup auf MX/A-Record).
-     *
-     * @param string $email Zu prüfende E-Mail-Adresse
-     * @return bool true wenn die E-Mail plausibel ist, false sonst
-     */
+        /**
+         * Prüft, ob eine E-Mail einem gängigen Format entspricht und ob die Domain existiert.
+         *
+         * Diese Methode erweitert die PHP-Filter-Validierung um zusätzliche Sicherheitsprüfungen
+         * (z. B. keine Doppel-Punkte, Domain-Teil enthält Punkt, DNS-Lookup auf MX/A-Record).
+         *
+         * @param string $email Zu prüfende E-Mail-Adresse
+         *
+         * @return bool true wenn die E-Mail plausibel ist, false sonst
+         */
         // Grundlegende PHP-Filter-Validierung
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return false;

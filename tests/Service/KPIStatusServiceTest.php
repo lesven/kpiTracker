@@ -3,9 +3,9 @@
 namespace App\Tests\Service;
 
 use App\Domain\ValueObject\KpiInterval;
-use App\Service\KPIStatusService;
 use App\Entity\KPI;
 use App\Repository\KPIValueRepository;
+use App\Service\KPIStatusService;
 use PHPUnit\Framework\TestCase;
 
 class KPIStatusServiceTest extends TestCase
@@ -25,24 +25,24 @@ class KPIStatusServiceTest extends TestCase
         $repo = $this->createMock(KPIValueRepository::class);
         $kpi = $this->createMock(KPI::class);
         $kpiValue = $this->createMock(\App\Entity\KPIValue::class);
-        
+
         $kpi->method('getCurrentPeriod')->willReturn('2024-01');
         $repo->method('findByKpiAndPeriod')->willReturn($kpiValue);
-        
+
         $service = new KPIStatusService($repo);
         $result = $service->getKpiStatus($kpi);
-        $this->assertEquals('green', $result);
+        $this->assertSame('green', $result);
     }
 
     public function testGetKpiStatusReturnsRedWhenOverdue(): void
     {
         $repo = $this->createMock(KPIValueRepository::class);
         $kpi = $this->createMock(KPI::class);
-        
+
         $kpi->method('getCurrentPeriod')->willReturn('2024-01');
         $kpi->method('getInterval')->willReturn(KpiInterval::MONTHLY);
         $repo->method('findByKpiAndPeriod')->willReturn(null);
-        
+
         $service = new KPIStatusService($repo);
         $result = $service->getKpiStatus($kpi);
         $this->assertIsString($result);

@@ -2,14 +2,14 @@
 
 namespace App\Tests\Service;
 
-use App\Service\ReminderService;
+use App\Repository\KPIRepository;
 use App\Service\ConfigurableMailer;
 use App\Service\KPIStatusService;
-use App\Repository\KPIRepository;
+use App\Service\ReminderService;
 use PHPUnit\Framework\TestCase;
-use Twig\Environment;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Twig\Environment;
 
 class ReminderServiceTest extends TestCase
 {
@@ -39,13 +39,13 @@ class ReminderServiceTest extends TestCase
         $statusService = $this->createMock(KPIStatusService::class);
         $kpiRepo = $this->createMock(KPIRepository::class);
         $logger = $this->createMock(LoggerInterface::class);
-        
+
         // ConfigurableMailer::send() return void, nicht bool
         $twig->method('render')->willReturn('<html>Test</html>');
-        
+
         $service = new ReminderService($mailer, $twig, $urlGen, $statusService, $kpiRepo, $logger, 'noreply@kpi-tracker.local');
         $result = $service->sendTestEmail('test@example.com');
-        
+
         $this->assertIsBool($result);
     }
 
@@ -57,17 +57,17 @@ class ReminderServiceTest extends TestCase
         $statusService = $this->createMock(KPIStatusService::class);
         $kpiRepo = $this->createMock(KPIRepository::class);
         $logger = $this->createMock(LoggerInterface::class);
-        
+
         $kpi = $this->createMock(\App\Entity\KPI::class);
         $user = $this->createMock(\App\Entity\User::class);
-        
+
         $kpi->method('getUser')->willReturn($user);
         $user->method('getEmail')->willReturn('user@example.com');
         $kpiRepo->method('findDueForReminder')->willReturn([$kpi]);
-        
+
         $service = new ReminderService($mailer, $twig, $urlGen, $statusService, $kpiRepo, $logger, 'noreply@kpi-tracker.local');
         $result = $service->sendDueReminders();
-        
+
         $this->assertIsArray($result);
         $this->assertArrayHasKey('skipped', $result);
     }

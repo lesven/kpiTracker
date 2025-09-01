@@ -17,9 +17,9 @@ class KpiIntervalTest extends TestCase
      */
     public function testEnumCasesAreAvailable(): void
     {
-        $this->assertEquals('weekly', KpiInterval::WEEKLY->value);
-        $this->assertEquals('monthly', KpiInterval::MONTHLY->value);
-        $this->assertEquals('quarterly', KpiInterval::QUARTERLY->value);
+        $this->assertSame('weekly', KpiInterval::WEEKLY->value);
+        $this->assertSame('monthly', KpiInterval::MONTHLY->value);
+        $this->assertSame('quarterly', KpiInterval::QUARTERLY->value);
     }
 
     /**
@@ -27,9 +27,9 @@ class KpiIntervalTest extends TestCase
      */
     public function testFromStringWithValidValues(): void
     {
-        $this->assertEquals(KpiInterval::WEEKLY, KpiInterval::fromString('weekly'));
-        $this->assertEquals(KpiInterval::MONTHLY, KpiInterval::fromString('monthly'));
-        $this->assertEquals(KpiInterval::QUARTERLY, KpiInterval::fromString('quarterly'));
+        $this->assertSame(KpiInterval::WEEKLY, KpiInterval::fromString('weekly'));
+        $this->assertSame(KpiInterval::MONTHLY, KpiInterval::fromString('monthly'));
+        $this->assertSame(KpiInterval::QUARTERLY, KpiInterval::fromString('quarterly'));
     }
 
     /**
@@ -39,7 +39,7 @@ class KpiIntervalTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid KPI interval "invalid"');
-        
+
         KpiInterval::fromString('invalid');
     }
 
@@ -52,7 +52,7 @@ class KpiIntervalTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessageMatches('/Invalid KPI interval/');
-        
+
         KpiInterval::fromString($invalidValue);
     }
 
@@ -82,9 +82,9 @@ class KpiIntervalTest extends TestCase
      */
     public function testLabelReturnsCorrectGermanLabels(): void
     {
-        $this->assertEquals('Wöchentlich', KpiInterval::WEEKLY->label());
-        $this->assertEquals('Monatlich', KpiInterval::MONTHLY->label());
-        $this->assertEquals('Quartalsweise', KpiInterval::QUARTERLY->label());
+        $this->assertSame('Wöchentlich', KpiInterval::WEEKLY->label());
+        $this->assertSame('Monatlich', KpiInterval::MONTHLY->label());
+        $this->assertSame('Quartalsweise', KpiInterval::QUARTERLY->label());
     }
 
     /**
@@ -93,12 +93,12 @@ class KpiIntervalTest extends TestCase
     public function testAllCasesHaveLabels(): void
     {
         $cases = KpiInterval::cases();
-        
+
         foreach ($cases as $case) {
             $label = $case->label();
             $this->assertIsString($label);
             $this->assertNotEmpty($label);
-            $this->assertNotEquals($case->value, $label); // Label sollte nicht gleich dem Wert sein
+            $this->assertNotSame($case->value, $label); // Label sollte nicht gleich dem Wert sein
         }
     }
 
@@ -107,9 +107,9 @@ class KpiIntervalTest extends TestCase
      */
     public function testEnumToString(): void
     {
-        $this->assertEquals('weekly', (string) KpiInterval::WEEKLY->value);
-        $this->assertEquals('monthly', (string) KpiInterval::MONTHLY->value);
-        $this->assertEquals('quarterly', (string) KpiInterval::QUARTERLY->value);
+        $this->assertSame('weekly', (string) KpiInterval::WEEKLY->value);
+        $this->assertSame('monthly', (string) KpiInterval::MONTHLY->value);
+        $this->assertSame('quarterly', (string) KpiInterval::QUARTERLY->value);
     }
 
     /**
@@ -131,9 +131,9 @@ class KpiIntervalTest extends TestCase
      */
     public function testTryFromWithValidValues(): void
     {
-        $this->assertEquals(KpiInterval::WEEKLY, KpiInterval::tryFrom('weekly'));
-        $this->assertEquals(KpiInterval::MONTHLY, KpiInterval::tryFrom('monthly'));
-        $this->assertEquals(KpiInterval::QUARTERLY, KpiInterval::tryFrom('quarterly'));
+        $this->assertSame(KpiInterval::WEEKLY, KpiInterval::tryFrom('weekly'));
+        $this->assertSame(KpiInterval::MONTHLY, KpiInterval::tryFrom('monthly'));
+        $this->assertSame(KpiInterval::QUARTERLY, KpiInterval::tryFrom('quarterly'));
     }
 
     /**
@@ -153,7 +153,7 @@ class KpiIntervalTest extends TestCase
     public function testCasesReturnsAllEnumValues(): void
     {
         $cases = KpiInterval::cases();
-        
+
         $this->assertCount(3, $cases);
         $this->assertContains(KpiInterval::WEEKLY, $cases);
         $this->assertContains(KpiInterval::MONTHLY, $cases);
@@ -186,7 +186,7 @@ class KpiIntervalTest extends TestCase
             KpiInterval::QUARTERLY => 'quarterly_result',
         };
 
-        $this->assertEquals('weekly_result', $result);
+        $this->assertSame('weekly_result', $result);
 
         $result = match (KpiInterval::QUARTERLY) {
             KpiInterval::WEEKLY => 'weekly_result',
@@ -194,7 +194,7 @@ class KpiIntervalTest extends TestCase
             KpiInterval::QUARTERLY => 'quarterly_result',
         };
 
-        $this->assertEquals('quarterly_result', $result);
+        $this->assertSame('quarterly_result', $result);
     }
 
     /**
@@ -210,8 +210,8 @@ class KpiIntervalTest extends TestCase
         $json = json_encode($data);
         $decoded = json_decode($json, true);
 
-        $this->assertEquals('weekly', $decoded['interval']);
-        $this->assertEquals('Wöchentlich', $decoded['label']);
+        $this->assertSame('weekly', $decoded['interval']);
+        $this->assertSame('Wöchentlich', $decoded['label']);
     }
 
     /**
@@ -219,9 +219,9 @@ class KpiIntervalTest extends TestCase
      */
     public function testEnumValuesAreUnique(): void
     {
-        $values = array_map(fn($case) => $case->value, KpiInterval::cases());
+        $values = array_map(fn ($case) => $case->value, KpiInterval::cases());
         $uniqueValues = array_unique($values);
-        
+
         $this->assertCount(count($values), $uniqueValues);
     }
 
@@ -230,9 +230,9 @@ class KpiIntervalTest extends TestCase
      */
     public function testLabelsAreUnique(): void
     {
-        $labels = array_map(fn($case) => $case->label(), KpiInterval::cases());
+        $labels = array_map(fn ($case) => $case->label(), KpiInterval::cases());
         $uniqueLabels = array_unique($labels);
-        
+
         $this->assertCount(count($labels), $uniqueLabels);
     }
 }

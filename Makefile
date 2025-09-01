@@ -86,7 +86,7 @@ lint: ## Prüft Code-Style (PSR-12)
 	docker compose exec --workdir /var/www/html app ./vendor/bin/php-cs-fixer fix --dry-run --diff
 
 fix: ## Korrigiert Code-Style automatisch
-	docker compose exec --workdir /var/www/html app ./vendor/bin/php-cs-fixer fix
+	docker compose exec --workdir /var/www/html app ./vendor/bin/php-cs-fixer fix --allow-risky=yes
 
 clean: ## Räumt Cache und Logs auf
 	docker compose exec --workdir /var/www/html app php bin/console cache:clear --no-warmup || true

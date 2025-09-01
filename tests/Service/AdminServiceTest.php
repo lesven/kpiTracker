@@ -3,15 +3,15 @@
 namespace App\Tests\Service;
 
 use App\Entity\User;
-use App\Service\AdminService;
-use PHPUnit\Framework\TestCase;
-use Doctrine\ORM\EntityManagerInterface;
-use App\Repository\UserRepository;
 use App\Repository\KPIRepository;
 use App\Repository\KPIValueRepository;
 use App\Repository\MailSettingsRepository;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use App\Repository\UserRepository;
+use App\Service\AdminService;
 use App\Service\ReminderService;
+use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AdminServiceTest extends TestCase
 {
@@ -66,8 +66,8 @@ class AdminServiceTest extends TestCase
         $this->assertArrayHasKey('total_users', $stats);
         $this->assertArrayHasKey('total_admins', $stats);
         $this->assertArrayHasKey('total_kpis', $stats);
-        $this->assertEquals(10, $stats['total_users']);
-        $this->assertEquals(2, $stats['total_admins']);
-        $this->assertEquals(25, $stats['total_kpis']);
+        $this->assertSame(10, $stats['total_users']);
+        $this->assertSame(2, $stats['total_admins']);
+        $this->assertSame(25, $stats['total_kpis']);
     }
 }

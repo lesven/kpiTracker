@@ -26,7 +26,7 @@ class CreateAdminCommand extends Command
     /**
      * CreateAdminCommand constructor.
      *
-     * @param EntityManagerInterface $entityManager Doctrine EntityManager zum Persistieren von Benutzern
+     * @param EntityManagerInterface      $entityManager  Doctrine EntityManager zum Persistieren von Benutzern
      * @param UserPasswordHasherInterface $passwordHasher Passwort-Hasher für die sichere Speicherung
      */
     public function __construct(
@@ -43,7 +43,6 @@ class CreateAdminCommand extends Command
      */
     protected function configure(): void
     {
-        
         $this
             ->setDescription('Erstellt einen neuen Administrator-Benutzer')
             ->setHelp('Dieser Command erstellt einen neuen Benutzer mit Administrator-Rechten.')
@@ -53,6 +52,7 @@ class CreateAdminCommand extends Command
             ->addOption('last-name', 'l', InputOption::VALUE_REQUIRED, 'Nachname des Administrators')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Überschreibt existierenden Benutzer');
     }
+
     /**
      * Führt die Erstellung oder Aktualisierung eines Administrator-Benutzers aus.
      *
@@ -61,14 +61,13 @@ class CreateAdminCommand extends Command
      *
      * Gibt Command::SUCCESS bei Erfolg und Command::FAILURE bei Fehlern zurück.
      *
-     * @param InputInterface $input Konsolen-Eingabe
+     * @param InputInterface  $input  Konsolen-Eingabe
      * @param OutputInterface $output Konsolen-Ausgabe
      *
      * @return int Exit-Code
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-    
         $io = new SymfonyStyle($input, $output);
 
         $email = $input->getArgument('email');
@@ -161,15 +160,17 @@ class CreateAdminCommand extends Command
      */
     private function generatePassword(int $length = 12): string
     {
-    /**
-     * Generiert ein sicheres, zufälliges Passwort für Administratoren.
-     *
-     * Das Passwort enthält Zahlen, Buchstaben und Sonderzeichen und erfüllt die Mindestlänge.
-     *
-     * @param int $length Die gewünschte Passwortlänge (Standard: 12)
-     * @return string Das generierte Passwort
-     * @throws \Exception Falls random_int fehlschlägt
-     */
+        /**
+         * Generiert ein sicheres, zufälliges Passwort für Administratoren.
+         *
+         * Das Passwort enthält Zahlen, Buchstaben und Sonderzeichen und erfüllt die Mindestlänge.
+         *
+         * @param int $length Die gewünschte Passwortlänge (Standard: 12)
+         *
+         * @throws \Exception Falls random_int fehlschlägt
+         *
+         * @return string Das generierte Passwort
+         */
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*';
         $password = '';
 

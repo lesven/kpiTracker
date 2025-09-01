@@ -2,12 +2,12 @@
 
 namespace App\Tests\Service;
 
-use App\Service\DashboardService;
+use App\Entity\KPI;
+use App\Entity\User;
 use App\Repository\KPIRepository;
 use App\Repository\KPIValueRepository;
+use App\Service\DashboardService;
 use App\Service\KPIStatusService;
-use App\Entity\User;
-use App\Entity\KPI;
 use PHPUnit\Framework\TestCase;
 
 class DashboardServiceTest extends TestCase
@@ -51,6 +51,6 @@ class DashboardServiceTest extends TestCase
         $this->assertArrayHasKey('overdue_count', $stats);
         $this->assertArrayHasKey('due_soon_count', $stats);
         $this->assertArrayHasKey('up_to_date_count', $stats);
-        $this->assertEquals(2, $stats['total_kpis']);
+        $this->assertSame(2, $stats['total_kpis']);
     }
 }

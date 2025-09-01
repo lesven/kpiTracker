@@ -49,6 +49,7 @@ class KPIController extends AbstractController
      * Zeigt die Liste aller KPIs des Benutzers mit optionaler Sortierung.
      *
      * @param Request $request HTTP-Request mit Sortierparametern
+     *
      * @return Response Die gerenderte KPI-Liste
      */
     #[Route('/', name: 'app_kpi_index', methods: ['GET'])]
@@ -89,6 +90,7 @@ class KPIController extends AbstractController
      * Erstellt eine neue KPI für den aktuellen Benutzer (User Story 3).
      *
      * @param Request $request HTTP-Request mit Formulardaten
+     *
      * @return Response Die Seite zum Anlegen einer KPI oder Redirect nach Erfolg
      */
     #[Route('/new', name: 'app_kpi_new', methods: ['GET', 'POST'])]
@@ -121,6 +123,7 @@ class KPIController extends AbstractController
      * Zeigt die Details einer KPI inkl. Historie aller Werte.
      *
      * @param KPI $kpi Die zugehörige KPI-Entität
+     *
      * @return Response Die gerenderte Detailseite
      */
     #[Route('/{id}', name: 'app_kpi_show', methods: ['GET'])]
@@ -143,7 +146,8 @@ class KPIController extends AbstractController
      * Bearbeitet eine bestehende KPI.
      *
      * @param Request $request HTTP-Request mit Formulardaten
-     * @param KPI $kpi Zu bearbeitende KPI
+     * @param KPI     $kpi     Zu bearbeitende KPI
+     *
      * @return Response Die Seite zum Bearbeiten oder Redirect nach Erfolg
      */
     #[Route('/{id}/edit', name: 'app_kpi_edit', methods: ['GET', 'POST'])]
@@ -172,7 +176,8 @@ class KPIController extends AbstractController
      * Löscht eine KPI inkl. aller Werte.
      *
      * @param Request $request HTTP-Request mit CSRF-Token
-     * @param KPI $kpi Zu löschende KPI
+     * @param KPI     $kpi     Zu löschende KPI
+     *
      * @return Response Redirect zur KPI-Liste
      */
     #[Route('/{id}/delete', name: 'app_kpi_delete', methods: ['POST'])]
@@ -195,7 +200,8 @@ class KPIController extends AbstractController
      * Erfasst einen neuen Wert für eine KPI (User Story 5).
      *
      * @param Request $request HTTP-Request mit Formulardaten
-     * @param KPI $kpi Die zugehörige KPI-Entität
+     * @param KPI     $kpi     Die zugehörige KPI-Entität
+     *
      * @return Response Die Seite zum Erfassen eines Wertes oder Redirect nach Erfolg
      */
     #[Route('/{id}/add-value', name: 'app_kpi_add_value', methods: ['GET', 'POST'])]
@@ -250,8 +256,9 @@ class KPIController extends AbstractController
     /**
      * Bearbeitet einen bestehenden KPI-Wert (User Story 8).
      *
-     * @param Request $request HTTP-Request mit Formulardaten
+     * @param Request  $request  HTTP-Request mit Formulardaten
      * @param KPIValue $kpiValue Zu bearbeitender Wert
+     *
      * @return Response Die Seite zum Bearbeiten oder Redirect nach Erfolg
      */
     #[Route('/value/{id}/edit', name: 'app_kpi_value_edit', methods: ['GET', 'POST'])]
@@ -281,8 +288,9 @@ class KPIController extends AbstractController
     /**
      * Löscht einen KPI-Wert (User Story 8).
      *
-     * @param Request $request HTTP-Request mit CSRF-Token
+     * @param Request  $request  HTTP-Request mit CSRF-Token
      * @param KPIValue $kpiValue Zu löschender Wert
+     *
      * @return Response Redirect zur KPI-Detailseite
      */
     #[Route('/value/{id}/delete', name: 'app_kpi_value_delete', methods: ['POST'])]

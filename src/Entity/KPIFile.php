@@ -121,6 +121,7 @@ class KPIFile
      * Setzt den gespeicherten Dateinamen.
      *
      * @param string $filename
+     *
      * @return static
      */
     public function setFilename(string $filename): static
@@ -144,6 +145,7 @@ class KPIFile
      * Setzt den ursprünglichen Dateinamen.
      *
      * @param string $originalName
+     *
      * @return static
      */
     public function setOriginalName(string $originalName): static
@@ -167,6 +169,7 @@ class KPIFile
      * Setzt den MIME-Type der Datei.
      *
      * @param string|null $mimeType
+     *
      * @return static
      */
     public function setMimeType(?string $mimeType): static
@@ -190,6 +193,7 @@ class KPIFile
      * Setzt die Dateigröße in Bytes.
      *
      * @param int|null $fileSize
+     *
      * @return static
      */
     public function setFileSize(?int $fileSize): static
@@ -213,6 +217,7 @@ class KPIFile
      * Setzt das Erstellungsdatum der Datei.
      *
      * @param \DateTimeImmutable $createdAt
+     *
      * @return static
      */
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
@@ -236,6 +241,7 @@ class KPIFile
      * Setzt den zugehörigen KPI-Wert.
      *
      * @param KPIValue|null $kpiValue
+     *
      * @return static
      */
     public function setKpiValue(?KPIValue $kpiValue): static

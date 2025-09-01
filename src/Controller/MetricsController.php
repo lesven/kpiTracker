@@ -18,6 +18,7 @@ class MetricsController extends AbstractController
      * Liefert alle KPI-Werte als Prometheus-Metriken (nur für Admins).
      *
      * @param KPIValueRepository $repository Repository für KPI-Werte
+     *
      * @return Response Text-Response mit Prometheus-Metriken
      */
     #[Route('', name: 'app_metrics', methods: ['GET'])]

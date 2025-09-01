@@ -95,6 +95,7 @@ class MailSettings
      * Setzt den Hostnamen des Mailservers.
      *
      * @param string $host
+     *
      * @return self
      */
     public function setHost(string $host): self
@@ -118,6 +119,7 @@ class MailSettings
      * Setzt den Port des Mailservers.
      *
      * @param int $port
+     *
      * @return self
      */
     public function setPort(int $port): self
@@ -141,6 +143,7 @@ class MailSettings
      * Setzt den Benutzernamen für die Authentifizierung.
      *
      * @param string|null $username
+     *
      * @return self
      */
     public function setUsername(?string $username): self
@@ -164,6 +167,7 @@ class MailSettings
      * Setzt das Passwort für die Authentifizierung.
      *
      * @param string|null $password
+     *
      * @return self
      */
     public function setPassword(?string $password): self
@@ -187,6 +191,7 @@ class MailSettings
      * Setzt, ob Zertifikatsfehler ignoriert werden sollen.
      *
      * @param bool $ignore
+     *
      * @return self
      */
     public function setIgnoreCertificate(bool $ignore): self
@@ -210,6 +215,7 @@ class MailSettings
      * Setzt, ob dies die Standard-Mailserver-Konfiguration ist.
      *
      * @param bool $isDefault
+     *
      * @return self
      */
     public function setIsDefault(bool $isDefault): self

@@ -19,8 +19,8 @@ class ExcelExportServiceTest extends TestCase
     {
         $service = new ExcelExportService();
         $response = $service->createKpiExportResponse([]);
-        
-        $this->assertEquals('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', $response->headers->get('Content-Type'));
+
+        $this->assertSame('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', $response->headers->get('Content-Type'));
         $this->assertStringContainsString('attachment; filename="kpi_export_', $response->headers->get('Content-Disposition'));
     }
 
@@ -28,8 +28,8 @@ class ExcelExportServiceTest extends TestCase
     {
         $service = new ExcelExportService();
         $response = $service->createKpiExportResponse([]);
-        
+
         $this->assertInstanceOf(StreamedResponse::class, $response);
-        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertSame(200, $response->getStatusCode());
     }
 }

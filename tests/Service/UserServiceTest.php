@@ -2,11 +2,11 @@
 
 namespace App\Tests\Service;
 
-use App\Service\UserService;
 use App\Entity\User;
+use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class UserServiceTest extends TestCase
 {
@@ -29,27 +29,27 @@ class UserServiceTest extends TestCase
         } catch (\Exception $e) {
             // Ignoriere Exception für diesen Test
         }
-    $this->assertCount(2, $calls);
-    $this->assertStringContainsString('Starting GDPR-compliant user deletion', $calls[0][0]);
-    $this->assertArrayHasKey('user_id', $calls[0][1]);
-    $this->assertStringContainsString('GDPR-compliant user deletion completed', $calls[1][0]);
-    $this->assertArrayHasKey('stats', $calls[1][1]);
+        $this->assertCount(2, $calls);
+        $this->assertStringContainsString('Starting GDPR-compliant user deletion', $calls[0][0]);
+        $this->assertArrayHasKey('user_id', $calls[0][1]);
+        $this->assertStringContainsString('GDPR-compliant user deletion completed', $calls[1][0]);
+        $this->assertArrayHasKey('stats', $calls[1][1]);
     }
 
     public function testGetUserDeletionStatsReturnsArrayWithKeys(): void
     {
         $em = $this->createMock(EntityManagerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
-        
+
         $user = $this->createMock(User::class);
-        
+
         $user->method('getKpis')->willReturn(new \Doctrine\Common\Collections\ArrayCollection([]));
         $user->method('getEmail')->willReturn('test@example.com');
         $user->method('getCreatedAt')->willReturn(new \DateTimeImmutable());
-        
+
         $service = new UserService($em, $logger);
         $stats = $service->getUserDeletionStats($user);
-        
+
         $this->assertIsArray($stats);
         $this->assertArrayHasKey('email', $stats);
         $this->assertArrayHasKey('kpi_count', $stats);
@@ -61,18 +61,18 @@ class UserServiceTest extends TestCase
     {
         $em = $this->createMock(EntityManagerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
-        
+
         $user = $this->createMock(User::class);
         $currentUser = $this->createMock(User::class);
-        
+
         $user->method('isAdmin')->willReturn(false);
-        
+
         $userRepo = $this->createMock(\App\Repository\UserRepository::class);
         $em->method('getRepository')->willReturn($userRepo);
-        
+
         $service = new UserService($em, $logger);
         $result = $service->canDeleteUser($user, $currentUser);
-        
+
         $this->assertIsArray($result);
         $this->assertArrayHasKey('can_delete', $result);
         $this->assertArrayHasKey('reasons', $result);

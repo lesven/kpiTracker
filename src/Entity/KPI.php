@@ -201,6 +201,7 @@ class KPI
      * Setzt den Namen des KPIs.
      *
      * @param string $name
+     *
      * @return static
      */
     public function setName(string $name): static
@@ -253,6 +254,7 @@ class KPI
      * Setzt die Beschreibung des KPIs.
      *
      * @param string|null $description
+     *
      * @return static
      */
     public function setDescription(?string $description): static
@@ -282,6 +284,7 @@ class KPI
      * Setzt das Erstellungsdatum (hauptsächlich für Tests).
      *
      * @param \DateTimeImmutable $createdAt
+     *
      * @return static
      */
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
@@ -311,6 +314,7 @@ class KPI
      * Setzt den zugehörigen Benutzer für diesen KPI.
      *
      * @param User|null $user
+     *
      * @return static
      */
     public function setUser(?User $user): static
@@ -344,6 +348,7 @@ class KPI
      * Setzt automatisch die Rückreferenz auf diesen KPI.
      *
      * @param KPIValue $value
+     *
      * @return static
      */
     public function addValue(KPIValue $value): static
@@ -365,6 +370,7 @@ class KPI
      * Entfernt auch die Rückreferenz falls gesetzt.
      *
      * @param KPIValue $value
+     *
      * @return static
      */
     public function removeValue(KPIValue $value): static
@@ -450,6 +456,7 @@ class KPI
      * Verhindert doppelte Einträge für denselben Zeitraum.
      *
      * @param string $period
+     *
      * @return bool
      */
     public function hasValueForPeriod(string $period): bool
@@ -557,6 +564,7 @@ class KPI
      * Setzt die Maßeinheit des KPIs.
      *
      * @param string|null $unit
+     *
      * @return static
      */
     public function setUnit(?string $unit): static
@@ -586,6 +594,7 @@ class KPI
      * Setzt den Zielwert des KPIs.
      *
      * @param string|null $target
+     *
      * @return static
      */
     public function setTarget(?string $target): static

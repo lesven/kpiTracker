@@ -28,9 +28,9 @@ class SendRemindersCommand extends Command
 
     protected function configure(): void
     {
-    /**
-     * Konfiguriert den SendReminders-Command mit Optionen für Dry-Run und Test-E-Mail.
-     */
+        /*
+         * Konfiguriert den SendReminders-Command mit Optionen für Dry-Run und Test-E-Mail.
+         */
         $this
             ->setDescription('Sendet E-Mail-Erinnerungen für fällige KPI-Einträge')
             ->setHelp('Dieser Command prüft alle KPIs und sendet entsprechende E-Mail-Erinnerungen an Benutzer.')
@@ -40,17 +40,18 @@ class SendRemindersCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-    /**
-     * Prüft fällige KPIs und löst den Versand von Erinnerungs-E-Mails aus.
-     *
-     * Unterstützte Modi:
-     * - Test-E-Mail: sendet eine einzelne Testnachricht an die angegebene Adresse.
-     * - Dry-Run: simuliert den Versand ohne tatsächliche E-Mails.
-     *
-     * @param InputInterface $input Konsolen-Eingabe
-     * @param OutputInterface $output Konsolen-Ausgabe
-     * @return int Exit-Code
-     */
+        /**
+         * Prüft fällige KPIs und löst den Versand von Erinnerungs-E-Mails aus.
+         *
+         * Unterstützte Modi:
+         * - Test-E-Mail: sendet eine einzelne Testnachricht an die angegebene Adresse.
+         * - Dry-Run: simuliert den Versand ohne tatsächliche E-Mails.
+         *
+         * @param InputInterface  $input  Konsolen-Eingabe
+         * @param OutputInterface $output Konsolen-Ausgabe
+         *
+         * @return int Exit-Code
+         */
         $io = new SymfonyStyle($input, $output);
 
         // Test-E-Mail senden falls angegeben

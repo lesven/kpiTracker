@@ -2,12 +2,12 @@
 
 namespace App\Tests\Service;
 
-use App\Service\FileUploadService;
 use App\Entity\KPIValue;
+use App\Service\FileUploadService;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\String\Slugger\SluggerInterface;
-use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 class FileUploadServiceTest extends TestCase
 {
@@ -31,13 +31,13 @@ class FileUploadServiceTest extends TestCase
         $slugger = $this->createMock(SluggerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
         $service = new FileUploadService($em, $slugger, $logger, 'uploads/');
-        
+
         $file = $this->createMock(\Symfony\Component\HttpFoundation\File\UploadedFile::class);
         $file->method('isValid')->willReturn(true);
         $file->method('getSize')->willReturn(1024 * 1024); // 1MB
         $file->method('getMimeType')->willReturn('application/pdf');
         $file->method('getClientOriginalExtension')->willReturn('pdf');
-        
+
         $result = $service->validateFile($file);
         $this->assertIsArray($result);
         $this->assertEmpty($result); // Keine Fehler bei gültiger Datei
@@ -49,12 +49,12 @@ class FileUploadServiceTest extends TestCase
         $slugger = $this->createMock(SluggerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
         $service = new FileUploadService($em, $slugger, $logger, 'uploads/');
-        
+
         $file = $this->createMock(\Symfony\Component\HttpFoundation\File\UploadedFile::class);
         $file->method('isValid')->willReturn(true);
         $file->method('getSize')->willReturn(10 * 1024 * 1024); // 10MB - zu groß
         $file->method('getMimeType')->willReturn('application/pdf');
-        
+
         $result = $service->validateFile($file);
         $this->assertIsArray($result);
         $this->assertNotEmpty($result); // Sollte Fehler enthalten

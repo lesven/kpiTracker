@@ -15,8 +15,9 @@ class ApiController extends AbstractController
     /**
      * Gibt alle Werte einer KPI als JSON zurück (API-Endpunkt).
      *
-     * @param KPI $kpi Die zugehörige KPI-Entität
+     * @param KPI                $kpi        Die zugehörige KPI-Entität
      * @param KPIValueRepository $repository Repository für KPI-Werte
+     *
      * @return JsonResponse JSON-Array mit KPI-Werten
      */
     #[Route('/kpi/{id}/values', name: 'api_kpi_values', methods: ['GET'])]

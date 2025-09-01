@@ -2,11 +2,11 @@
 
 namespace App\Tests\Service;
 
-use App\Service\ConfigurableMailer;
 use App\Repository\MailSettingsRepository;
+use App\Service\ConfigurableMailer;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
-use PHPUnit\Framework\TestCase;
 
 class ConfigurableMailerTest extends TestCase
 {
@@ -33,7 +33,7 @@ class ConfigurableMailerTest extends TestCase
 
         // Zuerst null für isDefault = true, dann null für alle Settings
         $settingsRepo->method('findOneBy')
-            ->willReturnCallback(function($criteria) {
+            ->willReturnCallback(function ($criteria) {
                 // Simuliere aufeinanderfolgende Aufrufe ohne withConsecutive
                 return null;
             });

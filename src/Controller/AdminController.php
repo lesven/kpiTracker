@@ -71,6 +71,7 @@ class AdminController extends AbstractController
      * Legt einen neuen Benutzer an (User Story 2).
      *
      * @param Request $request HTTP-Request mit Formulardaten
+     *
      * @return Response Die Seite zum Anlegen eines Benutzers oder Redirect nach Erfolg
      */
     #[Route('/users/new', name: 'app_admin_user_new', methods: ['GET', 'POST'])]
@@ -99,7 +100,8 @@ class AdminController extends AbstractController
      * Bearbeitet einen bestehenden Benutzer.
      *
      * @param Request $request HTTP-Request mit Formulardaten
-     * @param User $user Zu bearbeitender Benutzer
+     * @param User    $user    Zu bearbeitender Benutzer
+     *
      * @return Response Die Seite zum Bearbeiten oder Redirect nach Erfolg
      */
     #[Route('/users/{id}/edit', name: 'app_admin_user_edit', methods: ['GET', 'POST'])]
@@ -127,7 +129,8 @@ class AdminController extends AbstractController
      * Löscht einen Benutzer DSGVO-konform inkl. aller zugehörigen Daten.
      *
      * @param Request $request HTTP-Request mit CSRF-Token
-     * @param User $user Zu löschender Benutzer
+     * @param User    $user    Zu löschender Benutzer
+     *
      * @return Response Redirect zur Benutzerliste
      */
     #[Route('/users/{id}/delete', name: 'app_admin_user_delete', methods: ['POST'])]
@@ -184,6 +187,7 @@ class AdminController extends AbstractController
      * Legt eine neue KPI für einen Benutzer an (User Story 4).
      *
      * @param Request $request HTTP-Request mit Formulardaten
+     *
      * @return Response Die Seite zum Anlegen einer KPI oder Redirect nach Erfolg
      */
     #[Route('/kpis/new', name: 'app_admin_kpi_new', methods: ['GET', 'POST'])]
@@ -212,7 +216,8 @@ class AdminController extends AbstractController
      * Bearbeitet eine bestehende KPI als Admin.
      *
      * @param Request $request HTTP-Request mit Formulardaten
-     * @param KPI $kpi Zu bearbeitende KPI
+     * @param KPI     $kpi     Zu bearbeitende KPI
+     *
      * @return Response Die Seite zum Bearbeiten oder Redirect nach Erfolg
      */
     #[Route('/kpis/{id}/edit', name: 'app_admin_kpi_edit', methods: ['GET', 'POST'])]
@@ -239,7 +244,8 @@ class AdminController extends AbstractController
      * Löscht eine KPI als Admin.
      *
      * @param Request $request HTTP-Request mit CSRF-Token
-     * @param KPI $kpi Zu löschende KPI
+     * @param KPI     $kpi     Zu löschende KPI
+     *
      * @return Response Redirect zur KPI-Liste
      */
     #[Route('/kpis/{id}/delete', name: 'app_admin_kpi_delete', methods: ['POST'])]
@@ -262,6 +268,7 @@ class AdminController extends AbstractController
      * Zeigt und speichert die E-Mail-Einstellungen für Erinnerungen.
      *
      * @param Request $request HTTP-Request mit Formulardaten
+     *
      * @return Response Die Seite mit dem Einstellungsformular oder Redirect nach Erfolg
      */
     #[Route('/settings/mail', name: 'app_admin_mail_settings', methods: ['GET', 'POST'])]
@@ -289,6 +296,7 @@ class AdminController extends AbstractController
      * Sendet Test-Erinnerungen per E-Mail (nur für Admins).
      *
      * @param Request $request HTTP-Request mit Test-E-Mail-Adresse
+     *
      * @return Response Die Testseite mit Ergebnis
      */
     #[Route('/test-reminders', name: 'app_admin_test_reminders', methods: ['GET', 'POST'])]
@@ -331,6 +339,7 @@ class AdminController extends AbstractController
      * Sendet alle fälligen Erinnerungen manuell (Admin-Trigger).
      *
      * @param Request $request HTTP-Request mit CSRF-Token
+     *
      * @return Response Redirect zur Testseite
      */
     #[Route('/send-all-reminders', name: 'app_admin_send_all_reminders', methods: ['POST'])]

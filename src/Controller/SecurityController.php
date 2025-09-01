@@ -17,6 +17,7 @@ class SecurityController extends AbstractController
      * Zeigt die Login-Seite und verarbeitet Login-Versuche.
      *
      * @param AuthenticationUtils $authenticationUtils Hilfsklasse für Authentifizierung
+     *
      * @return Response Die gerenderte Login-Seite oder Redirect nach Erfolg
      */
     #[Route(path: '/login', name: 'app_login')]

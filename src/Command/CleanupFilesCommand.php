@@ -43,7 +43,7 @@ class CleanupFilesCommand extends Command
 
         $io->title('Dateisystem-Wartung');
 
-    try {
+        try {
             $io->text('Starte Bereinigung verwaister Dateien...');
 
             $stats = $this->fileUploadService->cleanupOrphanedFiles();
