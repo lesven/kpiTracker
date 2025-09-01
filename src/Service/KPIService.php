@@ -32,7 +32,7 @@ class KPIService
      */
     public function hasCurrentValue(KPI $kpi): bool
     {
-        $currentPeriod = new Period($kpi->getCurrentPeriod());
+        $currentPeriod = $kpi->getCurrentPeriod();
         $existingValue = $this->kpiValueRepository->findByKpiAndPeriod($kpi, $currentPeriod);
 
         return null !== $existingValue;

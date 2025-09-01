@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Domain\ValueObject\KpiInterval;
+use App\Domain\ValueObject\Period;
 use App\Repository\KPIRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -455,14 +456,14 @@ class KPI
      * Prüft ob ein Wert für einen bestimmten Zeitraum bereits existiert.
      * Verhindert doppelte Einträge für denselben Zeitraum.
      *
-     * @param string $period
+     * @param Period $period
      *
      * @return bool
      */
-    public function hasValueForPeriod(string $period): bool
+    public function hasValueForPeriod(Period $period): bool
     {
         foreach ($this->values as $value) {
-            if ((string) $value->getPeriod() === $period) {
+            if ($value->getPeriod() && $value->getPeriod()->value() === $period->value()) {
                 return true;
             }
         }
@@ -530,18 +531,20 @@ class KPI
      * - monthly: Y-m (z.B. "2024-7")
      * - quarterly: Y-Q* (z.B. "2024-Q2").
      *
-     * @return string
+     * @return Period
      */
-    public function getCurrentPeriod(): string
+    public function getCurrentPeriod(): Period
     {
         $now = $this->getCurrentDateTime();
 
-        return match ($this->interval) {
-            KpiInterval::WEEKLY => $now->format('Y-W'),
+        $periodString = match ($this->interval) {
+            KpiInterval::WEEKLY => $now->format('Y-\WW'),
             KpiInterval::MONTHLY => $now->format('Y-m'),
             KpiInterval::QUARTERLY => $now->format('Y').'-Q'.ceil($now->format('n') / 3),
             default => $now->format('Y-m-d'),
         };
+
+        return Period::fromString($periodString);
     }
 
     /**

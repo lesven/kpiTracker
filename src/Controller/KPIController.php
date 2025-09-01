@@ -215,7 +215,7 @@ class KPIController extends AbstractController
 
         // Aktuellen Zeitraum als Standardwert vorschlagen
         $currentPeriod = $kpi->getCurrentPeriod();
-        $kpiValue->setPeriod(new Period($currentPeriod));
+        $kpiValue->setPeriod($currentPeriod);
 
         $form = $this->createForm(KPIValueType::class, $kpiValue);
         $form->handleRequest($request);
@@ -226,7 +226,7 @@ class KPIController extends AbstractController
 
             if ('duplicate' === $result['status']) {
                 $period = $kpiValue->getPeriod();
-                $this->addFlash('warning', 'Für den Zeitraum "'.$period.'" existiert bereits ein Wert. Bitte bearbeiten Sie den bestehenden Wert oder wählen Sie einen anderen Zeitraum.');
+                $this->addFlash('warning', 'Für den Zeitraum "'.$period->format().'" existiert bereits ein Wert. Bitte bearbeiten Sie den bestehenden Wert oder wählen Sie einen anderen Zeitraum.');
 
                 return $this->redirectToRoute('app_kpi_show', ['id' => $kpi->getId()]);
             }
@@ -250,7 +250,7 @@ class KPIController extends AbstractController
             'kpi' => $kpi,
             'kpi_value' => $kpiValue,
             'form' => $form,
-            'current_period' => $currentPeriod,
+            'current_period' => $currentPeriod->format(),
         ]);
     }
 

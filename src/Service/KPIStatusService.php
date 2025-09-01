@@ -28,7 +28,7 @@ class KPIStatusService
      */
     public function getKpiStatus(KPI $kpi): string
     {
-        $currentPeriod = new Period($kpi->getCurrentPeriod());
+        $currentPeriod = $kpi->getCurrentPeriod();
 
         // Prüfen ob bereits ein Wert für den aktuellen Zeitraum existiert
         $existingValue = $this->kpiValueRepository->findByKpiAndPeriod($kpi, $currentPeriod);
@@ -122,7 +122,7 @@ class KPIStatusService
 
         foreach ($kpis as $kpi) {
             $daysOverdue = $this->getDaysOverdue($kpi);
-            $currentPeriod = new Period($kpi->getCurrentPeriod());
+            $currentPeriod = $kpi->getCurrentPeriod();
 
             // Prüfen ob bereits Wert für aktuellen Zeitraum erfasst
             $hasValue = null !== $this->kpiValueRepository->findByKpiAndPeriod($kpi, $currentPeriod);

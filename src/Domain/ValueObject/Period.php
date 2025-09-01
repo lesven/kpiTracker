@@ -15,7 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Embeddable]
 final class Period
 {
-    public const PATTERN = '/^(\d{4})-(\d{2}|W\d{2}|Q\d)$/';
+    public const PATTERN = '/^(\d{4})-(\d{1,2}|W\d{1,2}|Q\d)$/';
 
     #[ORM\Column(name: 'period', length: 20)]
     private string $value;
@@ -24,6 +24,28 @@ final class Period
     {
         if (!preg_match(self::PATTERN, $value)) {
             throw new \InvalidArgumentException('Ungültiges Zeitraum-Format. Verwenden Sie: YYYY-MM, YYYY-WXX oder YYYY-QX');
+        }
+
+        // Additional validation
+        if (preg_match('/^(\d{4})-(\d{1,2})$/', $value, $matches)) {
+            $month = (int)$matches[2];
+            if ($month < 1 || $month > 12) {
+                throw new \InvalidArgumentException('Ungültiger Monat. Monate müssen zwischen 01 und 12 liegen.');
+            }
+        }
+
+        if (preg_match('/^(\d{4})-W(\d{1,2})$/', $value, $matches)) {
+            $week = (int)$matches[2];
+            if ($week < 1 || $week > 53) {
+                throw new \InvalidArgumentException('Ungültige Woche. Wochen müssen zwischen 01 und 53 liegen.');
+            }
+        }
+
+        if (preg_match('/^(\d{4})-Q(\d)$/', $value, $matches)) {
+            $quarter = (int)$matches[2];
+            if ($quarter < 1 || $quarter > 4) {
+                throw new \InvalidArgumentException('Ungültiges Quartal. Quartale müssen zwischen 1 und 4 liegen.');
+            }
         }
 
         $this->value = $value;
@@ -49,9 +71,9 @@ final class Period
      */
     public function format(): string
     {
-        if (preg_match('/^(\d{4})-(\d{2})$/', $this->value, $matches)) {
+        if (preg_match('/^(\d{4})-(\d{1,2})$/', $this->value, $matches)) {
             $year = $matches[1];
-            $month = $matches[2];
+            $month = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
             $monthNames = [
                 '01' => 'Januar', '02' => 'Februar', '03' => 'März',
                 '04' => 'April', '05' => 'Mai', '06' => 'Juni',
@@ -62,7 +84,7 @@ final class Period
             return ($monthNames[$month] ?? 'Monat '.$month).' '.$year;
         }
 
-        if (preg_match('/^(\d{4})-W(\d{2})$/', $this->value, $matches)) {
+        if (preg_match('/^(\d{4})-W(\d{1,2})$/', $this->value, $matches)) {
             return 'KW '.ltrim($matches[2], '0').'/'.$matches[1];
         }
 
@@ -71,5 +93,35 @@ final class Period
         }
 
         return $this->value;
+    }
+
+    /**
+     * Compares this period with another period for equality.
+     */
+    public function equals(Period $other): bool
+    {
+        return $this->value === $other->value;
+    }
+
+    /**
+     * Creates a Period from a date and interval.
+     */
+    public static function fromDate(\DateTimeInterface $date, \App\Domain\ValueObject\KpiInterval $interval): self
+    {
+        $periodString = match ($interval) {
+            \App\Domain\ValueObject\KpiInterval::WEEKLY => $date->format('Y-\WW'),
+            \App\Domain\ValueObject\KpiInterval::MONTHLY => $date->format('Y-m'),
+            \App\Domain\ValueObject\KpiInterval::QUARTERLY => $date->format('Y').'-Q'.ceil($date->format('n') / 3),
+        };
+
+        return new self($periodString);
+    }
+
+    /**
+     * Creates a Period for the current date with the given interval.
+     */
+    public static function current(\App\Domain\ValueObject\KpiInterval $interval): self
+    {
+        return self::fromDate(new \DateTimeImmutable(), $interval);
     }
 }

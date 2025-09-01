@@ -3,6 +3,8 @@
 namespace App\Tests\Service;
 
 use App\Entity\KPI;
+use App\Entity\KPIValue;
+use App\Domain\ValueObject\Period;
 use App\Repository\KPIValueRepository;
 use App\Service\KPIService;
 use App\Service\KPIStatusService;
@@ -30,8 +32,9 @@ class KPIServiceTest extends TestCase
         $repo = $this->createMock(KPIValueRepository::class);
         $statusService = $this->createMock(KPIStatusService::class);
 
-        $kpiValue = $this->createMock(\App\Entity\KPIValue::class);
-        $kpi->method('getCurrentPeriod')->willReturn('2024-01');
+        $kpiValue = $this->createMock(KPIValue::class);
+        $currentPeriod = new Period('2024-01');
+        $kpi->method('getCurrentPeriod')->willReturn($currentPeriod);
         $repo->method('findByKpiAndPeriod')->willReturn($kpiValue);
 
         $service = new KPIService($repo, $statusService);
