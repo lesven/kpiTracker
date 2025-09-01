@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\KPI;
 use App\Entity\KPIValue;
 use App\Entity\User;
+use App\Domain\ValueObject\Period;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -40,13 +41,13 @@ class KPIValueRepository extends ServiceEntityRepository
     /**
      * Findet einen Wert für eine bestimmte KPI und Zeitraum.
      */
-    public function findByKpiAndPeriod(KPI $kpi, string $period): ?KPIValue
+    public function findByKpiAndPeriod(KPI $kpi, Period $period): ?KPIValue
     {
         return $this->createQueryBuilder('v')
             ->andWhere('v.kpi = :kpi')
             ->andWhere('v.period = :period')
             ->setParameter('kpi', $kpi)
-            ->setParameter('period', $period)
+            ->setParameter('period', (string) $period)
             ->getQuery()
             ->getOneOrNullResult();
     }

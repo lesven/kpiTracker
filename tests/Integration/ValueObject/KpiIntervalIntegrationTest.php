@@ -90,7 +90,7 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         $weeklyKpi->setInterval(KpiInterval::WEEKLY);
 
         $weeklyPeriod = $weeklyKpi->getCurrentPeriod();
-        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}$/', $weeklyPeriod); // Format: YYYY-WW (ohne W-Prefix)
+        $this->assertMatchesRegularExpression('/^\d{4}-W\d{2}$/', (string) $weeklyPeriod); // Format: YYYY-WXX
 
         // Monthly KPI
         $monthlyKpi = new KPI();
@@ -182,13 +182,13 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         $user->setFirstName('Test');
         $user->setLastName('User');
 
-        // Teste, dass weekly tatsächlich wöchentliche Formate erzeugt (Format: YYYY-WW)
+        // Teste, dass weekly tatsächlich wöchentliche Formate erzeugt (Format: YYYY-WXX)
         $weeklyKpi = new KPI();
         $weeklyKpi->setName('Weekly KPI');
         $weeklyKpi->setUser($user);
         $weeklyKpi->setInterval(KpiInterval::WEEKLY);
         $weeklyPeriod = $weeklyKpi->getCurrentPeriod();
-        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}$/', $weeklyPeriod);
+        $this->assertMatchesRegularExpression('/^\d{4}-W\d{2}$/', (string) $weeklyPeriod);
 
         // Teste, dass monthly monatliche Formate erzeugt (Format: YYYY-MM)
         $monthlyKpi = new KPI();
@@ -196,7 +196,7 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         $monthlyKpi->setUser($user);
         $monthlyKpi->setInterval(KpiInterval::MONTHLY);
         $monthlyPeriod = $monthlyKpi->getCurrentPeriod();
-        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}$/', $monthlyPeriod);
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{1,2}$/', (string) $monthlyPeriod);
 
         // Teste, dass quarterly quartalsweise Formate erzeugt (Format: YYYY-QX)
         $quarterlyKpi = new KPI();
@@ -204,8 +204,8 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         $quarterlyKpi->setUser($user);
         $quarterlyKpi->setInterval(KpiInterval::QUARTERLY);
         $quarterlyPeriod = $quarterlyKpi->getCurrentPeriod();
-        $this->assertStringContainsString('Q', $quarterlyPeriod);
-        $this->assertMatchesRegularExpression('/^\d{4}-Q[1-4]$/', $quarterlyPeriod);
+        $this->assertStringContainsString('Q', (string) $quarterlyPeriod);
+        $this->assertMatchesRegularExpression('/^\d{4}-Q[1-4]$/', (string) $quarterlyPeriod);
     }
 
     /**

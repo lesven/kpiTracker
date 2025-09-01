@@ -4,6 +4,8 @@ namespace App\Tests\Service;
 
 use App\Domain\ValueObject\KpiInterval;
 use App\Entity\KPI;
+use App\Entity\KPIValue;
+use App\Domain\ValueObject\Period;
 use App\Repository\KPIValueRepository;
 use App\Service\KPIStatusService;
 use PHPUnit\Framework\TestCase;
@@ -14,6 +16,8 @@ class KPIStatusServiceTest extends TestCase
     {
         $repo = $this->createMock(KPIValueRepository::class);
         $kpi = $this->createMock(KPI::class);
+        $currentPeriod = new Period('2024-01');
+        $kpi->method('getCurrentPeriod')->willReturn($currentPeriod);
         $repo->method('findByKpiAndPeriod')->willReturn(null);
         $service = new KPIStatusService($repo);
         $result = $service->getKpiStatus($kpi);
@@ -24,9 +28,10 @@ class KPIStatusServiceTest extends TestCase
     {
         $repo = $this->createMock(KPIValueRepository::class);
         $kpi = $this->createMock(KPI::class);
-        $kpiValue = $this->createMock(\App\Entity\KPIValue::class);
+        $kpiValue = $this->createMock(KPIValue::class);
 
-        $kpi->method('getCurrentPeriod')->willReturn('2024-01');
+        $currentPeriod = new Period('2024-01');
+        $kpi->method('getCurrentPeriod')->willReturn($currentPeriod);
         $repo->method('findByKpiAndPeriod')->willReturn($kpiValue);
 
         $service = new KPIStatusService($repo);
@@ -39,7 +44,8 @@ class KPIStatusServiceTest extends TestCase
         $repo = $this->createMock(KPIValueRepository::class);
         $kpi = $this->createMock(KPI::class);
 
-        $kpi->method('getCurrentPeriod')->willReturn('2024-01');
+        $currentPeriod = new Period('2024-01');
+        $kpi->method('getCurrentPeriod')->willReturn($currentPeriod);
         $kpi->method('getInterval')->willReturn(KpiInterval::MONTHLY);
         $repo->method('findByKpiAndPeriod')->willReturn(null);
 

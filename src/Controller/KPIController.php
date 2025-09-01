@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\KPI;
 use App\Entity\KPIValue;
+use App\Domain\ValueObject\Period;
 use App\Entity\User;
 use App\Form\KPIType;
 use App\Form\KPIValueType;
@@ -225,7 +226,7 @@ class KPIController extends AbstractController
 
             if ('duplicate' === $result['status']) {
                 $period = $kpiValue->getPeriod();
-                $this->addFlash('warning', 'Für den Zeitraum "'.$period.'" existiert bereits ein Wert. Bitte bearbeiten Sie den bestehenden Wert oder wählen Sie einen anderen Zeitraum.');
+                $this->addFlash('warning', 'Für den Zeitraum "'.$period->format().'" existiert bereits ein Wert. Bitte bearbeiten Sie den bestehenden Wert oder wählen Sie einen anderen Zeitraum.');
 
                 return $this->redirectToRoute('app_kpi_show', ['id' => $kpi->getId()]);
             }
@@ -249,7 +250,7 @@ class KPIController extends AbstractController
             'kpi' => $kpi,
             'kpi_value' => $kpiValue,
             'form' => $form,
-            'current_period' => $currentPeriod,
+            'current_period' => $currentPeriod->format(),
         ]);
     }
 

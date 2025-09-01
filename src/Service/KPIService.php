@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\KPI;
 use App\Repository\KPIValueRepository;
+use App\Domain\ValueObject\Period;
 
 /**
  * Service-Klasse für das Management und die Business-Logik von KPIs.
