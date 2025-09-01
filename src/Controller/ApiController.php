@@ -12,6 +12,13 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/api')]
 class ApiController extends AbstractController
 {
+    /**
+     * Gibt alle Werte einer KPI als JSON zurück (API-Endpunkt).
+     *
+     * @param KPI $kpi Die zugehörige KPI-Entität
+     * @param KPIValueRepository $repository Repository für KPI-Werte
+     * @return JsonResponse JSON-Array mit KPI-Werten
+     */
     #[Route('/kpi/{id}/values', name: 'api_kpi_values', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     public function values(KPI $kpi, KPIValueRepository $repository): JsonResponse

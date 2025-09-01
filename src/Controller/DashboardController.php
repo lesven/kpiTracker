@@ -25,7 +25,9 @@ class DashboardController extends AbstractController
     }
 
     /**
-     * Hauptdashboard mit KPI-Übersicht und Ampellogik.
+     * Zeigt das Hauptdashboard mit KPI-Übersicht und Ampellogik.
+     *
+     * @return Response Die gerenderte Dashboard-Seite
      */
     #[Route('/', name: 'app_dashboard')]
     #[Route('/dashboard', name: 'app_dashboard_alt')]
@@ -45,7 +47,9 @@ class DashboardController extends AbstractController
     }
 
     /**
-     * AJAX-Endpunkt für Dashboard-Updates (für Live-Updates).
+     * AJAX-Endpunkt für Live-Updates des Dashboards.
+     *
+     * @return Response JSON mit Status-Übersicht und Zeitstempel
      */
     #[Route('/dashboard/refresh', name: 'app_dashboard_refresh', methods: ['GET'])]
     public function refresh(): Response

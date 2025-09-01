@@ -14,7 +14,10 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 class SecurityController extends AbstractController
 {
     /**
-     * Login-Seite anzeigen und Login-Versuche verarbeiten.
+     * Zeigt die Login-Seite und verarbeitet Login-Versuche.
+     *
+     * @param AuthenticationUtils $authenticationUtils Hilfsklasse für Authentifizierung
+     * @return Response Die gerenderte Login-Seite oder Redirect nach Erfolg
      */
     #[Route(path: '/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
@@ -37,7 +40,9 @@ class SecurityController extends AbstractController
     }
 
     /**
-     * Logout wird von Symfony Security automatisch verarbeitet.
+     * Logout-Endpunkt (wird von Symfony Security automatisch verarbeitet).
+     *
+     * @return void
      */
     #[Route(path: '/logout', name: 'app_logout')]
     public function logout(): void

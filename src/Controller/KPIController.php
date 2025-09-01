@@ -46,8 +46,10 @@ class KPIController extends AbstractController
     }
 
     /**
-     * Liste aller KPIs des Benutzers.
-     * Unterstützt optionale Sortierung nach verschiedenen Kriterien.
+     * Zeigt die Liste aller KPIs des Benutzers mit optionaler Sortierung.
+     *
+     * @param Request $request HTTP-Request mit Sortierparametern
+     * @return Response Die gerenderte KPI-Liste
      */
     #[Route('/', name: 'app_kpi_index', methods: ['GET'])]
     public function index(Request $request): Response
@@ -84,8 +86,10 @@ class KPIController extends AbstractController
     }
 
     /**
-     * Neue KPI erstellen
-     * User Story 3: Benutzer kann KPI anlegen.
+     * Erstellt eine neue KPI für den aktuellen Benutzer (User Story 3).
+     *
+     * @param Request $request HTTP-Request mit Formulardaten
+     * @return Response Die Seite zum Anlegen einer KPI oder Redirect nach Erfolg
      */
     #[Route('/new', name: 'app_kpi_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
@@ -114,7 +118,10 @@ class KPIController extends AbstractController
     }
 
     /**
-     * KPI-Details anzeigen mit Historie aller Werte.
+     * Zeigt die Details einer KPI inkl. Historie aller Werte.
+     *
+     * @param KPI $kpi Die zugehörige KPI-Entität
+     * @return Response Die gerenderte Detailseite
      */
     #[Route('/{id}', name: 'app_kpi_show', methods: ['GET'])]
     public function show(KPI $kpi): Response
@@ -133,7 +140,11 @@ class KPIController extends AbstractController
     }
 
     /**
-     * KPI bearbeiten.
+     * Bearbeitet eine bestehende KPI.
+     *
+     * @param Request $request HTTP-Request mit Formulardaten
+     * @param KPI $kpi Zu bearbeitende KPI
+     * @return Response Die Seite zum Bearbeiten oder Redirect nach Erfolg
      */
     #[Route('/{id}/edit', name: 'app_kpi_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, KPI $kpi): Response
@@ -158,7 +169,11 @@ class KPIController extends AbstractController
     }
 
     /**
-     * KPI löschen.
+     * Löscht eine KPI inkl. aller Werte.
+     *
+     * @param Request $request HTTP-Request mit CSRF-Token
+     * @param KPI $kpi Zu löschende KPI
+     * @return Response Redirect zur KPI-Liste
      */
     #[Route('/{id}/delete', name: 'app_kpi_delete', methods: ['POST'])]
     public function delete(Request $request, KPI $kpi): Response
@@ -177,8 +192,11 @@ class KPIController extends AbstractController
     }
 
     /**
-     * Neuen KPI-Wert erfassen
-     * User Story 5: Benutzer kann KPI-Werte erfassen.
+     * Erfasst einen neuen Wert für eine KPI (User Story 5).
+     *
+     * @param Request $request HTTP-Request mit Formulardaten
+     * @param KPI $kpi Die zugehörige KPI-Entität
+     * @return Response Die Seite zum Erfassen eines Wertes oder Redirect nach Erfolg
      */
     #[Route('/{id}/add-value', name: 'app_kpi_add_value', methods: ['GET', 'POST'])]
     public function addValue(Request $request, KPI $kpi): Response
@@ -230,8 +248,11 @@ class KPIController extends AbstractController
     }
 
     /**
-     * KPI-Wert bearbeiten
-     * User Story 8: KPI-Wertliste und nachträgliche Bearbeitung.
+     * Bearbeitet einen bestehenden KPI-Wert (User Story 8).
+     *
+     * @param Request $request HTTP-Request mit Formulardaten
+     * @param KPIValue $kpiValue Zu bearbeitender Wert
+     * @return Response Die Seite zum Bearbeiten oder Redirect nach Erfolg
      */
     #[Route('/value/{id}/edit', name: 'app_kpi_value_edit', methods: ['GET', 'POST'])]
     public function editValue(Request $request, KPIValue $kpiValue): Response
@@ -258,8 +279,11 @@ class KPIController extends AbstractController
     }
 
     /**
-     * KPI-Wert löschen
-     * User Story 8: KPI-Wertliste und nachträgliche Bearbeitung.
+     * Löscht einen KPI-Wert (User Story 8).
+     *
+     * @param Request $request HTTP-Request mit CSRF-Token
+     * @param KPIValue $kpiValue Zu löschender Wert
+     * @return Response Redirect zur KPI-Detailseite
      */
     #[Route('/value/{id}/delete', name: 'app_kpi_value_delete', methods: ['POST'])]
     public function deleteValue(Request $request, KPIValue $kpiValue): Response

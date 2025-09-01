@@ -14,6 +14,12 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/metrics')]
 class MetricsController extends AbstractController
 {
+    /**
+     * Liefert alle KPI-Werte als Prometheus-Metriken (nur für Admins).
+     *
+     * @param KPIValueRepository $repository Repository für KPI-Werte
+     * @return Response Text-Response mit Prometheus-Metriken
+     */
     #[Route('', name: 'app_metrics', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
     public function metrics(KPIValueRepository $repository): Response
