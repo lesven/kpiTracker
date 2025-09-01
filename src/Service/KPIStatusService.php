@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Domain\ValueObject\KpiInterval;
 use App\Entity\KPI;
 use App\Repository\KPIValueRepository;
 
@@ -77,9 +78,9 @@ class KPIStatusService
         $now = new \DateTimeImmutable();
 
         return match ($kpi->getInterval()) {
-            'weekly' => $this->getNextMonday($now),
-            'monthly' => $this->getFirstOfNextMonth($now),
-            'quarterly' => $this->getNextQuarterStart($now),
+            KpiInterval::WEEKLY => $this->getNextMonday($now),
+            KpiInterval::MONTHLY => $this->getFirstOfNextMonth($now),
+            KpiInterval::QUARTERLY => $this->getNextQuarterStart($now),
             default => $now->modify('+1 week'),
         };
     }

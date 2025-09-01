@@ -139,11 +139,7 @@
                     
                     <dt class="col-sm-5">Intervall:</dt>
                     <dd class="col-sm-7">
-                        <span class="badge bg-secondary">
-                            {% if kpi.interval == 'weekly' %}Wöchentlich
-                            {% elseif kpi.interval == 'monthly' %}Monatlich
-                            {% else %}Quartalsweise{% endif %}
-                        </span>
+                        <span class="badge bg-secondary">{{ kpi.interval.label }}</span>
                     </dd>
                     
                     {% if kpi.unit %}

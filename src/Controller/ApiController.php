@@ -38,6 +38,8 @@ class ApiController extends AbstractController
         return $this->json([
             'kpi' => $kpi->getName(),
             'unit' => $kpi->getUnit(),
+            'interval' => $kpi->getInterval()?->value,
+            'interval_label' => $kpi->getInterval()?->label(),
             'data' => $data,
         ]);
     }

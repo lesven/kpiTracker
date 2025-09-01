@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Domain\ValueObject\KpiInterval;
 use App\Entity\KPI;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -61,11 +62,11 @@ class KPIRepository extends ServiceEntityRepository
      *
      * @return KPI[]
      */
-    public function findByInterval(string $interval): array
+    public function findByInterval(KpiInterval $interval): array
     {
         return $this->createQueryBuilder('k')
             ->andWhere('k.interval = :interval')
-            ->setParameter('interval', $interval)
+            ->setParameter('interval', $interval->value)
             ->orderBy('k.name', 'ASC')
             ->getQuery()
             ->getResult();

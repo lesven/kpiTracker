@@ -32,9 +32,7 @@
                     <td>{{ kpi.name }}</td>
                     <td>{{ kpi.user.email }}</td>
                     <td>
-                        <span class="badge bg-secondary">
-                            {% if kpi.interval == 'weekly' %}Wöchentlich{% elseif kpi.interval == 'monthly' %}Monatlich{% else %}Quartalsweise{% endif %}
-                        </span>
+                        <span class="badge bg-secondary">{{ kpi.interval.label }}</span>
                     </td>
                     <td>{{ kpi.createdAt|date('d.m.Y') }}</td>
                     <td>

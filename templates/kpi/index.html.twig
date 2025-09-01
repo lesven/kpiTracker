@@ -37,7 +37,7 @@
                 <div class="card kpi-card h-100">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h6 class="mb-0 fw-bold">{{ kpi.name }}</h6>
-                        <span class="badge bg-secondary">{{ kpi.interval|trans }}</span>
+                        <span class="badge bg-secondary">{{ kpi.interval.label }}</span>
                     </div>
                     <div class="card-body">
                         {% if kpi.description %}
