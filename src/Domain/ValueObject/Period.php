@@ -59,7 +59,7 @@ final class Period
                 '10' => 'Oktober', '11' => 'November', '12' => 'Dezember',
             ];
 
-            return $monthNames[$month] ?? ('Monat '.$month).' '.$year;
+            return ($monthNames[$month] ?? 'Monat '.$month).' '.$year;
         }
 
         if (preg_match('/^(\d{4})-W(\d{2})$/', $this->value, $matches)) {
