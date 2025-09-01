@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Domain\ValueObject\DecimalValue;
 use App\Domain\ValueObject\KpiInterval;
 use App\Domain\ValueObject\Period;
 use App\Repository\KPIRepository;
@@ -105,17 +106,22 @@ class KPI
     private ?string $unit = null;
 
     /**
-     * Zielwert für den KPI als Decimal-String.
-     * Wird als String gespeichert um deutsche Zahlenformate zu unterstützen.
+     * Zielwert für den KPI.
      */
-    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    #[ORM\Embedded(class: DecimalValue::class, columnPrefix: false)]
+    #[ORM\AttributeOverrides([
+        new ORM\AttributeOverride(
+            name: 'value',
+            column: new ORM\Column(name: 'target', type: 'decimal', precision: 10, scale: 2, nullable: true)
+        ),
+    ])]
+    #[Assert\Valid]
     /**
-     * Zielwert für den KPI als Decimal-String.
-     * Wird als String gespeichert um deutsche Zahlenformate zu unterstützen.
+     * Zielwert für den KPI.
      *
-     * @var string|null
+     * @var \App\Domain\ValueObject\DecimalValue|null
      */
-    private ?string $target = null;
+    private ?DecimalValue $target = null;
 
     /**
      * Zeitpunkt der Erstellung des KPIs.
@@ -581,26 +587,23 @@ class KPI
      * Gibt den Zielwert als String zurück (wie in DB gespeichert).
      */
     /**
-     * Gibt den Zielwert als String zurück (wie in DB gespeichert).
+     * Gibt den Zielwert zurück.
      *
-     * @return string|null
+     * @return DecimalValue|null
      */
-    public function getTarget(): ?string
+    public function getTarget(): ?DecimalValue
     {
         return $this->target;
     }
 
     /**
      * Setzt den Zielwert des KPIs.
-     */
-    /**
-     * Setzt den Zielwert des KPIs.
      *
-     * @param string|null $target
+     * @param DecimalValue|null $target
      *
      * @return static
      */
-    public function setTarget(?string $target): static
+    public function setTarget(?DecimalValue $target): static
     {
         $this->target = $target;
 
@@ -609,26 +612,10 @@ class KPI
 
     /**
      * Gibt den Zielwert als Float zurück für Berechnungen.
-     * Unterstützt deutsche Zahlenformate (Komma als Dezimaltrennzeichen).
-     * Gibt null zurück bei ungültigen oder leeren Werten.
-     */
-    /**
-     * Gibt den Zielwert als Float zurück für Berechnungen.
-     * Unterstützt deutsche Zahlenformate (Komma als Dezimaltrennzeichen).
-     * Gibt null zurück bei ungültigen oder leeren Werten.
-     *
-     * @return float|null
      */
     public function getTargetAsFloat(): ?float
     {
-        if (empty($this->target)) {
-            return null;
-        }
-
-        // Komma durch Punkt ersetzen für deutsche Zahlenformate
-        $cleanTarget = str_replace(',', '.', $this->target);
-
-        return is_numeric($cleanTarget) ? (float) $cleanTarget : null;
+        return $this->target?->toFloat();
     }
 
     /**

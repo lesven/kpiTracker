@@ -31,7 +31,7 @@ class ApiController extends AbstractController
         foreach ($values as $value) {
             $data[] = [
                 'timestamp' => $value->getCreatedAt()->getTimestamp() * 1000,
-                'value' => (float) $value->getValue(),
+                'value' => $value->getValueAsFloat(),
                 'period' => $value->getPeriod()?->value(),
                 'formatted_period' => $value->getFormattedPeriod(),
             ];
