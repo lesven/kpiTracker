@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\String\Slugger\SluggerInterface;
+use App\Factory\KpiFileFactory;
 
 /**
  * Service für Datei-Upload-Handling
@@ -18,8 +18,8 @@ class FileUploadService
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private SluggerInterface $slugger,
         private LoggerInterface $logger,
+        private KpiFileFactory $kpiFileFactory,
         private string $uploadDirectory = 'uploads/',
     ) {
     }
@@ -63,7 +63,8 @@ class FileUploadService
                     continue;
                 }
 
-                $kpiFile = $this->processUpload($uploadedFile, $kpiValue);
+                $kpiFile = $this->kpiFileFactory->createFromUpload($uploadedFile, $kpiValue);
+                $this->entityManager->persist($kpiFile);
                 ++$stats['uploaded'];
 
                 $this->logger->info('File uploaded successfully', [
@@ -83,41 +84,6 @@ class FileUploadService
         }
 
         return $stats;
-    }
-
-    /**
-     * Verarbeitet einen einzelnen Datei-Upload.
-     */
-    private function processUpload(UploadedFile $uploadedFile, KPIValue $kpiValue): KPIFile
-    {
-        // Sicheren Dateinamen generieren
-        $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
-        $safeFilename = $this->slugger->slug($originalFilename);
-        $fileName = $safeFilename.'-'.uniqid().'.'.$uploadedFile->guessExtension();
-
-        // Vollständigen Upload-Pfad erstellen
-        $uploadPath = $this->getUploadDirectory();
-
-        // Verzeichnis erstellen falls nicht vorhanden
-        if (!is_dir($uploadPath)) {
-            mkdir($uploadPath, 0755, true);
-        }
-
-        // Datei verschieben
-        $uploadedFile->move($uploadPath, $fileName);
-
-        // KPIFile Entity erstellen
-        $kpiFile = new KPIFile();
-        $kpiFile->setFilename($fileName);
-        $kpiFile->setOriginalName($uploadedFile->getClientOriginalName());
-        $kpiFile->setMimeType($uploadedFile->getMimeType());
-        $kpiFile->setFileSize($uploadedFile->getSize());
-        $kpiFile->setKpiValue($kpiValue);
-
-        // In Datenbank speichern
-        $this->entityManager->persist($kpiFile);
-
-        return $kpiFile;
     }
 
     /**
