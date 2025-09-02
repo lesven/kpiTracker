@@ -2,10 +2,9 @@
 
 namespace App\Service;
 
+use App\Factory\MailerFactory;
 use App\Repository\MailSettingsRepository;
-use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mime\Email;
 
 /**
@@ -17,11 +16,20 @@ class ConfigurableMailer
 {
     public function __construct(
         private MailSettingsRepository $settingsRepository,
-        private MailerInterface $defaultMailer,
+        private MailerFactory $mailerFactory,
     ) {
     }
 
     public function send(Email $email): void
+    {
+        $mailer = $this->getConfiguredMailer();
+        $mailer->send($email);
+    }
+
+    /**
+     * Ermittelt den zu verwendenden Mailer basierend auf verfügbaren Einstellungen.
+     */
+    private function getConfiguredMailer(): MailerInterface
     {
         // Versuche zuerst Default-Konfiguration zu finden
         $settings = $this->settingsRepository->findOneBy(['isDefault' => true]);
@@ -33,29 +41,9 @@ class ConfigurableMailer
 
         // Falls gar keine Konfiguration vorhanden, verwende Standard-Mailer
         if (!$settings) {
-            $this->defaultMailer->send($email);
-
-            return;
+            return $this->mailerFactory->createDefault();
         }
 
-        $dsn = sprintf(
-            'smtp://%s:%s@%s:%d',
-            rawurlencode($settings->getUsername()?->getValue() ?? ''),
-            rawurlencode($settings->getPassword() ?? ''),
-            $settings->getHost(),
-            $settings->getPort()
-        );
-
-        if ($settings->isIgnoreCertificate()) {
-            // Log a warning about the security implications of ignoring certificates
-            trigger_error(
-                'Ignoring certificate validation creates a security risk. Consider using proper certificate validation.',
-                E_USER_WARNING
-            );
-        }
-
-        $transport = Transport::fromDsn($dsn);
-        $mailer = new Mailer($transport);
-        $mailer->send($email);
+        return $this->mailerFactory->createFromSettings($settings);
     }
 }

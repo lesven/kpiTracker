@@ -2,6 +2,7 @@
 
 namespace App\Tests\Service;
 
+use App\Factory\MailerFactory;
 use App\Repository\MailSettingsRepository;
 use App\Service\ConfigurableMailer;
 use PHPUnit\Framework\TestCase;
@@ -14,14 +15,18 @@ class ConfigurableMailerTest extends TestCase
     {
         $settingsRepo = $this->createMock(MailSettingsRepository::class);
         $defaultMailer = $this->createMock(MailerInterface::class);
+        $mailerFactory = $this->createMock(MailerFactory::class);
         $email = $this->createMock(Email::class);
 
         $settingsRepo->method('findOneBy')->willReturn(null);
+        $mailerFactory->expects($this->once())
+            ->method('createDefault')
+            ->willReturn($defaultMailer);
         $defaultMailer->expects($this->once())
             ->method('send')
             ->with($email);
 
-        $mailer = new ConfigurableMailer($settingsRepo, $defaultMailer);
+        $mailer = new ConfigurableMailer($settingsRepo, $mailerFactory);
         $mailer->send($email);
     }
 
@@ -29,6 +34,7 @@ class ConfigurableMailerTest extends TestCase
     {
         $settingsRepo = $this->createMock(MailSettingsRepository::class);
         $defaultMailer = $this->createMock(MailerInterface::class);
+        $mailerFactory = $this->createMock(MailerFactory::class);
         $email = $this->createMock(Email::class);
 
         // Zuerst null für isDefault = true, dann null für alle Settings
@@ -38,11 +44,14 @@ class ConfigurableMailerTest extends TestCase
                 return null;
             });
 
+        $mailerFactory->expects($this->once())
+            ->method('createDefault')
+            ->willReturn($defaultMailer);
         $defaultMailer->expects($this->once())
             ->method('send')
             ->with($email);
 
-        $mailer = new ConfigurableMailer($settingsRepo, $defaultMailer);
+        $mailer = new ConfigurableMailer($settingsRepo, $mailerFactory);
         $mailer->send($email);
     }
 }
