@@ -212,8 +212,7 @@ class KPIController extends AbstractController
         $this->denyAccessUnlessGranted('add_value', $kpi);
 
         $kpiValue = $this->kpiValueFactory->create($kpi);
-
-        // Aktuellen Zeitraum wird bereits im Factory gesetzt
+        $currentPeriod = $kpiValue->getPeriod();
 
         $form = $this->createForm(KPIValueType::class, $kpiValue);
         $form->handleRequest($request);
