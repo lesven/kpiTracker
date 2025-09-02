@@ -4,8 +4,8 @@ namespace App\Tests\Integration\ValueObject;
 
 use App\Domain\ValueObject\KpiInterval;
 use App\Domain\ValueObject\EmailAddress;
-use App\Entity\KPI;
 use App\Entity\User;
+use App\Factory\KPIFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -34,10 +34,9 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');
-
-        $kpi = new KPI();
+        $kpiFactory = new KPIFactory();
+        $kpi = $kpiFactory->createForUser($user);
         $kpi->setName('Test KPI');
-        $kpi->setUser($user);
         $kpi->setInterval(KpiInterval::WEEKLY);
 
         $this->assertSame(KpiInterval::WEEKLY, $kpi->getInterval());
@@ -56,6 +55,8 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         $user->setFirstName('Test');
         $user->setLastName('User');
 
+        $kpiFactory = new KPIFactory();
+
         $intervals = [
             KpiInterval::WEEKLY,
             KpiInterval::MONTHLY,
@@ -63,9 +64,8 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         ];
 
         foreach ($intervals as $interval) {
-            $kpi = new KPI();
+            $kpi = $kpiFactory->createForUser($user);
             $kpi->setName('Test KPI '.$interval->value);
-            $kpi->setUser($user);
             $kpi->setInterval($interval);
 
             $this->assertSame($interval, $kpi->getInterval());
@@ -83,29 +83,27 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');
+        $kpiFactory = new KPIFactory();
 
         // Weekly KPI
-        $weeklyKpi = new KPI();
+        $weeklyKpi = $kpiFactory->createForUser($user);
         $weeklyKpi->setName('Weekly KPI');
-        $weeklyKpi->setUser($user);
         $weeklyKpi->setInterval(KpiInterval::WEEKLY);
 
         $weeklyPeriod = $weeklyKpi->getCurrentPeriod();
         $this->assertMatchesRegularExpression('/^\d{4}-W\d{2}$/', (string) $weeklyPeriod); // Format: YYYY-WXX
 
         // Monthly KPI
-        $monthlyKpi = new KPI();
+        $monthlyKpi = $kpiFactory->createForUser($user);
         $monthlyKpi->setName('Monthly KPI');
-        $monthlyKpi->setUser($user);
         $monthlyKpi->setInterval(KpiInterval::MONTHLY);
 
         $monthlyPeriod = $monthlyKpi->getCurrentPeriod();
         $this->assertMatchesRegularExpression('/^\d{4}-\d{2}$/', $monthlyPeriod);
 
         // Quarterly KPI
-        $quarterlyKpi = new KPI();
+        $quarterlyKpi = $kpiFactory->createForUser($user);
         $quarterlyKpi->setName('Quarterly KPI');
-        $quarterlyKpi->setUser($user);
         $quarterlyKpi->setInterval(KpiInterval::QUARTERLY);
 
         $quarterlyPeriod = $quarterlyKpi->getCurrentPeriod();
@@ -122,6 +120,7 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');
+        $kpiFactory = new KPIFactory();
 
         $intervals = [
             KpiInterval::WEEKLY,
@@ -130,9 +129,8 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         ];
 
         foreach ($intervals as $interval) {
-            $kpi = new KPI();
+            $kpi = $kpiFactory->createForUser($user);
             $kpi->setName('Test KPI '.$interval->value);
-            $kpi->setUser($user);
             $kpi->setInterval($interval);
 
             $dueDate = $kpi->getNextDueDate();
@@ -152,10 +150,9 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');
-
-        $kpi = new KPI();
+        $kpiFactory = new KPIFactory();
+        $kpi = $kpiFactory->createForUser($user);
         $kpi->setName('Test KPI');
-        $kpi->setUser($user);
         $kpi->setInterval(KpiInterval::MONTHLY);
 
         $data = [
@@ -182,27 +179,25 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');
+        $kpiFactory = new KPIFactory();
 
         // Teste, dass weekly tatsächlich wöchentliche Formate erzeugt (Format: YYYY-WXX)
-        $weeklyKpi = new KPI();
+        $weeklyKpi = $kpiFactory->createForUser($user);
         $weeklyKpi->setName('Weekly KPI');
-        $weeklyKpi->setUser($user);
         $weeklyKpi->setInterval(KpiInterval::WEEKLY);
         $weeklyPeriod = $weeklyKpi->getCurrentPeriod();
         $this->assertMatchesRegularExpression('/^\d{4}-W\d{2}$/', (string) $weeklyPeriod);
 
         // Teste, dass monthly monatliche Formate erzeugt (Format: YYYY-MM)
-        $monthlyKpi = new KPI();
+        $monthlyKpi = $kpiFactory->createForUser($user);
         $monthlyKpi->setName('Monthly KPI');
-        $monthlyKpi->setUser($user);
         $monthlyKpi->setInterval(KpiInterval::MONTHLY);
         $monthlyPeriod = $monthlyKpi->getCurrentPeriod();
         $this->assertMatchesRegularExpression('/^\d{4}-\d{1,2}$/', (string) $monthlyPeriod);
 
         // Teste, dass quarterly quartalsweise Formate erzeugt (Format: YYYY-QX)
-        $quarterlyKpi = new KPI();
+        $quarterlyKpi = $kpiFactory->createForUser($user);
         $quarterlyKpi->setName('Quarterly KPI');
-        $quarterlyKpi->setUser($user);
         $quarterlyKpi->setInterval(KpiInterval::QUARTERLY);
         $quarterlyPeriod = $quarterlyKpi->getCurrentPeriod();
         $this->assertStringContainsString('Q', (string) $quarterlyPeriod);
@@ -219,10 +214,10 @@ class KpiIntervalIntegrationTest extends KernelTestCase
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');
+        $kpiFactory = new KPIFactory();
 
-        $kpi = new KPI();
+        $kpi = $kpiFactory->createForUser($user);
         $kpi->setName('Test KPI');
-        $kpi->setUser($user);
 
         // Test mit verschiedenen Intervallen
         foreach (KpiInterval::cases() as $interval) {
