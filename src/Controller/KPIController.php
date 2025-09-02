@@ -6,6 +6,8 @@ use App\Entity\KPI;
 use App\Entity\KPIValue;
 use App\Domain\ValueObject\Period;
 use App\Entity\User;
+use App\Factory\KPIFactory;
+use App\Factory\KPIValueFactory;
 use App\Form\KPIType;
 use App\Form\KPIValueType;
 use App\Repository\KPIRepository;
@@ -43,6 +45,8 @@ class KPIController extends AbstractController
         private KPIValueRepository $kpiValueRepository,
         private KPIService $kpiService,
         private KPIValueService $kpiValueService,
+        private KPIFactory $kpiFactory,
+        private KPIValueFactory $kpiValueFactory,
     ) {
     }
 
@@ -97,15 +101,13 @@ class KPIController extends AbstractController
     #[Route('/new', name: 'app_kpi_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
-        $kpi = new KPI();
+        /** @var User $user */
+        $user = $this->getUser();
+        $kpi = $this->kpiFactory->createForUser($user);
         $form = $this->createForm(KPIType::class, $kpi);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var User $user */
-            $user = $this->getUser();
-            $kpi->setUser($user);
-
             $this->entityManager->persist($kpi);
             $this->entityManager->flush();
 
@@ -210,12 +212,10 @@ class KPIController extends AbstractController
     {
         $this->denyAccessUnlessGranted('add_value', $kpi);
 
-        $kpiValue = new KPIValue();
-        $kpiValue->setKpi($kpi);
+        $kpiValue = $this->kpiValueFactory->create($kpi);
 
         // Aktuellen Zeitraum als Standardwert vorschlagen
-        $currentPeriod = $kpi->getCurrentPeriod();
-        $kpiValue->setPeriod($currentPeriod);
+        $currentPeriod = $kpiValue->getPeriod();
 
         $form = $this->createForm(KPIValueType::class, $kpiValue);
         $form->handleRequest($request);
