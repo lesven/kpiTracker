@@ -6,9 +6,9 @@ use App\Domain\ValueObject\DecimalValue;
 use App\Domain\ValueObject\KpiInterval;
 use App\Domain\ValueObject\Period;
 use App\Domain\ValueObject\EmailAddress;
-use App\Entity\KPI;
-use App\Entity\KPIValue;
 use App\Entity\User;
+use App\Factory\KPIFactory;
+use App\Factory\KPIValueFactory;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -26,18 +26,18 @@ class DecimalValueFunctionalTest extends TestCase
         $user->setFirstName('Functional');
         $user->setLastName('Test');
 
+        $kpiFactory = new KPIFactory();
+        $kpiValueFactory = new KPIValueFactory();
+
         // Create KPI with DecimalValue target
-        $kpi = new KPI();
+        $kpi = $kpiFactory->createForUser($user);
         $kpi->setName('Functional Test KPI');
-        $kpi->setUser($user);
         $kpi->setInterval(KpiInterval::MONTHLY);
         $kpi->setTarget(new DecimalValue('5000,00'));
 
         // Create KPIValue with DecimalValue
-        $kpiValue = new KPIValue();
-        $kpiValue->setKpi($kpi);
+        $kpiValue = $kpiValueFactory->create($kpi, new Period('2024-09'));
         $kpiValue->setValue(new DecimalValue('4750,25'));
-        $kpiValue->setPeriod(new Period('2024-09'));
         $kpiValue->setComment('Functional test value');
 
         // Test value functionality (without database persistence)
@@ -91,16 +91,16 @@ class DecimalValueFunctionalTest extends TestCase
         $user->setFirstName('Test');
         $user->setLastName('User');
 
-        $kpi = new KPI();
+        $kpiFactory = new KPIFactory();
+        $kpiValueFactory = new KPIValueFactory();
+
+        $kpi = $kpiFactory->createForUser($user);
         $kpi->setName('Test KPI');
-        $kpi->setUser($user);
         $kpi->setInterval(KpiInterval::WEEKLY);
         $kpi->setTarget(new DecimalValue('2500,50'));
 
-        $kpiValue = new KPIValue();
-        $kpiValue->setKpi($kpi);
+        $kpiValue = $kpiValueFactory->create($kpi, new Period('2024-W36'));
         $kpiValue->setValue(new DecimalValue('2300,25'));
-        $kpiValue->setPeriod(new Period('2024-W36'));
 
         // Test bidirectional relationships
         $this->assertSame($kpi, $kpiValue->getKpi());

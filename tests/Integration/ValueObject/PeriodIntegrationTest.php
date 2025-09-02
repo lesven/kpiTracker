@@ -6,9 +6,9 @@ use App\Domain\ValueObject\DecimalValue;
 use App\Domain\ValueObject\EmailAddress;
 use App\Domain\ValueObject\KpiInterval;
 use App\Domain\ValueObject\Period;
-use App\Entity\KPI;
-use App\Entity\KPIValue;
 use App\Entity\User;
+use App\Factory\KPIFactory;
+use App\Factory\KPIValueFactory;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -26,17 +26,17 @@ class PeriodIntegrationTest extends TestCase
         $user->setFirstName('Period');
         $user->setLastName('Test');
 
-        $kpi = new KPI();
+        $kpiFactory = new KPIFactory();
+        $kpiValueFactory = new KPIValueFactory();
+
+        $kpi = $kpiFactory->createForUser($user);
         $kpi->setName('Period Integration KPI');
-        $kpi->setUser($user);
         $kpi->setInterval(KpiInterval::MONTHLY);
 
         // Test Period integration with KPIValue
         $period = new Period('2024-09');
-        $kpiValue = new KPIValue();
-        $kpiValue->setKpi($kpi);
+        $kpiValue = $kpiValueFactory->create($kpi, $period);
         $kpiValue->setValue(new DecimalValue('1500,50'));
-        $kpiValue->setPeriod($period);
 
         // Test Period methods
         $this->assertSame('2024-09', $kpiValue->getPeriod()->value());
@@ -53,41 +53,35 @@ class PeriodIntegrationTest extends TestCase
         $user->setLastName('Test');
 
         // Test monthly KPI with monthly period
-        $monthlyKpi = new KPI();
+        $kpiFactory = new KPIFactory();
+        $kpiValueFactory = new KPIValueFactory();
+
+        $monthlyKpi = $kpiFactory->createForUser($user);
         $monthlyKpi->setName('Monthly KPI');
-        $monthlyKpi->setUser($user);
         $monthlyKpi->setInterval(KpiInterval::MONTHLY);
 
-        $monthlyValue = new KPIValue();
-        $monthlyValue->setKpi($monthlyKpi);
+        $monthlyValue = $kpiValueFactory->create($monthlyKpi, new Period('2024-06'));
         $monthlyValue->setValue(new DecimalValue('1000'));
-        $monthlyValue->setPeriod(new Period('2024-06'));
 
         $this->assertSame('Juni 2024', $monthlyValue->getFormattedPeriod());
 
         // Test weekly KPI with weekly period
-        $weeklyKpi = new KPI();
+        $weeklyKpi = $kpiFactory->createForUser($user);
         $weeklyKpi->setName('Weekly KPI');
-        $weeklyKpi->setUser($user);
         $weeklyKpi->setInterval(KpiInterval::WEEKLY);
 
-        $weeklyValue = new KPIValue();
-        $weeklyValue->setKpi($weeklyKpi);
+        $weeklyValue = $kpiValueFactory->create($weeklyKpi, new Period('2024-W25'));
         $weeklyValue->setValue(new DecimalValue('250'));
-        $weeklyValue->setPeriod(new Period('2024-W25'));
 
         $this->assertSame('KW 25/2024', $weeklyValue->getFormattedPeriod());
 
         // Test quarterly KPI with quarterly period
-        $quarterlyKpi = new KPI();
+        $quarterlyKpi = $kpiFactory->createForUser($user);
         $quarterlyKpi->setName('Quarterly KPI');
-        $quarterlyKpi->setUser($user);
         $quarterlyKpi->setInterval(KpiInterval::QUARTERLY);
 
-        $quarterlyValue = new KPIValue();
-        $quarterlyValue->setKpi($quarterlyKpi);
+        $quarterlyValue = $kpiValueFactory->create($quarterlyKpi, new Period('2024-Q2'));
         $quarterlyValue->setValue(new DecimalValue('5000'));
-        $quarterlyValue->setPeriod(new Period('2024-Q2'));
 
         $this->assertSame('Q2 2024', $quarterlyValue->getFormattedPeriod());
     }
@@ -101,9 +95,10 @@ class PeriodIntegrationTest extends TestCase
         $user->setLastName('Test');
 
         // Test current period generation for different intervals
-        $monthlyKpi = new KPI();
+        $kpiFactory = new KPIFactory();
+
+        $monthlyKpi = $kpiFactory->createForUser($user);
         $monthlyKpi->setName('Monthly KPI');
-        $monthlyKpi->setUser($user);
         $monthlyKpi->setInterval(KpiInterval::MONTHLY);
 
         $currentPeriod = $monthlyKpi->getCurrentPeriod();
@@ -111,9 +106,8 @@ class PeriodIntegrationTest extends TestCase
         $this->assertMatchesRegularExpression('/^\d{4}-\d{1,2}$/', $currentPeriod->value());
 
         // Test weekly interval
-        $weeklyKpi = new KPI();
+        $weeklyKpi = $kpiFactory->createForUser($user);
         $weeklyKpi->setName('Weekly KPI');
-        $weeklyKpi->setUser($user);
         $weeklyKpi->setInterval(KpiInterval::WEEKLY);
 
         $currentWeeklyPeriod = $weeklyKpi->getCurrentPeriod();
@@ -121,9 +115,8 @@ class PeriodIntegrationTest extends TestCase
         $this->assertMatchesRegularExpression('/^\d{4}-W\d{1,2}$/', $currentWeeklyPeriod->value());
 
         // Test quarterly interval
-        $quarterlyKpi = new KPI();
+        $quarterlyKpi = $kpiFactory->createForUser($user);
         $quarterlyKpi->setName('Quarterly KPI');
-        $quarterlyKpi->setUser($user);
         $quarterlyKpi->setInterval(KpiInterval::QUARTERLY);
 
         $currentQuarterlyPeriod = $quarterlyKpi->getCurrentPeriod();
@@ -193,13 +186,14 @@ class PeriodIntegrationTest extends TestCase
         $user->setFirstName('Validation');
         $user->setLastName('Test');
 
-        $kpi = new KPI();
+        $kpiFactory = new KPIFactory();
+        $kpiValueFactory = new KPIValueFactory();
+
+        $kpi = $kpiFactory->createForUser($user);
         $kpi->setName('Validation KPI');
-        $kpi->setUser($user);
         $kpi->setInterval(KpiInterval::MONTHLY);
 
-        $kpiValue = new KPIValue();
-        $kpiValue->setKpi($kpi);
+        $kpiValue = $kpiValueFactory->create($kpi);
         $kpiValue->setValue(new DecimalValue('1000'));
 
         // Test that invalid period construction throws exception

@@ -6,9 +6,9 @@ use App\Domain\ValueObject\DecimalValue;
 use App\Domain\ValueObject\KpiInterval;
 use App\Domain\ValueObject\Period;
 use App\Domain\ValueObject\EmailAddress;
-use App\Entity\KPI;
-use App\Entity\KPIValue;
 use App\Entity\User;
+use App\Factory\KPIFactory;
+use App\Factory\KPIValueFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -34,10 +34,9 @@ class DecimalValueIntegrationTest extends KernelTestCase
         $user->setFirstName('Test');
         $user->setLastName('User');
 
-        // Create KPI with DecimalValue target
-        $kpi = new KPI();
+        $kpiFactory = new KPIFactory();
+        $kpi = $kpiFactory->createForUser($user);
         $kpi->setName('Test KPI with DecimalValue');
-        $kpi->setUser($user);
         $kpi->setInterval(KpiInterval::MONTHLY);
         $kpi->setTarget(new DecimalValue('1000,50'));
 
@@ -47,7 +46,7 @@ class DecimalValueIntegrationTest extends KernelTestCase
         $this->assertSame('1000,50', $kpi->getTarget()->format());
 
         // Persist entities (not actually saving to DB in unit test)
-        $this->assertInstanceOf(KPI::class, $kpi);
+        $this->assertInstanceOf(\App\Entity\KPI::class, $kpi);
     }
 
     public function testDecimalValueInKPIValueEntity(): void
@@ -58,17 +57,16 @@ class DecimalValueIntegrationTest extends KernelTestCase
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');
+        $kpiFactory = new KPIFactory();
+        $kpiValueFactory = new KPIValueFactory();
 
-        $kpi = new KPI();
+        $kpi = $kpiFactory->createForUser($user);
         $kpi->setName('Test KPI');
-        $kpi->setUser($user);
         $kpi->setInterval(KpiInterval::MONTHLY);
 
         // Create KPIValue with DecimalValue
-        $kpiValue = new KPIValue();
-        $kpiValue->setKpi($kpi);
+        $kpiValue = $kpiValueFactory->create($kpi, new Period('2024-09'));
         $kpiValue->setValue(new DecimalValue('2500,75'));
-        $kpiValue->setPeriod(new Period('2024-09'));
 
         // Test value functionality
         $this->assertInstanceOf(DecimalValue::class, $kpiValue->getValue());
@@ -88,16 +86,16 @@ class DecimalValueIntegrationTest extends KernelTestCase
         $user->setFirstName('Test');
         $user->setLastName('User');
 
-        $kpi = new KPI();
+        $kpiFactory = new KPIFactory();
+        $kpiValueFactory = new KPIValueFactory();
+
+        $kpi = $kpiFactory->createForUser($user);
         $kpi->setName('Test KPI');
-        $kpi->setUser($user);
         $kpi->setInterval(KpiInterval::MONTHLY);
 
         // Test negative value
-        $kpiValue = new KPIValue();
-        $kpiValue->setKpi($kpi);
+        $kpiValue = $kpiValueFactory->create($kpi, new Period('2024-08'));
         $kpiValue->setValue(new DecimalValue('-150,25'));
-        $kpiValue->setPeriod(new Period('2024-08'));
 
         $this->assertSame(-150.25, $kpiValue->getValueAsFloat());
         $this->assertSame('-150,25', $kpiValue->getValue()->format());
@@ -111,10 +109,11 @@ class DecimalValueIntegrationTest extends KernelTestCase
         $user->setFirstName('Test');
         $user->setLastName('User');
 
+        $kpiFactory = new KPIFactory();
+
         // KPI without target (nullable)
-        $kpi = new KPI();
+        $kpi = $kpiFactory->createForUser($user);
         $kpi->setName('Test KPI without target');
-        $kpi->setUser($user);
         $kpi->setInterval(KpiInterval::MONTHLY);
         // $kpi->setTarget(null); // Explicitly null
 
@@ -153,15 +152,15 @@ class DecimalValueIntegrationTest extends KernelTestCase
         $user->setFirstName('Test');
         $user->setLastName('User');
 
-        $kpi = new KPI();
+        $kpiFactory = new KPIFactory();
+        $kpiValueFactory = new KPIValueFactory();
+
+        $kpi = $kpiFactory->createForUser($user);
         $kpi->setName('Revenue KPI');
-        $kpi->setUser($user);
         $kpi->setInterval(KpiInterval::MONTHLY);
 
-        $kpiValue = new KPIValue();
-        $kpiValue->setKpi($kpi);
+        $kpiValue = $kpiValueFactory->create($kpi, new Period('2024-09'));
         $kpiValue->setValue(new DecimalValue('5000,00'));
-        $kpiValue->setPeriod(new Period('2024-09'));
 
         $stringRepresentation = (string) $kpiValue;
         
