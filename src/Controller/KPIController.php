@@ -214,8 +214,7 @@ class KPIController extends AbstractController
 
         $kpiValue = $this->kpiValueFactory->create($kpi);
 
-        // Aktuellen Zeitraum als Standardwert vorschlagen
-        $currentPeriod = $kpiValue->getPeriod();
+    // Aktuellen Zeitraum wird bereits im Factory gesetzt
 
         $form = $this->createForm(KPIValueType::class, $kpiValue);
         $form->handleRequest($request);
