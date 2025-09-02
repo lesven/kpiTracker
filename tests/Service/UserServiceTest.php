@@ -4,6 +4,7 @@ namespace App\Tests\Service;
 
 use App\Entity\User;
 use App\Service\UserService;
+use App\Domain\ValueObject\EmailAddress;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -15,7 +16,7 @@ class UserServiceTest extends TestCase
         $em = $this->createMock(EntityManagerInterface::class);
         $logger = $this->createMock(LoggerInterface::class);
         $user = $this->createMock(User::class);
-        $user->method('getEmail')->willReturn('test@example.com');
+        $user->method('getEmail')->willReturn(new EmailAddress('test@example.com'));
         $user->method('getId')->willReturn(1);
         $calls = [];
         $logger->method('info')->willReturnCallback(function ($msg, $context) use (&$calls) {
@@ -44,7 +45,7 @@ class UserServiceTest extends TestCase
         $user = $this->createMock(User::class);
 
         $user->method('getKpis')->willReturn(new \Doctrine\Common\Collections\ArrayCollection([]));
-        $user->method('getEmail')->willReturn('test@example.com');
+        $user->method('getEmail')->willReturn(new EmailAddress('test@example.com'));
         $user->method('getCreatedAt')->willReturn(new \DateTimeImmutable());
 
         $service = new UserService($em, $logger);

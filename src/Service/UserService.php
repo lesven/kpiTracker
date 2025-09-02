@@ -28,7 +28,7 @@ class UserService
      */
     public function deleteUserWithData(User $user): void
     {
-        $userEmail = $user->getEmail();
+        $userEmail = $user->getEmail()->getValue();
         $userId = $user->getId();
 
         $this->logger->info('Starting GDPR-compliant user deletion', [
@@ -121,7 +121,7 @@ class UserService
     public function getUserDeletionStats(User $user): array
     {
         $stats = [
-            'email' => $user->getEmail(),
+            'email' => $user->getEmail()->getValue(),
             'created_at' => $user->getCreatedAt(),
             'kpi_count' => 0,
             'value_count' => 0,

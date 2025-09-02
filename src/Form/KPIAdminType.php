@@ -29,7 +29,7 @@ class KPIAdminType extends AbstractType
             ->add('user', EntityType::class, [
                 'class' => User::class,
                 'choice_label' => function (User $user) {
-                    return $user->getEmail().' ('.$user->getFirstName().' '.$user->getLastName().')';
+                    return $user->getEmail()->getValue().' ('.$user->getFirstName().' '.$user->getLastName().')';
                 },
                 'label' => 'Benutzer',
                 'attr' => [

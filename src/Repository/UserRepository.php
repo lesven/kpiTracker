@@ -45,7 +45,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function findByEmail(string $email): ?User
     {
         return $this->createQueryBuilder('u')
-            ->andWhere('u.email = :email')
+            ->andWhere('u.email.value = :email')
             ->setParameter('email', $email)
             ->getQuery()
             ->getOneOrNullResult();
@@ -61,7 +61,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $this->createQueryBuilder('u')
             ->andWhere('u.roles LIKE :role')
             ->setParameter('role', '%'.User::ROLE_ADMIN.'%')
-            ->orderBy('u.email', 'ASC')
+            ->orderBy('u.email.value', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -76,7 +76,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $this->createQueryBuilder('u')
             ->andWhere('u.roles NOT LIKE :role OR u.roles IS NULL')
             ->setParameter('role', '%'.User::ROLE_ADMIN.'%')
-            ->orderBy('u.email', 'ASC')
+            ->orderBy('u.email.value', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -89,9 +89,9 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function findByEmailLike(string $searchTerm): array
     {
         return $this->createQueryBuilder('u')
-            ->andWhere('u.email LIKE :term')
+            ->andWhere('u.email.value LIKE :term')
             ->setParameter('term', '%'.$searchTerm.'%')
-            ->orderBy('u.email', 'ASC')
+            ->orderBy('u.email.value', 'ASC')
             ->setMaxResults(20)
             ->getQuery()
             ->getResult();

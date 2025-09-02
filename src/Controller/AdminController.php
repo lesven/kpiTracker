@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\KPI;
 use App\Entity\User;
+use App\Domain\ValueObject\EmailAddress;
 use App\Form\KPIAdminType;
 use App\Form\MailSettingsType;
 use App\Form\UserType;
@@ -85,7 +86,7 @@ class AdminController extends AbstractController
             $plainPassword = $form->get('plainPassword')->getData();
             $this->adminService->createUser($user, $plainPassword);
 
-            $this->addFlash('success', 'Benutzer "'.$user->getEmail().'" wurde erfolgreich erstellt.');
+            $this->addFlash('success', 'Benutzer "'.$user->getEmail()->getValue().'" wurde erfolgreich erstellt.');
 
             return $this->redirectToRoute('app_admin_users');
         }
@@ -144,7 +145,7 @@ class AdminController extends AbstractController
                 return $this->redirectToRoute('app_admin_users');
             }
 
-            $email = $user->getEmail();
+            $email = $user->getEmail()->getValue();
             $this->userService->deleteUserWithData($user);
 
             $this->addFlash('success', 'Benutzer "'.$email.'" und alle zugehörigen Daten wurden DSGVO-konform gelöscht.');
@@ -201,7 +202,7 @@ class AdminController extends AbstractController
             $this->entityManager->persist($kpi);
             $this->entityManager->flush();
 
-            $this->addFlash('success', 'KPI "'.$kpi->getName().'" wurde für '.$kpi->getUser()->getEmail().' erstellt.');
+            $this->addFlash('success', 'KPI "'.$kpi->getName().'" wurde für '.$kpi->getUser()->getEmail()->getValue().' erstellt.');
 
             return $this->redirectToRoute('app_admin_kpis');
         }
@@ -253,7 +254,7 @@ class AdminController extends AbstractController
     {
         if ($this->isCsrfTokenValid('delete'.$kpi->getId(), $request->request->get('_token'))) {
             $kpiName = $kpi->getName();
-            $userEmail = $kpi->getUser()->getEmail();
+            $userEmail = $kpi->getUser()->getEmail()->getValue();
 
             $this->entityManager->remove($kpi);
             $this->entityManager->flush();
@@ -308,24 +309,25 @@ class AdminController extends AbstractController
         if ($request->isMethod('POST')) {
             $testEmail = $request->request->get('test_email', '');
 
-            if (filter_var($testEmail, FILTER_VALIDATE_EMAIL)) {
-                try {
-                    $success = $this->adminService->sendTestReminder($testEmail);
+            try {
+                // Verwende EmailAddress Value Object für Validierung
+                $emailAddress = new EmailAddress($testEmail);
+                
+                $success = $this->adminService->sendTestReminder($emailAddress->getValue());
 
-                    if ($success) {
-                        $this->addFlash('success', "Test-E-Mail wurde erfolgreich an {$testEmail} gesendet. Überprüfen Sie MailHog unter http://localhost:8025");
-                        $result = ['success' => true, 'email' => $testEmail];
-                    } else {
-                        $this->addFlash('error', 'Fehler beim Senden der Test-E-Mail. Überprüfen Sie die Logs.');
-                        $result = ['success' => false, 'email' => $testEmail];
-                    }
-                } catch (\Exception $e) {
-                    $this->addFlash('error', 'Fehler: '.$e->getMessage());
-                    $result = ['success' => false, 'email' => $testEmail, 'error' => $e->getMessage()];
+                if ($success) {
+                    $this->addFlash('success', "Test-E-Mail wurde erfolgreich an {$emailAddress->getValue()} gesendet. Überprüfen Sie MailHog unter http://localhost:8025");
+                    $result = ['success' => true, 'email' => $emailAddress->getValue()];
+                } else {
+                    $this->addFlash('error', 'Fehler beim Senden der Test-E-Mail. Überprüfen Sie die Logs.');
+                    $result = ['success' => false, 'email' => $emailAddress->getValue()];
                 }
-            } else {
-                $this->addFlash('error', 'Bitte geben Sie eine gültige E-Mail-Adresse ein.');
-                $result = ['success' => false, 'email' => $testEmail, 'error' => 'Ungültige E-Mail-Adresse'];
+            } catch (\InvalidArgumentException $e) {
+                $this->addFlash('error', 'Ungültige E-Mail-Adresse: ' . $e->getMessage());
+                $result = ['success' => false, 'email' => $testEmail, 'error' => $e->getMessage()];
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Fehler: ' . $e->getMessage());
+                $result = ['success' => false, 'email' => $testEmail, 'error' => $e->getMessage()];
             }
         }
 

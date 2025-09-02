@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\MailSettingsRepository;
+use App\Domain\ValueObject\EmailAddress;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MailSettingsRepository::class)]
@@ -39,13 +40,13 @@ class MailSettings
      */
     private int $port;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Embedded(class: EmailAddress::class, columnPrefix: 'username_')]
     /**
-     * Benutzername für die Authentifizierung (optional).
+     * Benutzername für die Authentifizierung (optional) - meist eine E-Mail-Adresse.
      *
-     * @var string|null
+     * @var EmailAddress|null
      */
-    private ?string $username = null;
+    private ?EmailAddress $username = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     /**
@@ -132,9 +133,9 @@ class MailSettings
     /**
      * Gibt den Benutzernamen für die Authentifizierung zurück.
      *
-     * @return string|null
+     * @return EmailAddress|null
      */
-    public function getUsername(): ?string
+    public function getUsername(): ?EmailAddress
     {
         return $this->username;
     }
@@ -142,13 +143,31 @@ class MailSettings
     /**
      * Setzt den Benutzernamen für die Authentifizierung.
      *
+     * @param EmailAddress|null $username
+     *
+     * @return self
+     */
+    public function setUsername(?EmailAddress $username): self
+    {
+        $this->username = $username;
+
+        return $this;
+    }
+
+    /**
+     * Setzt den Benutzernamen aus einem String (mit Validierung).
+     *
      * @param string|null $username
      *
      * @return self
      */
-    public function setUsername(?string $username): self
+    public function setUsernameFromString(?string $username): self
     {
-        $this->username = $username;
+        if ($username === null || trim($username) === '') {
+            $this->username = null;
+        } else {
+            $this->username = new EmailAddress($username);
+        }
 
         return $this;
     }

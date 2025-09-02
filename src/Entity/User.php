@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use App\Domain\ValueObject\EmailAddress;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -17,7 +18,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-#[UniqueEntity(fields: ['email'], message: 'Diese E-Mail-Adresse wird bereits verwendet.')]
+#[UniqueEntity(fields: ['email.value'], message: 'Diese E-Mail-Adresse wird bereits verwendet.')]
 /**
  * Entity für die Verwaltung von Benutzern im KPI-Tracker.
  *
@@ -42,15 +43,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private ?int $id = null;
 
-    #[ORM\Column(length: 180, unique: true)]
-    #[Assert\NotBlank(message: 'E-Mail-Adresse ist erforderlich.')]
-    #[Assert\Email(message: 'Bitte geben Sie eine gültige E-Mail-Adresse ein.')]
+    #[ORM\Embedded(class: EmailAddress::class, columnPrefix: false)]
     /**
      * E-Mail-Adresse des Benutzers (unique).
      *
-     * @var string|null
+     * @var EmailAddress|null
      */
-    private ?string $email = null;
+    private ?EmailAddress $email = null;
 
     /**
      * Benutzerrollen (ROLE_USER, ROLE_ADMIN).
@@ -141,31 +140,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * Gibt die E-Mail-Adresse des Benutzers zurück.
      */
-    public function getEmail(): ?string
+    public function getEmail(): ?EmailAddress
     {
         return $this->email;
     }
 
     /**
      * Setzt die E-Mail-Adresse des Benutzers.
-     *
-     * @param string $email Die E-Mail-Adresse
-     *
-     * @return static
      */
-    public function setEmail(string $email): static
+    public function setEmail(EmailAddress $email): static
     {
-        $email = trim($email);
-
-        // Bei leerem String - lass Symfony Validator das handhaben
-        if ('' === $email) {
-            $this->email = $email;
-
-            return $this;
-        }
-
-        // Normalisiere E-Mail (lowercase)
-        $this->email = mb_strtolower($email);
+        $this->email = $email;
 
         return $this;
     }
@@ -178,7 +163,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        return $this->email?->getValue() ?? '';
     }
 
     /**
@@ -505,40 +490,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * Setzt die E-Mail-Adresse des Benutzers mit Validierung.
-     * Diese Methode sollte in Commands verwendet werden.
-     *
-     * @param string $email Die E-Mail-Adresse
-     *
-     * @throws \InvalidArgumentException Wenn E-Mail ungültig ist
-     *
-     * @return static
-     */
-    public function setEmailWithValidation(string $email): static
-    {
-        $email = trim($email);
-
-        if ('' === $email) {
-            throw new \InvalidArgumentException('E-Mail-Adresse darf nicht leer sein.');
-        }
-
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new \InvalidArgumentException('Ungültige E-Mail-Adresse.');
-        }
-
-        $this->email = mb_strtolower($email);
-
-        return $this;
-    }
-
-    /**
      * Validiert ob die E-Mail-Adresse gesetzt ist.
-     *
-     * @return bool
      */
     public function hasValidEmail(): bool
     {
-        return null !== $this->email && false !== filter_var($this->email, FILTER_VALIDATE_EMAIL);
+        return null !== $this->email;
     }
 
     /**
@@ -548,6 +504,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function __toString(): string
     {
-        return $this->email ?? '';
+        return $this->email?->getValue() ?? '';
     }
 }
