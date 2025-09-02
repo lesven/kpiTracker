@@ -3,8 +3,6 @@
 namespace App\DTO;
 
 use App\Entity\KPI;
-use DateTimeInterface;
-
 
 /**
  * DTO für die Anzeige eines KPI-Eintrags im Dashboard.
@@ -14,12 +12,12 @@ use DateTimeInterface;
 class DashboardKpiEntry
 {
     /**
-     * @param KPI $kpi Das zugehörige KPI-Objekt
-     * @param string $status Status des KPI (z.B. "green", "yellow", "red")
-     * @param mixed $latestValue Der zuletzt gemeldete Wert
-     * @param bool $isDueSoon Gibt an, ob das KPI demnächst fällig ist
-     * @param bool $isOverdue Gibt an, ob das KPI überfällig ist
-     * @param DateTimeInterface|null $nextDueDate Das nächste Fälligkeitsdatum, falls vorhanden
+     * @param KPI                     $kpi         Das zugehörige KPI-Objekt
+     * @param string                  $status      Status des KPI (z.B. "green", "yellow", "red")
+     * @param mixed                   $latestValue Der zuletzt gemeldete Wert
+     * @param bool                    $isDueSoon   Gibt an, ob das KPI demnächst fällig ist
+     * @param bool                    $isOverdue   Gibt an, ob das KPI überfällig ist
+     * @param \DateTimeInterface|null $nextDueDate Das nächste Fälligkeitsdatum, falls vorhanden
      */
     public function __construct(
         public KPI $kpi,
@@ -27,7 +25,7 @@ class DashboardKpiEntry
         public mixed $latestValue,
         public bool $isDueSoon,
         public bool $isOverdue,
-        public ?DateTimeInterface $nextDueDate,
+        public ?\DateTimeInterface $nextDueDate,
     ) {
     }
 }

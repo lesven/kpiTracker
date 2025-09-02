@@ -2,8 +2,8 @@
 
 namespace App\Entity;
 
-use App\Repository\MailSettingsRepository;
 use App\Domain\ValueObject\EmailAddress;
+use App\Repository\MailSettingsRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MailSettingsRepository::class)]
@@ -163,7 +163,7 @@ class MailSettings
      */
     public function setUsernameFromString(?string $username): self
     {
-        if ($username === null || trim($username) === '') {
+        if (null === $username || '' === trim($username)) {
             $this->username = null;
         } else {
             $this->username = new EmailAddress($username);

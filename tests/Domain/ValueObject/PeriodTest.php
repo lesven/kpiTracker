@@ -2,8 +2,8 @@
 
 namespace App\Tests\Domain\ValueObject;
 
-use App\Domain\ValueObject\Period;
 use App\Domain\ValueObject\KpiInterval;
+use App\Domain\ValueObject\Period;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -24,13 +24,13 @@ class PeriodTest extends TestCase
     /**
      * @dataProvider invalidPeriodProvider
      */
-    public function testConstructorWithInvalidPeriodsThrowsException(string $invalidPeriod, string $expectedMessage = null): void
+    public function testConstructorWithInvalidPeriodsThrowsException(string $invalidPeriod, ?string $expectedMessage = null): void
     {
         $this->expectException(\InvalidArgumentException::class);
         if ($expectedMessage) {
             $this->expectExceptionMessage($expectedMessage);
         }
-        
+
         new Period($invalidPeriod);
     }
 
@@ -104,18 +104,18 @@ class PeriodTest extends TestCase
             ['2024-10', 'Oktober 2024'],
             ['2024-11', 'November 2024'],
             ['2024-12', 'Dezember 2024'],
-            
+
             // Weekly periods
             ['2024-W01', 'KW 1/2024'],
             ['2024-W05', 'KW 5/2024'],
             ['2024-W52', 'KW 52/2024'],
-            
+
             // Quarterly periods
             ['2024-Q1', 'Q1 2024'],
             ['2024-Q2', 'Q2 2024'],
             ['2024-Q3', 'Q3 2024'],
             ['2024-Q4', 'Q4 2024'],
-            
+
             // Unknown format fallback
             // NOTE: Removed '2024-unknown' test as it would throw an exception
         ];
@@ -125,7 +125,7 @@ class PeriodTest extends TestCase
     {
         $date = new \DateTimeImmutable('2024-03-15');
 
-        // Monthly - PHP format 'Y-m' gives '2024-03' 
+        // Monthly - PHP format 'Y-m' gives '2024-03'
         $monthlyPeriod = Period::fromDate($date, KpiInterval::MONTHLY);
         $this->assertSame('2024-03', $monthlyPeriod->value());
 
@@ -183,7 +183,7 @@ class PeriodTest extends TestCase
         $this->assertSame(1, preg_match(Period::PATTERN, '2024-1'));
         $this->assertSame(1, preg_match(Period::PATTERN, '2024-W05'));
         $this->assertSame(1, preg_match(Period::PATTERN, '2024-Q1'));
-        
+
         $this->assertSame(0, preg_match(Period::PATTERN, 'invalid'));
         $this->assertSame(0, preg_match(Period::PATTERN, '24-01'));
     }
@@ -192,7 +192,7 @@ class PeriodTest extends TestCase
     {
         $original = new Period('2024-01');
         $copy = Period::fromString($original->value());
-        
+
         $this->assertTrue($original->equals($copy));
         $this->assertNotSame($original, $copy); // Different instances
     }

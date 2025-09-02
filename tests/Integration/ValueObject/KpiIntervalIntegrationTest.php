@@ -2,8 +2,8 @@
 
 namespace App\Tests\Integration\ValueObject;
 
-use App\Domain\ValueObject\KpiInterval;
 use App\Domain\ValueObject\EmailAddress;
+use App\Domain\ValueObject\KpiInterval;
 use App\Entity\User;
 use App\Factory\KPIFactory;
 use Doctrine\ORM\EntityManagerInterface;

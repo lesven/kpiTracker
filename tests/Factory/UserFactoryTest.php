@@ -2,8 +2,8 @@
 
 namespace App\Tests\Factory;
 
-use App\Entity\User;
 use App\Domain\ValueObject\EmailAddress;
+use App\Entity\User;
 use App\Factory\UserFactory;
 use PHPUnit\Framework\TestCase;
 
@@ -100,7 +100,7 @@ class UserFactoryTest extends TestCase
     public function testCreateWithEmptyEmailThrowsException(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        
+
         $this->factory->createRegularUser('', 'John', 'Doe');
     }
 
@@ -110,7 +110,7 @@ class UserFactoryTest extends TestCase
     public function testCreateWithInvalidEmailThrowsException(string $invalidEmail): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        
+
         $this->factory->createRegularUser($invalidEmail, 'John', 'Doe');
     }
 
@@ -159,7 +159,7 @@ class UserFactoryTest extends TestCase
         $this->assertSame($email, $user->getEmail()->getValue());
         $this->assertSame($firstName, $user->getFirstName());
         $this->assertSame($lastName, $user->getLastName());
-        
+
         // Test that user is properly initialized
         $this->assertNull($user->getId()); // New entity should have no ID
         $this->assertNull($user->getPassword()); // Password not set by factory

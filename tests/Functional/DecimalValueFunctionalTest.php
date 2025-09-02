@@ -3,9 +3,9 @@
 namespace App\Tests\Functional;
 
 use App\Domain\ValueObject\DecimalValue;
+use App\Domain\ValueObject\EmailAddress;
 use App\Domain\ValueObject\KpiInterval;
 use App\Domain\ValueObject\Period;
-use App\Domain\ValueObject\EmailAddress;
 use App\Entity\User;
 use App\Factory\KPIFactory;
 use App\Factory\KPIValueFactory;
@@ -125,7 +125,7 @@ class DecimalValueFunctionalTest extends TestCase
             '-50,25' => -50.25,
             '0' => 0.00,
             '0,00' => 0.00,
-            '999999,99' => 999999.99
+            '999999,99' => 999999.99,
         ];
 
         foreach ($validValues as $input => $expected) {

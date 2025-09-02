@@ -7,7 +7,6 @@ use App\Entity\KPI;
 use App\Repository\KPIValueRepository;
 use App\Service\KPIStatusService;
 
-
 /**
  * Factory zur Erstellung von DashboardKpiEntry-DTOs für die Dashboard-Anzeige.
  *
@@ -18,7 +17,7 @@ class DashboardKpiEntryFactory
     /**
      * Konstruktor injiziert Status-Service und Value-Repository.
      *
-     * @param KPIStatusService $kpiStatusService Service zur Ermittlung des KPI-Status
+     * @param KPIStatusService   $kpiStatusService   Service zur Ermittlung des KPI-Status
      * @param KPIValueRepository $kpiValueRepository Repository für KPI-Werte
      */
     public function __construct(
@@ -31,6 +30,7 @@ class DashboardKpiEntryFactory
      * Erstellt ein DashboardKpiEntry-DTO für ein gegebenes KPI.
      *
      * @param KPI $kpi Das zu verarbeitende KPI-Objekt
+     *
      * @return DashboardKpiEntry DTO mit Status, Wert und Fälligkeitsdaten
      */
     public function create(KPI $kpi): DashboardKpiEntry

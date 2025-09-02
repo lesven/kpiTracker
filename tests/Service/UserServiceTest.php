@@ -2,9 +2,9 @@
 
 namespace App\Tests\Service;
 
+use App\Domain\ValueObject\EmailAddress;
 use App\Entity\User;
 use App\Service\UserService;
-use App\Domain\ValueObject\EmailAddress;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;

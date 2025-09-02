@@ -2,8 +2,8 @@
 
 namespace App\Command;
 
-use App\Entity\User;
 use App\Domain\ValueObject\EmailAddress;
+use App\Entity\User;
 use App\Factory\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -115,12 +115,12 @@ class CreateUserCommand extends Command
             if ($existingUser) {
                 $user = $existingUser;
                 $io->note("Aktualisiere existierenden Benutzer '{$email}'...");
-                
+
                 // Update existing user properties
                 $user->setEmail(new EmailAddress($email));
                 $user->setFirstName($firstName);
                 $user->setLastName($lastName);
-                
+
                 // Update roles
                 if ($isAdmin) {
                     $user->setRoles([User::ROLE_ADMIN, User::ROLE_USER]);

@@ -64,9 +64,9 @@ class ReminderEmailFactory
     /**
      * Creates an email for overdue KPIs.
      *
-     * @param User  $user         Recipient user
-     * @param array $reminders    List of KPI reminders
-     * @param int   $daysOverdue  How many days the KPIs are overdue
+     * @param User  $user        Recipient user
+     * @param array $reminders   List of KPI reminders
+     * @param int   $daysOverdue How many days the KPIs are overdue
      */
     public function createOverdueReminder(User $user, array $reminders, int $daysOverdue): Email
     {

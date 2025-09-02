@@ -3,7 +3,6 @@
 namespace App\Service;
 
 use App\Domain\ValueObject\KpiInterval;
-use App\Domain\ValueObject\Period;
 use App\Entity\KPI;
 use App\Repository\KPIValueRepository;
 

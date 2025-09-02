@@ -2,12 +2,12 @@
 
 namespace App\Factory;
 
-use App\Entity\User;
 use App\Domain\ValueObject\EmailAddress;
+use App\Entity\User;
 
 /**
  * Factory-Klasse für die Erstellung von User-Entitäten.
- * 
+ *
  * Kapselt die Logik für die Erstellung verschiedener User-Typen und
  * reduziert Code-Duplikation bei der User-Erstellung.
  */
@@ -60,7 +60,7 @@ class UserFactory
      */
     public function createByType(string $email, string $firstName, string $lastName, bool $isAdmin): User
     {
-        return $isAdmin 
+        return $isAdmin
             ? $this->createAdmin($email, $firstName, $lastName)
             : $this->createRegularUser($email, $firstName, $lastName);
     }

@@ -3,9 +3,9 @@
 namespace App\Tests\Service;
 
 use App\Domain\ValueObject\KpiInterval;
+use App\Domain\ValueObject\Period;
 use App\Entity\KPI;
 use App\Entity\KPIValue;
-use App\Domain\ValueObject\Period;
 use App\Repository\KPIValueRepository;
 use App\Service\KPIStatusService;
 use PHPUnit\Framework\TestCase;

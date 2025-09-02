@@ -66,7 +66,7 @@ class KPIValueType extends AbstractType
         $builder->get('value')
             ->addModelTransformer(new CallbackTransformer(
                 fn (?DecimalValue $value) => $value?->format() ?? '',
-                fn (?string $value) => $value !== null && $value !== '' ? new DecimalValue($value) : null
+                fn (?string $value) => null !== $value && '' !== $value ? new DecimalValue($value) : null
             ));
 
         $builder->get('period')

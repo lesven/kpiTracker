@@ -147,7 +147,7 @@ class PeriodIntegrationTest extends TestCase
     public function testPeriodSerialization(): void
     {
         $period = new Period('2024-Q2');
-        
+
         // Test JSON serialization
         $json = json_encode(['period' => (string) $period]);
         $this->assertSame('{"period":"2024-Q2"}', $json);
@@ -199,7 +199,7 @@ class PeriodIntegrationTest extends TestCase
         // Test that invalid period construction throws exception
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Ungültiges Zeitraum-Format');
-        
+
         $invalidPeriod = new Period('invalid-period');
         $kpiValue->setPeriod($invalidPeriod);
     }

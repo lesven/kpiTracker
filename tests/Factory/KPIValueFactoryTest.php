@@ -2,9 +2,9 @@
 
 namespace App\Tests\Factory;
 
+use App\Domain\ValueObject\Period;
 use App\Entity\KPI;
 use App\Entity\KPIValue;
-use App\Domain\ValueObject\Period;
 use App\Factory\KPIValueFactory;
 use PHPUnit\Framework\TestCase;
 

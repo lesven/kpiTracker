@@ -2,10 +2,10 @@
 
 namespace App\Repository;
 
+use App\Domain\ValueObject\Period;
 use App\Entity\KPI;
 use App\Entity\KPIValue;
 use App\Entity\User;
-use App\Domain\ValueObject\Period;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

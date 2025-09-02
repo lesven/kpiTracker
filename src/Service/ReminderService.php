@@ -4,9 +4,9 @@ namespace App\Service;
 
 use App\Entity\KPI;
 use App\Entity\User;
+use App\Factory\ReminderEmailFactory;
 use App\Repository\KPIRepository;
 use Psr\Log\LoggerInterface;
-use App\Factory\ReminderEmailFactory;
 
 /**
  * Service-Klasse für das Versenden von E-Mail-Erinnerungen und Eskalationen.
