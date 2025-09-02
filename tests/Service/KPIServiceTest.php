@@ -2,57 +2,68 @@
 
 namespace App\Tests\Service;
 
-use App\Domain\ValueObject\Period;
 use App\Entity\KPI;
-use App\Entity\KPIValue;
-use App\Repository\KPIValueRepository;
+use App\Service\KPIAggregate;
 use App\Service\KPIService;
-use App\Service\KPIStatusService;
 use PHPUnit\Framework\TestCase;
 
 class KPIServiceTest extends TestCase
 {
-    public function testGetKpiStatusDelegatesToStatusService(): void
+    public function testGetKpiStatusDelegatesToAggregate(): void
     {
         $kpi = $this->createMock(KPI::class);
-        $repo = $this->createMock(KPIValueRepository::class);
-        $statusService = $this->createMock(KPIStatusService::class);
-        $statusService->expects($this->once())
+        $aggregate = $this->createMock(KPIAggregate::class);
+        $aggregate->expects($this->once())
             ->method('getKpiStatus')
             ->with($kpi)
             ->willReturn('green');
-        $service = new KPIService($repo, $statusService);
+        
+        $service = new KPIService($aggregate);
         $result = $service->getKpiStatus($kpi);
         $this->assertSame('green', $result);
     }
 
-    public function testHasCurrentValueReturnsTrueWhenValueExists(): void
+    public function testHasCurrentValueDelegatesToAggregate(): void
     {
         $kpi = $this->createMock(KPI::class);
-        $repo = $this->createMock(KPIValueRepository::class);
-        $statusService = $this->createMock(KPIStatusService::class);
+        $aggregate = $this->createMock(KPIAggregate::class);
+        $aggregate->expects($this->once())
+            ->method('hasCurrentValue')
+            ->with($kpi)
+            ->willReturn(true);
 
-        $kpiValue = $this->createMock(KPIValue::class);
-        $currentPeriod = new Period('2024-01');
-        $kpi->method('getCurrentPeriod')->willReturn($currentPeriod);
-        $repo->method('findByKpiAndPeriod')->willReturn($kpiValue);
-
-        $service = new KPIService($repo, $statusService);
+        $service = new KPIService($aggregate);
         $result = $service->hasCurrentValue($kpi);
         $this->assertTrue($result);
     }
 
-    public function testGetKpiStatisticsReturnsArray(): void
+    public function testGetKpiStatisticsDelegatesToAggregate(): void
     {
         $kpi = $this->createMock(KPI::class);
-        $repo = $this->createMock(KPIValueRepository::class);
-        $statusService = $this->createMock(KPIStatusService::class);
+        $aggregate = $this->createMock(KPIAggregate::class);
+        $expectedStats = ['total_entries' => 0];
+        $aggregate->expects($this->once())
+            ->method('getKpiStatistics')
+            ->with($kpi)
+            ->willReturn($expectedStats);
 
-        $repo->method('findByKPI')->willReturn([]);
-
-        $service = new KPIService($repo, $statusService);
+        $service = new KPIService($aggregate);
         $result = $service->getKpiStatistics($kpi);
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('total_entries', $result);
+        $this->assertSame($expectedStats, $result);
+    }
+
+    public function testValidateKpiDelegatesToAggregate(): void
+    {
+        $kpi = $this->createMock(KPI::class);
+        $aggregate = $this->createMock(KPIAggregate::class);
+        $expectedErrors = ['error1'];
+        $aggregate->expects($this->once())
+            ->method('validateKpi')
+            ->with($kpi)
+            ->willReturn($expectedErrors);
+
+        $service = new KPIService($aggregate);
+        $result = $service->validateKpi($kpi);
+        $this->assertSame($expectedErrors, $result);
     }
 }
