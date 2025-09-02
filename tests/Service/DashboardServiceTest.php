@@ -8,6 +8,8 @@ use App\Repository\KPIRepository;
 use App\Repository\KPIValueRepository;
 use App\Service\DashboardService;
 use App\Service\KPIStatusService;
+use App\DTO\DashboardKpiEntry;
+use App\Factory\DashboardKpiEntryFactory;
 use PHPUnit\Framework\TestCase;
 
 class DashboardServiceTest extends TestCase
@@ -17,10 +19,11 @@ class DashboardServiceTest extends TestCase
         $kpiRepo = $this->createMock(KPIRepository::class);
         $kpiValueRepo = $this->createMock(KPIValueRepository::class);
         $statusService = $this->createMock(KPIStatusService::class);
+        $factory = $this->createMock(DashboardKpiEntryFactory::class);
         $user = $this->createMock(User::class);
 
         $kpiRepo->method('findByUser')->willReturn([]);
-        $service = new DashboardService($kpiRepo, $kpiValueRepo, $statusService);
+        $service = new DashboardService($kpiRepo, $kpiValueRepo, $statusService, $factory);
         $result = $service->getKpiDataForUser($user);
         $this->assertIsArray($result);
     }
@@ -30,20 +33,20 @@ class DashboardServiceTest extends TestCase
         $kpiRepo = $this->createMock(KPIRepository::class);
         $kpiValueRepo = $this->createMock(KPIValueRepository::class);
         $statusService = $this->createMock(KPIStatusService::class);
+        $factory = $this->createMock(DashboardKpiEntryFactory::class);
         $user = $this->createMock(User::class);
 
         $kpi1 = $this->createMock(KPI::class);
-        $kpi1->method('getName')->willReturn('Test KPI 1');
-        $kpi1->method('getStatus')->willReturn('green');
+        $kpi2 = $this->createMock(KPI::class);
 
         $kpiData = [
-            ['name' => 'Test KPI 1', 'status' => 'green', 'due_date' => new \DateTime()],
-            ['name' => 'Test KPI 2', 'status' => 'red', 'due_date' => new \DateTime('-1 day')],
+            new DashboardKpiEntry($kpi1, 'green', null, false, false, new \DateTime()),
+            new DashboardKpiEntry($kpi2, 'red', null, false, true, new \DateTime('-1 day')),
         ];
 
         $kpiValueRepo->method('findRecentByUser')->willReturn([]);
 
-        $service = new DashboardService($kpiRepo, $kpiValueRepo, $statusService);
+        $service = new DashboardService($kpiRepo, $kpiValueRepo, $statusService, $factory);
         $stats = $service->getDashboardStats($user, $kpiData);
 
         $this->assertIsArray($stats);

@@ -2,10 +2,13 @@
 
 namespace App\Service;
 
+use App\DTO\DashboardKpiEntry;
 use App\Entity\KPI;
 use App\Entity\User;
+use App\Factory\DashboardKpiEntryFactory;
 use App\Repository\KPIRepository;
 use App\Repository\KPIValueRepository;
+use App\Service\KPIStatusService;
 
 /**
  * Service-Klasse zur Aufbereitung und Berechnung von Dashboard-Daten.
@@ -21,22 +24,21 @@ class DashboardService
         private KPIRepository $kpiRepository,
         private KPIValueRepository $kpiValueRepository,
         private KPIStatusService $kpiStatusService,
+        private DashboardKpiEntryFactory $kpiEntryFactory,
     ) {
     }
 
     /**
      * Liefert die KPI-Daten für das Dashboard eines Benutzers.
      *
-     * @return array<int, array<string, mixed>>
+     * @return array<int, DashboardKpiEntry>
      */
     public function getKpiDataForUser(User $user): array
     {
         $kpis = $this->kpiRepository->findByUser($user);
 
         $data = array_map(
-            function (KPI $kpi): array {
-                return $this->createKpiEntry($kpi);
-            },
+            fn (KPI $kpi): DashboardKpiEntry => $this->kpiEntryFactory->create($kpi),
             $kpis
         );
 
@@ -48,7 +50,7 @@ class DashboardService
     /**
      * Erstellt Statistiken für das Dashboard.
      *
-     * @param array<int, array<string, mixed>> $kpiData
+     * @param array<int, DashboardKpiEntry> $kpiData
      *
      * @return array<string, mixed> An array containing:
      *                              - 'total_kpis' (int): Total number of KPIs.
@@ -61,9 +63,9 @@ class DashboardService
     {
         return [
             'total_kpis' => count($kpiData),
-            'overdue_count' => count(array_filter($kpiData, fn ($item) => 'red' === $item['status'])),
-            'due_soon_count' => count(array_filter($kpiData, fn ($item) => 'yellow' === $item['status'])),
-            'up_to_date_count' => count(array_filter($kpiData, fn ($item) => 'green' === $item['status'])),
+            'overdue_count' => count(array_filter($kpiData, fn (DashboardKpiEntry $item) => 'red' === $item->status)),
+            'due_soon_count' => count(array_filter($kpiData, fn (DashboardKpiEntry $item) => 'yellow' === $item->status)),
+            'up_to_date_count' => count(array_filter($kpiData, fn (DashboardKpiEntry $item) => 'green' === $item->status)),
             'recent_values' => $this->kpiValueRepository->findRecentByUser($user, 5),
         ];
     }
@@ -94,50 +96,25 @@ class DashboardService
     }
 
     /**
-     * Creates an array representation for a single KPI.
-     *
-     * @param KPI $kpi the KPI entity to process
-     *
-     * @return array<string, mixed> An associative array containing:
-     *                              - 'kpi' (KPI): The KPI entity.
-     *                              - 'status' (string): The status of the KPI (e.g., 'green', 'yellow', 'red').
-     *                              - 'latest_value' (mixed): The latest value associated with the KPI.
-     *                              - 'is_due_soon' (bool): Whether the KPI is due soon.
-     *                              - 'is_overdue' (bool): Whether the KPI is overdue.
-     *                              - 'next_due_date' (\DateTimeInterface|null): The next due date of the KPI, or null if not applicable.
-     */
-    private function createKpiEntry(KPI $kpi): array
-    {
-        return [
-            'kpi' => $kpi,
-            'status' => $this->kpiStatusService->getKpiStatus($kpi),
-            'latest_value' => $this->kpiValueRepository->findLatestValueForKpi($kpi),
-            'is_due_soon' => $this->kpiStatusService->isDueSoon($kpi),
-            'is_overdue' => $this->kpiStatusService->isOverdue($kpi),
-            'next_due_date' => $kpi->getNextDueDate(),
-        ];
-    }
-
-    /**
      * Vergleichsfunktion für die Sortierung nach Fälligkeitsdatum.
      *
-     * @param array<string, mixed> $a array representing a KPI entry, must include 'next_due_date' as DateTimeInterface|null
-     * @param array<string, mixed> $b array representing a KPI entry, must include 'next_due_date' as DateTimeInterface|null
+     * @param DashboardKpiEntry $a first KPI entry
+     * @param DashboardKpiEntry $b second KPI entry
      *
      * @return int comparison result: -1 if $a < $b, 1 if $a > $b, 0 if equal
      */
-    private function compareDueDate(array $a, array $b): int
+    private function compareDueDate(DashboardKpiEntry $a, DashboardKpiEntry $b): int
     {
-        if (null === $a['next_due_date'] && null === $b['next_due_date']) {
+        if (null === $a->nextDueDate && null === $b->nextDueDate) {
             return 0;
         }
-        if (null === $a['next_due_date']) {
+        if (null === $a->nextDueDate) {
             return 1;
         }
-        if (null === $b['next_due_date']) {
+        if (null === $b->nextDueDate) {
             return -1;
         }
 
-        return $a['next_due_date'] <=> $b['next_due_date'];
+        return $a->nextDueDate <=> $b->nextDueDate;
     }
 }

@@ -126,20 +126,20 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            {% if item.latest_value %}
-                                                <span class="fw-bold">{{ item.latest_value.value }}</span>
+                                            {% if item.latestValue %}
+                                                <span class="fw-bold">{{ item.latestValue.value }}</span>
                                                 {% if item.kpi.unit %}{{ item.kpi.unit }}{% endif %}
-                                                <br><small class="text-muted">{{ item.latest_value.period }}</small>
+                                                <br><small class="text-muted">{{ item.latestValue.period }}</small>
                                             {% else %}
                                                 <span class="text-muted">Noch keine Werte</span>
                                             {% endif %}
                                         </td>
                                         <td>
-                                            {% if item.next_due_date %}
-                                                {{ item.next_due_date|date('d.m.Y') }}
-                                                {% if item.is_overdue %}
+                                            {% if item.nextDueDate %}
+                                                {{ item.nextDueDate|date('d.m.Y') }}
+                                                {% if item.isOverdue %}
                                                     <br><small class="text-danger">Überfällig</small>
-                                                {% elseif item.is_due_soon %}
+                                                {% elseif item.isDueSoon %}
                                                     <br><small class="text-warning">Bald fällig</small>
                                                 {% endif %}
                                             {% else %}
