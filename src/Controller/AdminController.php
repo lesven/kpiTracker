@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\KPI;
 use App\Entity\User;
 use App\Domain\ValueObject\EmailAddress;
+use App\Factory\UserFactory;
 use App\Form\KPIAdminType;
 use App\Form\MailSettingsType;
 use App\Form\UserType;
@@ -35,6 +36,7 @@ class AdminController extends AbstractController
         private KPIValueRepository $kpiValueRepository,
         private ExcelExportService $excelExportService,
         private AdminService $adminService,
+        private UserFactory $userFactory,
     ) {
     }
 
@@ -78,7 +80,7 @@ class AdminController extends AbstractController
     #[Route('/users/new', name: 'app_admin_user_new', methods: ['GET', 'POST'])]
     public function newUser(Request $request): Response
     {
-        $user = new User();
+        $user = $this->userFactory->createRegularUser('', '', '');
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
 

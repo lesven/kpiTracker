@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Entity\User;
 use App\Domain\ValueObject\EmailAddress;
+use App\Factory\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -33,6 +34,7 @@ class CreateUserCommand extends Command
     public function __construct(
         private EntityManagerInterface $entityManager,
         private UserPasswordHasherInterface $passwordHasher,
+        private UserFactory $userFactory,
     ) {
         parent::__construct();
     }
@@ -113,20 +115,21 @@ class CreateUserCommand extends Command
             if ($existingUser) {
                 $user = $existingUser;
                 $io->note("Aktualisiere existierenden Benutzer '{$email}'...");
+                
+                // Update existing user properties
+                $user->setEmail(new EmailAddress($email));
+                $user->setFirstName($firstName);
+                $user->setLastName($lastName);
+                
+                // Update roles
+                if ($isAdmin) {
+                    $user->setRoles([User::ROLE_ADMIN, User::ROLE_USER]);
+                } else {
+                    $user->setRoles([User::ROLE_USER]);
+                }
             } else {
-                $user = new User();
+                $user = $this->userFactory->createByType($email, $firstName, $lastName, $isAdmin);
                 $io->note("Erstelle neuen Benutzer '{$email}'...");
-            }
-
-            $user->setEmail(new EmailAddress($email));
-            $user->setFirstName($firstName);
-            $user->setLastName($lastName);
-
-            // Rollen setzen
-            if ($isAdmin) {
-                $user->setRoles([User::ROLE_ADMIN, User::ROLE_USER]);
-            } else {
-                $user->setRoles([User::ROLE_USER]);
             }
 
             // Passwort hashen

@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Entity\User;
 use App\Domain\ValueObject\EmailAddress;
+use App\Factory\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -33,6 +34,7 @@ class CreateAdminCommand extends Command
     public function __construct(
         private EntityManagerInterface $entityManager,
         private UserPasswordHasherInterface $passwordHasher,
+        private UserFactory $userFactory,
     ) {
         parent::__construct();
     }
@@ -112,15 +114,16 @@ class CreateAdminCommand extends Command
             if ($existingUser) {
                 $user = $existingUser;
                 $io->note("Aktualisiere existierenden Benutzer '{$email}'...");
+                
+                // Update existing user to admin
+                $user->setEmail(new EmailAddress($email));
+                $user->setFirstName($firstName);
+                $user->setLastName($lastName);
+                $user->setRoles([User::ROLE_ADMIN, User::ROLE_USER]);
             } else {
-                $user = new User();
+                $user = $this->userFactory->createAdmin($email, $firstName, $lastName);
                 $io->note("Erstelle neuen Administrator '{$email}'...");
             }
-
-            $user->setEmail(new EmailAddress($email));
-            $user->setFirstName($firstName);
-            $user->setLastName($lastName);
-            $user->setRoles([User::ROLE_ADMIN, User::ROLE_USER]);
 
             // Passwort hashen
             $hashedPassword = $this->passwordHasher->hashPassword($user, $password);
