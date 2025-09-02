@@ -11,7 +11,7 @@ class KpiFileFactory
 {
     public function __construct(
         private SluggerInterface $slugger,
-        private string $uploadDir = 'uploads/',
+        private string $uploadDir,
     ) {
     }
 
