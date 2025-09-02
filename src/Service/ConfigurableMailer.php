@@ -40,7 +40,7 @@ class ConfigurableMailer
 
         $dsn = sprintf(
             'smtp://%s:%s@%s:%d',
-            rawurlencode($settings->getUsername() ?? ''),
+            rawurlencode($settings->getUsername()?->getValue() ?? ''),
             rawurlencode($settings->getPassword() ?? ''),
             $settings->getHost(),
             $settings->getPort()

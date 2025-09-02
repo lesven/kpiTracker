@@ -3,7 +3,9 @@
 namespace App\Form;
 
 use App\Entity\MailSettings;
+use App\Domain\ValueObject\EmailAddress;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -37,10 +39,12 @@ class MailSettingsType extends AbstractType
             ])
             ->add('username', TextType::class, [
                 'required' => false,
-                'label' => 'Benutzername',
+                'label' => 'Benutzername (E-Mail)',
                 'attr' => [
                     'class' => 'form-control',
+                    'placeholder' => 'user@smtp-provider.com',
                 ],
+                'help' => 'Meist eine E-Mail-Adresse für SMTP-Authentifizierung',
             ])
             ->add('password', PasswordType::class, [
                 'required' => false,
@@ -64,6 +68,13 @@ class MailSettingsType extends AbstractType
                     'class' => 'form-check-input',
                 ],
             ]);
+
+        // Data Transformer für EmailAddress username
+        $builder->get('username')
+            ->addModelTransformer(new CallbackTransformer(
+                fn (?EmailAddress $email) => $email?->getValue() ?? '',
+                fn (?string $value) => $value !== null && trim($value) !== '' ? new EmailAddress($value) : null
+            ));
     }
 
     public function configureOptions(OptionsResolver $resolver): void
