@@ -6,6 +6,8 @@ use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use App\Domain\ValueObject\EmailAddress;
+use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -123,6 +125,12 @@ class UserType extends AbstractType
                 ],
             ]);
         }
+
+        $builder->get('email')
+            ->addModelTransformer(new CallbackTransformer(
+                fn (?EmailAddress $email) => $email?->getValue() ?? '',
+                fn (?string $value) => $value !== null && $value !== '' ? new EmailAddress($value) : null
+            ));
     }
 
     public function configureOptions(OptionsResolver $resolver): void

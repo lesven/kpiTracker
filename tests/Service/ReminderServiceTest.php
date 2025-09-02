@@ -6,6 +6,7 @@ use App\Repository\KPIRepository;
 use App\Service\ConfigurableMailer;
 use App\Service\KPIStatusService;
 use App\Service\ReminderService;
+use App\Domain\ValueObject\EmailAddress;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -62,7 +63,7 @@ class ReminderServiceTest extends TestCase
         $user = $this->createMock(\App\Entity\User::class);
 
         $kpi->method('getUser')->willReturn($user);
-        $user->method('getEmail')->willReturn('user@example.com');
+        $user->method('getEmail')->willReturn(new EmailAddress('user@example.com'));
         $kpiRepo->method('findDueForReminder')->willReturn([$kpi]);
 
         $service = new ReminderService($mailer, $twig, $urlGen, $statusService, $kpiRepo, $logger, 'noreply@kpi-tracker.local');

@@ -5,6 +5,7 @@ namespace App\Tests\Integration\ValueObject;
 use App\Domain\ValueObject\DecimalValue;
 use App\Domain\ValueObject\KpiInterval;
 use App\Domain\ValueObject\Period;
+use App\Domain\ValueObject\EmailAddress;
 use App\Entity\KPI;
 use App\Entity\KPIValue;
 use App\Entity\User;
@@ -28,7 +29,7 @@ class DecimalValueIntegrationTest extends KernelTestCase
     {
         // Create test user
         $user = new User();
-        $user->setEmail('test@example.com');
+        $user->setEmail(new EmailAddress('test@example.com'));
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');
@@ -53,7 +54,7 @@ class DecimalValueIntegrationTest extends KernelTestCase
     {
         // Create test user and KPI
         $user = new User();
-        $user->setEmail('test@example.com');
+        $user->setEmail(new EmailAddress('test@example.com'));
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');
@@ -82,7 +83,7 @@ class DecimalValueIntegrationTest extends KernelTestCase
     public function testNegativeDecimalValues(): void
     {
         $user = new User();
-        $user->setEmail('test@example.com');
+        $user->setEmail(new EmailAddress('test@example.com'));
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');
@@ -105,7 +106,7 @@ class DecimalValueIntegrationTest extends KernelTestCase
     public function testNullableDecimalValues(): void
     {
         $user = new User();
-        $user->setEmail('test@example.com');
+        $user->setEmail(new EmailAddress('test@example.com'));
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');
@@ -147,7 +148,7 @@ class DecimalValueIntegrationTest extends KernelTestCase
     public function testEntityStringRepresentation(): void
     {
         $user = new User();
-        $user->setEmail('test@example.com');
+        $user->setEmail(new EmailAddress('test@example.com'));
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');

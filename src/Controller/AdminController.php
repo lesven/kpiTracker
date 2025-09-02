@@ -85,7 +85,7 @@ class AdminController extends AbstractController
             $plainPassword = $form->get('plainPassword')->getData();
             $this->adminService->createUser($user, $plainPassword);
 
-            $this->addFlash('success', 'Benutzer "'.$user->getEmail().'" wurde erfolgreich erstellt.');
+            $this->addFlash('success', 'Benutzer "'.$user->getEmail()->getValue().'" wurde erfolgreich erstellt.');
 
             return $this->redirectToRoute('app_admin_users');
         }
@@ -144,7 +144,7 @@ class AdminController extends AbstractController
                 return $this->redirectToRoute('app_admin_users');
             }
 
-            $email = $user->getEmail();
+            $email = $user->getEmail()->getValue();
             $this->userService->deleteUserWithData($user);
 
             $this->addFlash('success', 'Benutzer "'.$email.'" und alle zugehörigen Daten wurden DSGVO-konform gelöscht.');
@@ -201,7 +201,7 @@ class AdminController extends AbstractController
             $this->entityManager->persist($kpi);
             $this->entityManager->flush();
 
-            $this->addFlash('success', 'KPI "'.$kpi->getName().'" wurde für '.$kpi->getUser()->getEmail().' erstellt.');
+            $this->addFlash('success', 'KPI "'.$kpi->getName().'" wurde für '.$kpi->getUser()->getEmail()->getValue().' erstellt.');
 
             return $this->redirectToRoute('app_admin_kpis');
         }
@@ -253,7 +253,7 @@ class AdminController extends AbstractController
     {
         if ($this->isCsrfTokenValid('delete'.$kpi->getId(), $request->request->get('_token'))) {
             $kpiName = $kpi->getName();
-            $userEmail = $kpi->getUser()->getEmail();
+            $userEmail = $kpi->getUser()->getEmail()->getValue();
 
             $this->entityManager->remove($kpi);
             $this->entityManager->flush();

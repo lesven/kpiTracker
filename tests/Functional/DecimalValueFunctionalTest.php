@@ -5,6 +5,7 @@ namespace App\Tests\Functional;
 use App\Domain\ValueObject\DecimalValue;
 use App\Domain\ValueObject\KpiInterval;
 use App\Domain\ValueObject\Period;
+use App\Domain\ValueObject\EmailAddress;
 use App\Entity\KPI;
 use App\Entity\KPIValue;
 use App\Entity\User;
@@ -20,7 +21,7 @@ class DecimalValueFunctionalTest extends TestCase
     {
         // Create test user
         $user = new User();
-        $user->setEmail('functional-test@example.com');
+        $user->setEmail(new EmailAddress('functional-test@example.com'));
         $user->setPassword('password');
         $user->setFirstName('Functional');
         $user->setLastName('Test');
@@ -85,7 +86,7 @@ class DecimalValueFunctionalTest extends TestCase
     {
         // Create complete entity structure
         $user = new User();
-        $user->setEmail('test@example.com');
+        $user->setEmail(new EmailAddress('test@example.com'));
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');

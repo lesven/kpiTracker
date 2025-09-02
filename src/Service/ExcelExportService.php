@@ -85,7 +85,7 @@ class ExcelExportService
         $user = $kpi?->getUser();
 
         return [
-            $user?->getEmail() ?? self::DEFAULT_VALUE,
+            $user?->getEmail()?->getValue() ?? self::DEFAULT_VALUE,
             $kpi?->getName() ?? self::DEFAULT_VALUE,
             (string) $kpiValue->getValue(),
             (string) $kpiValue->getPeriod(),

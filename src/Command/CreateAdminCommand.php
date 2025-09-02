@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\Entity\User;
+use App\Domain\ValueObject\EmailAddress;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -84,7 +85,7 @@ class CreateAdminCommand extends Command
         }
 
         // Prüfen ob Benutzer bereits existiert
-        $existingUser = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+        $existingUser = $this->entityManager->getRepository(User::class)->findOneBy(['email.value' => $email]);
 
         if ($existingUser && !$force) {
             $io->error("Benutzer mit E-Mail '{$email}' existiert bereits. Verwenden Sie --force zum Überschreiben.");
@@ -116,7 +117,7 @@ class CreateAdminCommand extends Command
                 $io->note("Erstelle neuen Administrator '{$email}'...");
             }
 
-            $user->setEmailWithValidation($email);
+            $user->setEmail(new EmailAddress($email));
             $user->setFirstName($firstName);
             $user->setLastName($lastName);
             $user->setRoles([User::ROLE_ADMIN, User::ROLE_USER]);
@@ -136,7 +137,7 @@ class CreateAdminCommand extends Command
             $io->horizontalTable(
                 ['Eigenschaft', 'Wert'],
                 [
-                    ['E-Mail', $user->getEmail()],
+                    ['E-Mail', $user->getEmail()->getValue()],
                     ['Vorname', $user->getFirstName()],
                     ['Nachname', $user->getLastName()],
                     ['Rollen', implode(', ', $user->getRoles())],

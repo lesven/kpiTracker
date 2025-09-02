@@ -3,6 +3,7 @@
 namespace App\Tests\Integration\ValueObject;
 
 use App\Domain\ValueObject\KpiInterval;
+use App\Domain\ValueObject\EmailAddress;
 use App\Entity\KPI;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,7 +30,7 @@ class KpiIntervalIntegrationTest extends KernelTestCase
     public function testKpiIntervalInEntity(): void
     {
         $user = new User();
-        $user->setEmail('test@example.com');
+        $user->setEmail(new EmailAddress('test@example.com'));
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');
@@ -50,7 +51,7 @@ class KpiIntervalIntegrationTest extends KernelTestCase
     public function testAllIntervalTypesInEntity(): void
     {
         $user = new User();
-        $user->setEmail('test@example.com');
+        $user->setEmail(new EmailAddress('test@example.com'));
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');
@@ -78,7 +79,7 @@ class KpiIntervalIntegrationTest extends KernelTestCase
     public function testGetCurrentPeriodWithDifferentIntervals(): void
     {
         $user = new User();
-        $user->setEmail('test@example.com');
+        $user->setEmail(new EmailAddress('test@example.com'));
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');
@@ -117,7 +118,7 @@ class KpiIntervalIntegrationTest extends KernelTestCase
     public function testGetNextDueDateWithDifferentIntervals(): void
     {
         $user = new User();
-        $user->setEmail('test@example.com');
+        $user->setEmail(new EmailAddress('test@example.com'));
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');
@@ -147,7 +148,7 @@ class KpiIntervalIntegrationTest extends KernelTestCase
     public function testJsonSerialization(): void
     {
         $user = new User();
-        $user->setEmail('test@example.com');
+        $user->setEmail(new EmailAddress('test@example.com'));
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');
@@ -177,7 +178,7 @@ class KpiIntervalIntegrationTest extends KernelTestCase
     public function testIntervalConsistency(): void
     {
         $user = new User();
-        $user->setEmail('test@example.com');
+        $user->setEmail(new EmailAddress('test@example.com'));
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');
@@ -214,7 +215,7 @@ class KpiIntervalIntegrationTest extends KernelTestCase
     public function testPeriodCalculationEdgeCases(): void
     {
         $user = new User();
-        $user->setEmail('test@example.com');
+        $user->setEmail(new EmailAddress('test@example.com'));
         $user->setPassword('password');
         $user->setFirstName('Test');
         $user->setLastName('User');
