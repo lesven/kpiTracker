@@ -9,14 +9,14 @@ use Symfony\Component\Mailer\Transport;
 
 /**
  * Factory-Klasse für die Erstellung von Mailer-Instanzen.
- * 
+ *
  * Kapselt die komplexe Logik für SMTP-Konfiguration und DSN-String-Erstellung.
  * Reduziert Code-Duplikation bei der Mailer-Erstellung.
  */
 class MailerFactory
 {
     public function __construct(
-        private MailerInterface $defaultMailer
+        private MailerInterface $defaultMailer,
     ) {
     }
 
@@ -26,12 +26,13 @@ class MailerFactory
     public function createFromSettings(MailSettings $settings): MailerInterface
     {
         $dsn = $this->buildDsnFromSettings($settings);
-        
+
         if ($settings->isIgnoreCertificate()) {
             $this->logCertificateWarning();
         }
 
         $transport = Transport::fromDsn($dsn);
+
         return new Mailer($transport);
     }
 
@@ -51,15 +52,16 @@ class MailerFactory
         int $port,
         ?string $username = null,
         ?string $password = null,
-        bool $ignoreCertificate = false
+        bool $ignoreCertificate = false,
     ): MailerInterface {
         $dsn = $this->buildDsn($host, $port, $username, $password);
-        
+
         if ($ignoreCertificate) {
             $this->logCertificateWarning();
         }
 
         $transport = Transport::fromDsn($dsn);
+
         return new Mailer($transport);
     }
 

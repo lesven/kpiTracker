@@ -2,8 +2,8 @@
 
 namespace App\Tests\Factory;
 
-use App\Entity\MailSettings;
 use App\Domain\ValueObject\EmailAddress;
+use App\Entity\MailSettings;
 use App\Factory\MailerFactory;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Mailer\Mailer;
@@ -53,9 +53,10 @@ class MailerFactoryTest extends TestCase
         // Erwarte eine PHP User Warning wegen ignorierter Zertifikate
         $errorTriggered = false;
         set_error_handler(function ($severity, $message) use (&$errorTriggered) {
-            if ($severity === E_USER_WARNING && str_contains($message, 'Ignoring certificate validation')) {
+            if (E_USER_WARNING === $severity && str_contains($message, 'Ignoring certificate validation')) {
                 $errorTriggered = true;
             }
+
             return true;
         });
 
@@ -88,9 +89,10 @@ class MailerFactoryTest extends TestCase
         // Erwarte eine PHP User Warning wegen ignorierter Zertifikate
         $errorTriggered = false;
         set_error_handler(function ($severity, $message) use (&$errorTriggered) {
-            if ($severity === E_USER_WARNING && str_contains($message, 'Ignoring certificate validation')) {
+            if (E_USER_WARNING === $severity && str_contains($message, 'Ignoring certificate validation')) {
                 $errorTriggered = true;
             }
+
             return true;
         });
 
@@ -149,7 +151,7 @@ class MailerFactoryTest extends TestCase
         int $port,
         ?string $username = null,
         ?string $password = null,
-        bool $ignoreCertificate = false
+        bool $ignoreCertificate = false,
     ): MailSettings {
         $settings = $this->createMock(MailSettings::class);
         $settings->method('getHost')->willReturn($host);
