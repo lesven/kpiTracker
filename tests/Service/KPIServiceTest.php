@@ -17,7 +17,7 @@ class KPIServiceTest extends TestCase
             ->method('getKpiStatus')
             ->with($kpi)
             ->willReturn('green');
-        
+
         $service = new KPIService($aggregate);
         $result = $service->getKpiStatus($kpi);
         $this->assertSame('green', $result);

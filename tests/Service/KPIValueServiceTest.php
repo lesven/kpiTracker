@@ -14,7 +14,7 @@ class KPIValueServiceTest extends TestCase
         $kpiValue = $this->createMock(KPIValue::class);
         $aggregate = $this->createMock(KPIAggregate::class);
         $expectedResult = ['status' => 'success'];
-        
+
         $aggregate->expects($this->once())
             ->method('addValue')
             ->with($kpiValue, null)
@@ -22,7 +22,7 @@ class KPIValueServiceTest extends TestCase
 
         $service = new KPIValueService($aggregate);
         $result = $service->addValue($kpiValue);
-        
+
         $this->assertSame($expectedResult, $result);
     }
 
@@ -32,7 +32,7 @@ class KPIValueServiceTest extends TestCase
         $uploadedFiles = ['file1', 'file2'];
         $aggregate = $this->createMock(KPIAggregate::class);
         $expectedResult = ['status' => 'success', 'upload' => ['uploaded' => 2]];
-        
+
         $aggregate->expects($this->once())
             ->method('addValue')
             ->with($kpiValue, $uploadedFiles)
@@ -40,7 +40,7 @@ class KPIValueServiceTest extends TestCase
 
         $service = new KPIValueService($aggregate);
         $result = $service->addValue($kpiValue, $uploadedFiles);
-        
+
         $this->assertSame($expectedResult, $result);
     }
 
@@ -50,7 +50,7 @@ class KPIValueServiceTest extends TestCase
         $existingValue = $this->createMock(KPIValue::class);
         $aggregate = $this->createMock(KPIAggregate::class);
         $expectedResult = ['status' => 'duplicate', 'existing' => $existingValue];
-        
+
         $aggregate->expects($this->once())
             ->method('addValue')
             ->with($kpiValue, null)
@@ -58,7 +58,7 @@ class KPIValueServiceTest extends TestCase
 
         $service = new KPIValueService($aggregate);
         $result = $service->addValue($kpiValue);
-        
+
         $this->assertSame($expectedResult, $result);
     }
 }

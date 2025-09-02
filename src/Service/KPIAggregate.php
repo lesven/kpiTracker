@@ -10,7 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 /**
  * KPI-Aggregat: Zentrale Business-Logic für alle KPI-bezogenen Operationen.
  *
- * Diese Klasse konsolidiert die verstreute Business-Logic aus KPIService, 
+ * Diese Klasse konsolidiert die verstreute Business-Logic aus KPIService,
  * KPIStatusService und KPIValueService in einer einzigen, kohärenten Komponente.
  *
  * Verantwortlichkeiten:
@@ -40,6 +40,7 @@ class KPIAggregate
      * - GRÜN: Noch genügend Zeit bis zur Fälligkeit
      *
      * @param KPI $kpi Die zu prüfende KPI
+     *
      * @return string Status-Code: 'green', 'yellow' oder 'red'
      */
     public function getKpiStatus(KPI $kpi): string
@@ -74,6 +75,7 @@ class KPIAggregate
      * Prüft, ob für die KPI bereits ein Wert im aktuellen Zeitraum erfasst wurde.
      *
      * @param KPI $kpi Die zu prüfende KPI
+     *
      * @return bool true wenn Wert existiert, false wenn nicht
      */
     public function hasCurrentValue(KPI $kpi): bool
@@ -95,6 +97,7 @@ class KPIAggregate
      * - Trend-Indikator basierend auf den letzten 3 Werten
      *
      * @param KPI $kpi Die KPI für die Statistik-Berechnung
+     *
      * @return array Assoziatives Array mit allen statistischen Kennzahlen
      */
     public function getKpiStatistics(KPI $kpi): array
@@ -135,6 +138,7 @@ class KPIAggregate
      * - KPI muss einem Benutzer zugeordnet sein
      *
      * @param KPI $kpi Die zu validierende KPI
+     *
      * @return array Liste der Validierungsfehler (leer = valide)
      */
     public function validateKpi(KPI $kpi): array
@@ -168,8 +172,9 @@ class KPIAggregate
      * 3. Optional: Verarbeitung hochgeladener Dateien
      * 4. Rückgabe des Ergebnis-Status mit Details
      *
-     * @param KPIValue $kpiValue Der zu speichernde KPI-Wert
+     * @param KPIValue   $kpiValue      Der zu speichernde KPI-Wert
      * @param array|null $uploadedFiles Optional hochgeladene Dateien
+     *
      * @return array Ergebnis mit Status und optional Upload-Statistiken
      */
     public function addValue(KPIValue $kpiValue, ?array $uploadedFiles = null): array
@@ -202,6 +207,7 @@ class KPIAggregate
      * Prüft, ob eine KPI bald fällig ist (Status = gelb).
      *
      * @param KPI $kpi Die zu prüfende KPI
+     *
      * @return bool true wenn KPI in den nächsten 3 Tagen fällig wird
      */
     public function isDueSoon(KPI $kpi): bool
@@ -213,6 +219,7 @@ class KPIAggregate
      * Prüft, ob eine KPI überfällig ist (Status = rot).
      *
      * @param KPI $kpi Die zu prüfende KPI
+     *
      * @return bool true wenn KPI bereits überfällig ist
      */
     public function isOverdue(KPI $kpi): bool
@@ -230,6 +237,7 @@ class KPIAggregate
      * - Default: Eine Woche ab heute
      *
      * @param KPI $kpi Die KPI für die Fälligkeits-Berechnung
+     *
      * @return \DateTimeImmutable Das berechnete Fälligkeitsdatum
      */
     public function calculateDueDate(KPI $kpi): \DateTimeImmutable
@@ -248,6 +256,7 @@ class KPIAggregate
      * Berechnet die Anzahl Tage seit/bis zur Fälligkeit.
      *
      * @param KPI $kpi Die zu prüfende KPI
+     *
      * @return int Positive Zahl = Tage überfällig, negative Zahl = Tage bis Fälligkeit
      */
     public function getDaysOverdue(KPI $kpi): int
@@ -272,9 +281,10 @@ class KPIAggregate
      * - 'due_today': Am Fälligkeitstag selbst
      * - 'overdue': X Tage nach Fälligkeit (Mahnung)
      *
-     * @param array $kpis Liste der zu prüfenden KPIs
-     * @param int $daysBefore Tage vor Fälligkeit für Vorab-Erinnerung (Standard: 3)
-     * @param int $daysAfter Tage nach Fälligkeit für Nachhak-Erinnerung (Standard: 0)
+     * @param array $kpis       Liste der zu prüfenden KPIs
+     * @param int   $daysBefore Tage vor Fälligkeit für Vorab-Erinnerung (Standard: 3)
+     * @param int   $daysAfter  Tage nach Fälligkeit für Nachhak-Erinnerung (Standard: 0)
+     *
      * @return array Liste von Erinnerungs-Objekten mit KPI, Typ und Nachricht
      */
     public function getKpisForReminder(array $kpis, int $daysBefore = 3, int $daysAfter = 0): array
@@ -335,6 +345,7 @@ class KPIAggregate
      * - Schwellwerte: >5% = steigend, <-5% = fallend, dazwischen = stabil
      *
      * @param array $values Array numerischer Werte (chronologisch neueste zuerst)
+     *
      * @return string Trend-Indikator: 'rising', 'falling', 'stable', 'insufficient_data'
      */
     private function calculateTrend(array $values): string
@@ -374,6 +385,7 @@ class KPIAggregate
      * - Andernfalls: nächster kommender Montag
      *
      * @param \DateTimeImmutable $date Ausgangsdatum
+     *
      * @return \DateTimeImmutable Datum des nächsten Montags
      */
     private function getNextMonday(\DateTimeImmutable $date): \DateTimeImmutable
@@ -395,6 +407,7 @@ class KPIAggregate
      * Ermittelt den ersten Tag des nächsten Monats.
      *
      * @param \DateTimeImmutable $date Ausgangsdatum
+     *
      * @return \DateTimeImmutable Erster Tag des Folgemonats
      */
     private function getFirstOfNextMonth(\DateTimeImmutable $date): \DateTimeImmutable
@@ -412,6 +425,7 @@ class KPIAggregate
      * - Q4: Oktober (Monat 10)
      *
      * @param \DateTimeImmutable $date Ausgangsdatum
+     *
      * @return \DateTimeImmutable Erster Tag des nächsten Quartals
      */
     private function getNextQuarterStart(\DateTimeImmutable $date): \DateTimeImmutable

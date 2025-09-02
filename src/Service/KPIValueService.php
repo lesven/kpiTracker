@@ -3,8 +3,6 @@
 namespace App\Service;
 
 use App\Entity\KPIValue;
-use App\Repository\KPIValueRepository;
-use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * Service-Klasse für das Erstellen und Bearbeiten von KPI-Werten.

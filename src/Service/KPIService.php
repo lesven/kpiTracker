@@ -3,7 +3,6 @@
 namespace App\Service;
 
 use App\Entity\KPI;
-use App\Repository\KPIValueRepository;
 
 /**
  * Service-Klasse für das Management und die Business-Logik von KPIs.
