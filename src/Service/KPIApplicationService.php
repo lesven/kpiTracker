@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Domain\Event\KPIValueAdded;
 use App\Domain\Service\KPIDuplicateDetectionDomainService;
 use App\Domain\Service\KPIReminderDomainService;
 use App\Domain\Service\KPIStatisticsDomainService;
@@ -16,21 +17,20 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
- * KPI-Aggregat: Koordiniert KPI-Operationen mit Domain Services.
+ * KPI Application Service: Koordiniert KPI-Operationen mit Domain Services.
  *
- * Diese Klasse wurde von einer monolithischen Business-Logic-Implementierung
- * zu einem Application Service refactored, der spezialisierte Domain Services
- * koordiniert. Dies folgt Domain-Driven Design Prinzipien und verbessert
- * Testbarkeit, Wartbarkeit und Erweiterbarkeit.
+ * Diese Klasse dient als Anwendungsservice der alle KPI-bezogenen Operationen
+ * koordiniert. Anstatt selbst Business Logic zu implementieren, delegiert sie
+ * an spezialisierte Domain Services und orchestriert deren Zusammenspiel.
  *
  * Verantwortlichkeiten:
  * - Koordination zwischen Domain Services
  * - Transaktions-Management
  * - Event-Publishing nach Operationen
  * - Datenpersistierung
- * - Legacy-Kompatibilität für bestehende Services
+ * - Input/Output-Transformation
  */
-class KPIAggregate
+class KPIApplicationService
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
@@ -313,113 +313,104 @@ class KPIAggregate
     }
 
     /**
-     * Berechnet den Trend einer KPI basierend auf den letzten Werten.
+     * Führt eine Bulk-Operation für mehrere KPIs durch.
      *
-     * Trend-Logik:
-     * - Mindestens 2 Werte erforderlich für Trend-Berechnung
-     * - Verwendet die letzten 3 Werte (falls verfügbar)
-     * - Berechnet prozentuale Veränderung zwischen ältestem und neuestem Wert
-     * - Schwellwerte: >5% = steigend, <-5% = fallend, dazwischen = stabil
+     * @param array  $kpis      Liste der KPIs
+     * @param string $operation Operation: 'validate', 'calculate_status', 'get_statistics'
+     * @param array  $context   Zusätzlicher Kontext
      *
-     * @param array $values Array numerischer Werte (chronologisch neueste zuerst)
-     *
-     * @return string Trend-Indikator: 'rising', 'falling', 'stable', 'insufficient_data'
+     * @return array Ergebnisse der Bulk-Operation
      */
-    private function calculateTrend(array $values): string
+    public function performBulkOperation(array $kpis, string $operation, array $context = []): array
     {
-        if (count($values) < 2) {
-            return 'insufficient_data';
-        }
-
-        // Maximal die letzten 3 Werte für Trend-Berechnung verwenden
-        $recentValues = array_slice($values, 0, min(3, count($values)));
-
-        if (count($recentValues) < 2) {
-            return 'insufficient_data';
-        }
-
-        // Ältester und neuester Wert für Vergleich
-        $first = $recentValues[count($recentValues) - 1]; // Ältester der betrachteten Werte
-        $last = $recentValues[0]; // Neuester Wert (Index 0)
-
-        // Prozentuale Veränderung berechnen
-        $percentageChange = (($last - $first) / $first) * 100;
-
-        if ($percentageChange > 5) {
-            return 'rising';
-        } elseif ($percentageChange < -5) {
-            return 'falling';
-        }
-
-        return 'stable';
-    }
-
-    /**
-     * Ermittelt den nächsten Montag ab einem gegebenen Datum.
-     *
-     * Logik:
-     * - Ist heute Montag: nächster Montag in einer Woche
-     * - Andernfalls: nächster kommender Montag
-     *
-     * @param \DateTimeImmutable $date Ausgangsdatum
-     *
-     * @return \DateTimeImmutable Datum des nächsten Montags
-     */
-    private function getNextMonday(\DateTimeImmutable $date): \DateTimeImmutable
-    {
-        $dayOfWeek = (int) $date->format('N'); // ISO-8601: 1=Montag, 7=Sonntag
-
-        if (1 === $dayOfWeek) {
-            // Heute ist bereits Montag - nächster Montag in einer Woche
-            return $date->modify('+1 week');
-        }
-
-        // Tage bis zum nächsten Montag berechnen
-        $daysUntilMonday = 8 - $dayOfWeek;
-
-        return $date->modify("+{$daysUntilMonday} days");
-    }
-
-    /**
-     * Ermittelt den ersten Tag des nächsten Monats.
-     *
-     * @param \DateTimeImmutable $date Ausgangsdatum
-     *
-     * @return \DateTimeImmutable Erster Tag des Folgemonats
-     */
-    private function getFirstOfNextMonth(\DateTimeImmutable $date): \DateTimeImmutable
-    {
-        return $date->modify('first day of next month');
-    }
-
-    /**
-     * Ermittelt den Beginn des nächsten Quartals.
-     *
-     * Quartals-Definitionen:
-     * - Q1: Januar (Monat 1)
-     * - Q2: April (Monat 4)
-     * - Q3: Juli (Monat 7)
-     * - Q4: Oktober (Monat 10)
-     *
-     * @param \DateTimeImmutable $date Ausgangsdatum
-     *
-     * @return \DateTimeImmutable Erster Tag des nächsten Quartals
-     */
-    private function getNextQuarterStart(\DateTimeImmutable $date): \DateTimeImmutable
-    {
-        $currentMonth = (int) $date->format('n'); // Monat ohne führende Null (1-12)
-
-        // Nächsten Quartalsbeginn basierend auf aktuellem Monat ermitteln
-        $nextQuarterMonth = match (true) {
-            $currentMonth <= 3 => 4,  // Q1 → Q2 (April)
-            $currentMonth <= 6 => 7,  // Q2 → Q3 (Juli)
-            $currentMonth <= 9 => 10, // Q3 → Q4 (Oktober)
-            default => 1,             // Q4 → Q1 (Januar nächstes Jahr)
+        return match ($operation) {
+            'validate' => $this->validationService->validateMultipleKpis($kpis, $context),
+            'calculate_status' => $this->statusService->calculateStatusForMultiple($kpis),
+            'get_statistics' => $this->statisticsService->calculateBulkStatistics($kpis),
+            'check_reminders' => $this->reminderService->getKpisForReminder($kpis),
+            default => throw new \InvalidArgumentException("Unknown bulk operation: {$operation}")
         };
+    }
 
-        // Jahr anpassen wenn Übergang zu Q1 des nächsten Jahres
-        $year = 1 === $nextQuarterMonth ? (int) $date->format('Y') + 1 : (int) $date->format('Y');
+    /**
+     * Erstellt eine neue KPI mit vollständiger Domain Event-Unterstützung.
+     *
+     * @param array $kpiData KPI-Daten (name, interval, user, etc.)
+     * @param array $context Zusätzlicher Kontext für Creation Event
+     *
+     * @return array Ergebnis der KPI-Erstellung
+     */
+    public function createKpi(array $kpiData, array $context = []): array
+    {
+        // Validierung der Input-Daten
+        $validationErrors = $this->validationService->validateKpiData($kpiData);
+        if (!empty($validationErrors)) {
+            return [
+                'status' => 'validation_error',
+                'errors' => $validationErrors
+            ];
+        }
 
-        return new \DateTimeImmutable("{$year}-{$nextQuarterMonth}-01");
+        $this->entityManager->beginTransaction();
+        try {
+            // KPI über Factory-Methode erstellen (triggert KPICreated Event)
+            $kpi = KPI::create(
+                name: $kpiData['name'],
+                interval: $kpiData['interval'],
+                user: $kpiData['user'],
+                description: $kpiData['description'] ?? null,
+                unit: $kpiData['unit'] ?? null,
+                target: $kpiData['target'] ?? null,
+                context: $context
+            );
+
+            $this->entityManager->persist($kpi);
+            $this->entityManager->flush();
+
+            // Domain Events dispatchen
+            $events = $kpi->getRecordedEvents();
+            foreach ($events as $event) {
+                $this->eventDispatcher->dispatch($event);
+            }
+
+            $this->entityManager->commit();
+
+            return [
+                'status' => 'success',
+                'kpi' => $kpi,
+                'events_dispatched' => count($events)
+            ];
+
+        } catch (\Exception $e) {
+            $this->entityManager->rollback();
+            
+            return [
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Führt eine umfassende KPI-Analyse durch.
+     *
+     * @param KPI $kpi Die zu analysierende KPI
+     *
+     * @return array Vollständige Analyse-Ergebnisse
+     */
+    public function performKpiAnalysis(KPI $kpi): array
+    {
+        $values = $this->kpiValueRepository->findByKPI($kpi);
+        
+        return [
+            'kpi' => $kpi,
+            'status' => $this->statusService->calculateStatus($kpi),
+            'statistics' => $this->statisticsService->calculateStatistics($values),
+            'trend' => $this->statisticsService->calculateTrend($values),
+            'validation' => $this->validationService->validateKpi($kpi),
+            'reminder_info' => $this->reminderService->shouldReceiveReminder($kpi),
+            'duplicate_risks' => $this->duplicateDetectionService->identifyPatterns([$kpi]),
+            'analysis_timestamp' => new \DateTimeImmutable()
+        ];
     }
 }

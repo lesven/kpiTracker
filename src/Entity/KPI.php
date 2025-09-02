@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use App\Domain\Event\DomainEventRecorder;
+use App\Domain\Event\KPICreated;
 use App\Domain\ValueObject\DecimalValue;
 use App\Domain\ValueObject\KpiInterval;
 use App\Domain\ValueObject\Period;
@@ -25,6 +27,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: KPIRepository::class)]
 class KPI
 {
+    use DomainEventRecorder;
     /**
      * Status-Konstanten für die Dashboard-Anzeige.
      *
@@ -167,6 +170,41 @@ class KPI
     {
         $this->values = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
+    }
+
+    /**
+     * Factory-Methode für die Erstellung einer neuen KPI mit Domain Event.
+     * Sollte anstelle des direkten Konstruktor-Aufrufs verwendet werden.
+     */
+    public static function create(
+        string $name,
+        KpiInterval $interval,
+        User $user,
+        ?string $description = null,
+        ?string $unit = null,
+        ?DecimalValue $target = null,
+        array $context = []
+    ): self {
+        $kpi = new self();
+        $kpi->setName($name);
+        $kpi->setInterval($interval);
+        $kpi->setUser($user);
+        $kpi->setDescription($description);
+        $kpi->setUnit($unit);
+        $kpi->setTarget($target);
+        
+        // Prüfe ob dies die erste KPI des Benutzers ist
+        $isFirstKpi = $user->getKpis()->isEmpty();
+        
+        // Domain Event: KPI wurde erstellt
+        $kpi->recordEvent(
+            \App\Domain\Event\KPICreated::create(
+                $kpi, 
+                array_merge($context, ['is_first_kpi' => $isFirstKpi])
+            )
+        );
+        
+        return $kpi;
     }
 
     /**
@@ -355,8 +393,19 @@ class KPI
     public function addValue(KPIValue $value): static
     {
         if (!$this->values->contains($value)) {
+            $isFirstValue = $this->values->isEmpty();
+            
             $this->values->add($value);
             $value->setKpi($this);
+            
+            // Domain Event: KPI-Wert hinzugefügt
+            $this->recordEvent(
+                \App\Domain\Event\KPIValueAdded::create(
+                    $this, 
+                    $value, 
+                    ['is_first_value' => $isFirstValue]
+                )
+            );
         }
 
         return $this;
@@ -498,6 +547,49 @@ class KPI
         }
 
         return $this->isCloseToDeadline() ? self::STATUS_YELLOW : self::STATUS_RED;
+    }
+
+    /**
+     * Prüft Statusänderungen und zeichnet entsprechende Domain Events auf.
+     * Sollte von Domain Services aufgerufen werden, um Status-Übergänge zu überwachen.
+     */
+    public function checkAndRecordStatusChange(string $previousStatus): void
+    {
+        $currentStatus = $this->getStatus();
+        
+        // Nur Events aufzeichnen wenn sich Status verschlechtert hat zu rot
+        if ($currentStatus === self::STATUS_RED && $previousStatus !== self::STATUS_RED) {
+            $this->recordKPIBecameOverdueEvent($previousStatus, $currentStatus);
+        }
+    }
+
+    /**
+     * Zeichnet das KPIBecameOverdue Event auf.
+     */
+    private function recordKPIBecameOverdueEvent(string $previousStatus, string $currentStatus): void
+    {
+        $now = new \DateTimeImmutable();
+        $dueDate = $this->getNextDueDate();
+        $daysOverdue = max(0, $now->diff($dueDate)->days);
+        
+        // Konvertiere String-Status zu ValueObjects (für Domain Event)
+        $previousStatusVO = match($previousStatus) {
+            self::STATUS_GREEN => \App\Domain\ValueObject\KPIStatus::green(),
+            self::STATUS_YELLOW => \App\Domain\ValueObject\KPIStatus::yellow(),
+            default => \App\Domain\ValueObject\KPIStatus::red(),
+        };
+        
+        $currentStatusVO = \App\Domain\ValueObject\KPIStatus::red();
+        
+        $this->recordEvent(
+            \App\Domain\Event\KPIBecameOverdue::create(
+                $this,
+                $previousStatusVO,
+                $currentStatusVO,
+                $daysOverdue,
+                $dueDate
+            )
+        );
     }
 
     /**
