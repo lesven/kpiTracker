@@ -3,6 +3,7 @@
 namespace App\Tests\Integration\ValueObject;
 
 use App\Domain\ValueObject\DecimalValue;
+use App\Domain\ValueObject\EmailAddress;
 use App\Domain\ValueObject\KpiInterval;
 use App\Domain\ValueObject\Period;
 use App\Entity\KPI;
@@ -20,7 +21,7 @@ class PeriodIntegrationTest extends TestCase
     {
         // Create test entities
         $user = new User();
-        $user->setEmail('period-test@example.com');
+        $user->setEmail(new EmailAddress('period-test@example.com'));
         $user->setPassword('password');
         $user->setFirstName('Period');
         $user->setLastName('Test');
@@ -46,7 +47,7 @@ class PeriodIntegrationTest extends TestCase
     public function testPeriodWithDifferentIntervals(): void
     {
         $user = new User();
-        $user->setEmail('interval-test@example.com');
+        $user->setEmail(new EmailAddress('interval-test@example.com'));
         $user->setPassword('password');
         $user->setFirstName('Interval');
         $user->setLastName('Test');
@@ -94,7 +95,7 @@ class PeriodIntegrationTest extends TestCase
     public function testPeriodCurrentGeneration(): void
     {
         $user = new User();
-        $user->setEmail('current-test@example.com');
+        $user->setEmail(new EmailAddress('current-test@example.com'));
         $user->setPassword('password');
         $user->setFirstName('Current');
         $user->setLastName('Test');
@@ -187,7 +188,7 @@ class PeriodIntegrationTest extends TestCase
     {
         // Test that invalid periods are properly rejected when used with entities
         $user = new User();
-        $user->setEmail('validation-test@example.com');
+        $user->setEmail(new EmailAddress('validation-test@example.com'));
         $user->setPassword('password');
         $user->setFirstName('Validation');
         $user->setLastName('Test');
