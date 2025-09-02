@@ -5,11 +5,8 @@ namespace App\Service;
 use App\Entity\KPI;
 use App\Entity\User;
 use App\Repository\KPIRepository;
-use App\Domain\ValueObject\EmailAddress;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Mime\Email;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Twig\Environment;
+use App\Factory\ReminderEmailFactory;
 
 /**
  * Service-Klasse für das Versenden von E-Mail-Erinnerungen und Eskalationen.
@@ -18,18 +15,13 @@ use Twig\Environment;
  */
 class ReminderService
 {
-    private readonly EmailAddress $fromEmailAddress;
-
     public function __construct(
         private readonly ConfigurableMailer $mailer,
-        private readonly Environment $twig,
-        private readonly UrlGeneratorInterface $urlGenerator,
         private readonly KPIStatusService $kpiStatusService,
         private readonly KPIRepository $kpiRepository,
         private readonly LoggerInterface $logger,
-        string $fromEmail = 'noreply@kpi-tracker.local',
+        private readonly ReminderEmailFactory $emailFactory,
     ) {
-        $this->fromEmailAddress = new EmailAddress($fromEmail);
     }
 
     /**
@@ -121,16 +113,7 @@ class ReminderService
     private function sendUpcomingReminder(User $user, array $reminders): bool
     {
         try {
-            $email = (new Email())
-                ->from($this->fromEmailAddress->getValue())
-                ->to($user->getEmail()->getValue())
-                ->subject('KPI-Erinnerung: Fällige Einträge in 3 Tagen')
-                ->html($this->twig->render('emails/upcoming_reminder.html.twig', [
-                    'user' => $user,
-                    'reminders' => $reminders,
-                    'dashboard_url' => $this->urlGenerator->generate('app_dashboard', [], UrlGeneratorInterface::ABSOLUTE_URL),
-                ]));
-
+            $email = $this->emailFactory->createUpcomingReminder($user, $reminders);
             $this->mailer->send($email);
 
             $this->logger->info('Upcoming reminder sent', [
@@ -155,16 +138,7 @@ class ReminderService
     private function sendDueTodayReminder(User $user, array $reminders): bool
     {
         try {
-            $email = (new Email())
-                ->from($this->fromEmailAddress->getValue())
-                ->to($user->getEmail()->getValue())
-                ->subject('KPI-Erinnerung: Einträge sind heute fällig')
-                ->html($this->twig->render('emails/due_today_reminder.html.twig', [
-                    'user' => $user,
-                    'reminders' => $reminders,
-                    'dashboard_url' => $this->urlGenerator->generate('app_dashboard', [], UrlGeneratorInterface::ABSOLUTE_URL),
-                ]));
-
+            $email = $this->emailFactory->createDueTodayReminder($user, $reminders);
             $this->mailer->send($email);
 
             $this->logger->info('Due today reminder sent', [
@@ -189,24 +163,7 @@ class ReminderService
     private function sendOverdueReminder(User $user, array $reminders, int $daysOverdue): bool
     {
         try {
-            $urgencyLevel = match ($daysOverdue) {
-                7 => 'medium',
-                14 => 'high',
-                default => 'low',
-            };
-
-            $email = (new Email())
-                ->from($this->fromEmailAddress->getValue())
-                ->to($user->getEmail()->getValue())
-                ->subject("DRINGEND: KPI-Einträge sind seit {$daysOverdue} Tagen überfällig")
-                ->html($this->twig->render('emails/overdue_reminder.html.twig', [
-                    'user' => $user,
-                    'reminders' => $reminders,
-                    'days_overdue' => $daysOverdue,
-                    'urgency_level' => $urgencyLevel,
-                    'dashboard_url' => $this->urlGenerator->generate('app_dashboard', [], UrlGeneratorInterface::ABSOLUTE_URL),
-                ]));
-
+            $email = $this->emailFactory->createOverdueReminder($user, $reminders, $daysOverdue);
             $this->mailer->send($email);
 
             $this->logger->info('Overdue reminder sent', [
@@ -248,18 +205,7 @@ class ReminderService
             }
 
             foreach ($admins as $admin) {
-                $email = (new Email())
-                    ->from($this->fromEmailAddress->getValue())
-                    ->to($admin->getEmail()->getValue())
-                    ->subject('ESKALATION: KPI-Einträge seit 21 Tagen überfällig')
-                    ->html($this->twig->render('emails/escalation_to_admin.html.twig', [
-                        'admin' => $admin,
-                        'user' => $user,
-                        'reminders' => $reminders,
-                        'days_overdue' => 21,
-                        'admin_url' => $this->urlGenerator->generate('app_admin_dashboard', [], UrlGeneratorInterface::ABSOLUTE_URL),
-                    ]));
-
+                $email = $this->emailFactory->createEscalation($admin, $user, $reminders);
                 $this->mailer->send($email);
             }
 
@@ -286,15 +232,7 @@ class ReminderService
     public function sendTestEmail(string $recipientEmail): bool
     {
         try {
-            $email = (new Email())
-                ->from($this->fromEmailAddress->getValue())
-                ->to($recipientEmail)
-                ->subject('KPI-Tracker: Test-E-Mail')
-                ->html($this->twig->render('emails/test_email.html.twig', [
-                    'recipient' => $recipientEmail,
-                    'timestamp' => new \DateTimeImmutable(),
-                ]));
-
+            $email = $this->emailFactory->createTestEmail($recipientEmail);
             $this->mailer->send($email);
 
             $this->logger->info('Test email sent', [
