@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\KPI;
 use App\Entity\KPIValue;
-use App\Domain\ValueObject\Period;
 use App\Entity\User;
 use App\Factory\KPIFactory;
 use App\Factory\KPIValueFactory;
@@ -214,7 +213,7 @@ class KPIController extends AbstractController
 
         $kpiValue = $this->kpiValueFactory->create($kpi);
 
-    // Aktuellen Zeitraum wird bereits im Factory gesetzt
+        // Aktuellen Zeitraum wird bereits im Factory gesetzt
 
         $form = $this->createForm(KPIValueType::class, $kpiValue);
         $form->handleRequest($request);

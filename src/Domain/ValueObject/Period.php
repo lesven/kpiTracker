@@ -28,21 +28,21 @@ final class Period
 
         // Additional validation
         if (preg_match('/^(\d{4})-(\d{1,2})$/', $value, $matches)) {
-            $month = (int)$matches[2];
+            $month = (int) $matches[2];
             if ($month < 1 || $month > 12) {
                 throw new \InvalidArgumentException('Ungültiger Monat. Monate müssen zwischen 01 und 12 liegen.');
             }
         }
 
         if (preg_match('/^(\d{4})-W(\d{1,2})$/', $value, $matches)) {
-            $week = (int)$matches[2];
+            $week = (int) $matches[2];
             if ($week < 1 || $week > 53) {
                 throw new \InvalidArgumentException('Ungültige Woche. Wochen müssen zwischen 01 und 53 liegen.');
             }
         }
 
         if (preg_match('/^(\d{4})-Q(\d)$/', $value, $matches)) {
-            $quarter = (int)$matches[2];
+            $quarter = (int) $matches[2];
             if ($quarter < 1 || $quarter > 4) {
                 throw new \InvalidArgumentException('Ungültiges Quartal. Quartale müssen zwischen 1 und 4 liegen.');
             }
@@ -106,12 +106,12 @@ final class Period
     /**
      * Creates a Period from a date and interval.
      */
-    public static function fromDate(\DateTimeInterface $date, \App\Domain\ValueObject\KpiInterval $interval): self
+    public static function fromDate(\DateTimeInterface $date, KpiInterval $interval): self
     {
         $periodString = match ($interval) {
-            \App\Domain\ValueObject\KpiInterval::WEEKLY => $date->format('Y-\WW'),
-            \App\Domain\ValueObject\KpiInterval::MONTHLY => $date->format('Y-m'),
-            \App\Domain\ValueObject\KpiInterval::QUARTERLY => $date->format('Y').'-Q'.ceil($date->format('n') / 3),
+            KpiInterval::WEEKLY => $date->format('Y-\WW'),
+            KpiInterval::MONTHLY => $date->format('Y-m'),
+            KpiInterval::QUARTERLY => $date->format('Y').'-Q'.ceil($date->format('n') / 3),
         };
 
         return new self($periodString);
@@ -120,7 +120,7 @@ final class Period
     /**
      * Creates a Period for the current date with the given interval.
      */
-    public static function current(\App\Domain\ValueObject\KpiInterval $interval): self
+    public static function current(KpiInterval $interval): self
     {
         return self::fromDate(new \DateTimeImmutable(), $interval);
     }

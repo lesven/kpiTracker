@@ -2,8 +2,8 @@
 
 namespace App\Form;
 
-use App\Entity\MailSettings;
 use App\Domain\ValueObject\EmailAddress;
+use App\Entity\MailSettings;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -73,7 +73,7 @@ class MailSettingsType extends AbstractType
         $builder->get('username')
             ->addModelTransformer(new CallbackTransformer(
                 fn (?EmailAddress $email) => $email?->getValue() ?? '',
-                fn (?string $value) => $value !== null && trim($value) !== '' ? new EmailAddress($value) : null
+                fn (?string $value) => null !== $value && '' !== trim($value) ? new EmailAddress($value) : null
             ));
     }
 

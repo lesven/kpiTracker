@@ -3,9 +3,9 @@
 namespace App\Tests\Integration\ValueObject;
 
 use App\Domain\ValueObject\DecimalValue;
+use App\Domain\ValueObject\EmailAddress;
 use App\Domain\ValueObject\KpiInterval;
 use App\Domain\ValueObject\Period;
-use App\Domain\ValueObject\EmailAddress;
 use App\Entity\User;
 use App\Factory\KPIFactory;
 use App\Factory\KPIValueFactory;
@@ -163,9 +163,8 @@ class DecimalValueIntegrationTest extends KernelTestCase
         $kpiValue->setValue(new DecimalValue('5000,00'));
 
         $stringRepresentation = (string) $kpiValue;
-        
+
         $this->assertStringContainsString('5000,00', $stringRepresentation);
         $this->assertStringContainsString('September 2024', $stringRepresentation);
     }
-
 }

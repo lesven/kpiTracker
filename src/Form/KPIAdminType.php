@@ -8,10 +8,10 @@ use App\Entity\KPI;
 use App\Entity\User;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -93,7 +93,7 @@ class KPIAdminType extends AbstractType
         $builder->get('target')
             ->addModelTransformer(new CallbackTransformer(
                 fn (?DecimalValue $value) => $value?->format() ?? '',
-                fn (?string $value) => $value !== null && $value !== '' ? new DecimalValue($value) : null
+                fn (?string $value) => null !== $value && '' !== $value ? new DecimalValue($value) : null
             ));
     }
 

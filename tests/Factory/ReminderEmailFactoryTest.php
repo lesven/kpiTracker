@@ -2,13 +2,13 @@
 
 namespace App\Tests\Factory;
 
-use App\Factory\ReminderEmailFactory;
-use App\Entity\User;
 use App\Domain\ValueObject\EmailAddress;
+use App\Entity\User;
+use App\Factory\ReminderEmailFactory;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
-use Symfony\Component\Mime\Email;
 
 class ReminderEmailFactoryTest extends TestCase
 {

@@ -2,9 +2,10 @@
 
 namespace App\Controller;
 
+use App\Domain\ValueObject\EmailAddress;
 use App\Entity\KPI;
 use App\Entity\User;
-use App\Domain\ValueObject\EmailAddress;
+use App\Factory\UserFactory;
 use App\Form\KPIAdminType;
 use App\Form\MailSettingsType;
 use App\Form\UserType;
@@ -35,6 +36,7 @@ class AdminController extends AbstractController
         private KPIValueRepository $kpiValueRepository,
         private ExcelExportService $excelExportService,
         private AdminService $adminService,
+        private UserFactory $userFactory,
     ) {
     }
 
@@ -78,7 +80,7 @@ class AdminController extends AbstractController
     #[Route('/users/new', name: 'app_admin_user_new', methods: ['GET', 'POST'])]
     public function newUser(Request $request): Response
     {
-        $user = new User();
+        $user = $this->userFactory->createRegularUser('', '', '');
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
 
@@ -312,7 +314,7 @@ class AdminController extends AbstractController
             try {
                 // Verwende EmailAddress Value Object für Validierung
                 $emailAddress = new EmailAddress($testEmail);
-                
+
                 $success = $this->adminService->sendTestReminder($emailAddress->getValue());
 
                 if ($success) {
@@ -323,10 +325,10 @@ class AdminController extends AbstractController
                     $result = ['success' => false, 'email' => $emailAddress->getValue()];
                 }
             } catch (\InvalidArgumentException $e) {
-                $this->addFlash('error', 'Ungültige E-Mail-Adresse: ' . $e->getMessage());
+                $this->addFlash('error', 'Ungültige E-Mail-Adresse: '.$e->getMessage());
                 $result = ['success' => false, 'email' => $testEmail, 'error' => $e->getMessage()];
             } catch (\Exception $e) {
-                $this->addFlash('error', 'Fehler: ' . $e->getMessage());
+                $this->addFlash('error', 'Fehler: '.$e->getMessage());
                 $result = ['success' => false, 'email' => $testEmail, 'error' => $e->getMessage()];
             }
         }

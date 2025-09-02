@@ -2,9 +2,9 @@
 
 namespace App\Tests\Service;
 
+use App\Domain\ValueObject\Period;
 use App\Entity\KPI;
 use App\Entity\KPIValue;
-use App\Domain\ValueObject\Period;
 use App\Repository\KPIValueRepository;
 use App\Service\FileUploadService;
 use App\Service\KPIValueService;

@@ -2,14 +2,14 @@
 
 namespace App\Tests\Service;
 
+use App\DTO\DashboardKpiEntry;
 use App\Entity\KPI;
 use App\Entity\User;
+use App\Factory\DashboardKpiEntryFactory;
 use App\Repository\KPIRepository;
 use App\Repository\KPIValueRepository;
 use App\Service\DashboardService;
 use App\Service\KPIStatusService;
-use App\DTO\DashboardKpiEntry;
-use App\Factory\DashboardKpiEntryFactory;
 use PHPUnit\Framework\TestCase;
 
 class DashboardServiceTest extends TestCase

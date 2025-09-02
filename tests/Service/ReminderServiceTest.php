@@ -2,14 +2,14 @@
 
 namespace App\Tests\Service;
 
+use App\Domain\ValueObject\EmailAddress;
+use App\Factory\ReminderEmailFactory;
 use App\Repository\KPIRepository;
 use App\Service\ConfigurableMailer;
 use App\Service\KPIStatusService;
 use App\Service\ReminderService;
-use App\Domain\ValueObject\EmailAddress;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use App\Factory\ReminderEmailFactory;
 
 class ReminderServiceTest extends TestCase
 {

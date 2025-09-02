@@ -46,7 +46,7 @@ class DecimalValueTest extends TestCase
         $value = new DecimalValue('-456,78');
         $this->assertSame(-456.78, $value->toFloat());
         $this->assertSame('-456,78', $value->format());
-        
+
         $value2 = new DecimalValue('-100.50');
         $this->assertSame(-100.50, $value2->toFloat());
         $this->assertSame('-100,50', $value2->format());
@@ -71,7 +71,7 @@ class DecimalValueTest extends TestCase
         $value = new DecimalValue('0');
         $this->assertSame(0.00, $value->toFloat());
         $this->assertSame('0,00', $value->format());
-        
+
         $value2 = new DecimalValue('0,00');
         $this->assertSame(0.00, $value2->toFloat());
         $this->assertSame('0,00', $value2->format());
@@ -211,7 +211,7 @@ class DecimalValueTest extends TestCase
     {
         $value1 = new DecimalValue('100,50');
         $value2 = DecimalValue::fromString('100,50');
-        
+
         $this->assertNotSame($value1, $value2); // Different instances
         $this->assertSame($value1->getValue(), $value2->getValue()); // Same value
     }
@@ -222,17 +222,17 @@ class DecimalValueTest extends TestCase
     public function testJsonSerialization(): void
     {
         $value = new DecimalValue('1234,56');
-        
+
         // Test direct serialization
         $data = [
             'value_float' => $value->toFloat(),
             'value_formatted' => $value->format(),
             'value_raw' => $value->getValue(),
         ];
-        
+
         $json = json_encode($data);
         $decoded = json_decode($json, true);
-        
+
         $this->assertSame(1234.56, $decoded['value_float']);
         $this->assertSame('1234,56', $decoded['value_formatted']);
         $this->assertSame('1234.56', $decoded['value_raw']);
@@ -246,11 +246,11 @@ class DecimalValueTest extends TestCase
         // Test smallest positive value
         $small = new DecimalValue('0,01');
         $this->assertSame(0.01, $small->toFloat());
-        
+
         // Test zero
         $zero = new DecimalValue('0');
         $this->assertSame(0.00, $zero->toFloat());
-        
+
         // Test largest reasonable value (within decimal precision)
         $large = new DecimalValue('9999999,99');
         $this->assertSame(9999999.99, $large->toFloat());

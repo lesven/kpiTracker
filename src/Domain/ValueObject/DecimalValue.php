@@ -16,7 +16,7 @@ final class DecimalValue
     public function __construct(string $value)
     {
         $normalized = str_replace(',', '.', trim($value));
-        
+
         if (!is_numeric($normalized)) {
             throw new \InvalidArgumentException(sprintf('Ungültiger Dezimalwert "%s"', $value));
         }

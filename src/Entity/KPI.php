@@ -113,7 +113,7 @@ class KPI
     /**
      * Zielwert für den KPI.
      *
-     * @var \App\Domain\ValueObject\DecimalValue|null
+     * @var DecimalValue|null
      */
     private ?DecimalValue $target = null;
 

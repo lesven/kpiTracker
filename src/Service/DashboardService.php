@@ -8,7 +8,6 @@ use App\Entity\User;
 use App\Factory\DashboardKpiEntryFactory;
 use App\Repository\KPIRepository;
 use App\Repository\KPIValueRepository;
-use App\Service\KPIStatusService;
 
 /**
  * Service-Klasse zur Aufbereitung und Berechnung von Dashboard-Daten.
