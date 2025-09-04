@@ -1,7 +1,7 @@
 # Makefile für KPI-Tracker
 # Vereinfacht die häufigsten Entwicklungsaufgaben
 
-.PHONY: help install start stop restart build test coverage lint fix clean migrate seed fix-permissions fresh-install
+.PHONY: help install start stop restart build test coverage coverage-table coverage-detail coverage-summary lint fix clean migrate seed fix-permissions fresh-install
 
 # Standard-Ziel
 help: ## Zeigt diese Hilfe an
@@ -79,8 +79,29 @@ performance-test: ## Testet Performance-Basics
 	@echo "Teste Response Time..."
 	@curl -w "@scripts/curl-format.txt" -o /dev/null -s http://localhost:8080/ || echo "Anwendung nicht erreichbar auf localhost:8080"
 
-coverage: ## Erstellt Test-Coverage-Report
-	docker compose exec --workdir /var/www/html app ./vendor/bin/phpunit --coverage-html coverage/
+coverage: ## Erstellt Test-Coverage-Report (HTML + detaillierte Shell-Ausgabe)
+	@echo "🧪 Generiere Code Coverage Report..."
+	docker compose exec --workdir /var/www/html app bash -c "XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html coverage/ --coverage-text --coverage-clover=coverage.xml"
+	@echo ""
+	@echo "📊 Coverage Report pro Klasse:"
+	@echo "================================"
+	@docker compose exec --workdir /var/www/html app php scripts/coverage-parser.php
+
+coverage-detail: ## Zeigt detaillierte Coverage pro Datei in der Shell  
+	@echo "📈 Generiere detaillierte Coverage-Analyse..."
+	@docker compose exec --workdir /var/www/html app bash -c "XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text --coverage-filter=src/ --testdox --coverage-text-show-uncovered"
+
+coverage-table: ## Zeigt Coverage pro Klasse in schöner Tabellenform
+	@echo "📊 Generiere Coverage-Tabelle..."
+	@docker compose exec --workdir /var/www/html app bash -c "XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-clover=coverage.xml >/dev/null 2>&1"
+	@docker compose exec --workdir /var/www/html app php scripts/coverage-parser.php
+
+coverage-summary: ## Zeigt kompakte Coverage-Zusammenfassung
+	@echo "📈 Code Coverage Zusammenfassung:"
+	@echo "========================================"
+	@docker compose exec --workdir /var/www/html app bash -c "XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text --colors=never" | grep -E "(Classes|Methods|Lines):" || echo "Coverage-Daten nicht verfügbar"
+	@echo "========================================"
+	@docker compose exec --workdir /var/www/html app bash -c "ls -la coverage/ | grep -E '\\.html$$' | wc -l" 2>/dev/null | xargs -I {} echo "📄 {} HTML-Dateien generiert"
 
 lint: ## Prüft Code-Style (PSR-12)
 	docker compose exec --workdir /var/www/html app ./vendor/bin/php-cs-fixer fix --dry-run --diff

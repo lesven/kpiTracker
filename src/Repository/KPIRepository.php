@@ -84,7 +84,7 @@ class KPIRepository extends ServiceEntityRepository
             ->andWhere('k.name LIKE :term')
             ->setParameter('term', '%'.$searchTerm.'%')
             ->orderBy('k.name', 'ASC')
-            ->addOrderBy('u.email', 'ASC')
+            ->addOrderBy('u.email.value', 'ASC')
             ->setMaxResults(50)
             ->getQuery()
             ->getResult();
@@ -100,7 +100,7 @@ class KPIRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('k')
             ->join('k.user', 'u')
             ->addSelect('u')
-            ->orderBy('u.email', 'ASC')
+            ->orderBy('u.email.value', 'ASC')
             ->addOrderBy('k.name', 'ASC')
             ->getQuery()
             ->getResult();

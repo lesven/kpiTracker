@@ -58,3 +58,5 @@ backup_*.sql
 /.php-cs-fixer.cache
 ###< friendsofphp/php-cs-fixer ###
 .phpunit.cache/test-results
+coverage.xml
+coverage.txt
