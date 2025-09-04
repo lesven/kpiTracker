@@ -5,14 +5,11 @@ namespace App\Controller;
 use App\Entity\KPI;
 use App\Entity\KPIValue;
 use App\Entity\User;
-use App\Factory\KPIFactory;
-use App\Factory\KPIValueFactory;
 use App\Form\KPIType;
 use App\Form\KPIValueType;
 use App\Repository\KPIRepository;
 use App\Repository\KPIValueRepository;
-use App\Service\KPIService;
-use App\Service\KPIValueService;
+use App\Service\KPIApplicationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Cookie;
@@ -42,10 +39,7 @@ class KPIController extends AbstractController
         private EntityManagerInterface $entityManager,
         private KPIRepository $kpiRepository,
         private KPIValueRepository $kpiValueRepository,
-        private KPIService $kpiService,
-        private KPIValueService $kpiValueService,
-        private KPIFactory $kpiFactory,
-        private KPIValueFactory $kpiValueFactory,
+        private KPIApplicationService $kpiApplicationService,
     ) {
     }
 
@@ -102,7 +96,8 @@ class KPIController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $kpi = $this->kpiFactory->createForUser($user);
+        $kpi = new KPI();
+        $kpi->setUser($user);
         $form = $this->createForm(KPIType::class, $kpi);
         $form->handleRequest($request);
 
@@ -135,7 +130,7 @@ class KPIController extends AbstractController
         $this->denyAccessUnlessGranted('view', $kpi);
 
         $values = $this->kpiValueRepository->findByKPI($kpi);
-        $status = $this->kpiService->getKpiStatus($kpi);
+        $status = $this->kpiApplicationService->getKpiStatus($kpi);
 
         return $this->render('kpi/show.html.twig', [
             'kpi' => $kpi,
@@ -211,7 +206,9 @@ class KPIController extends AbstractController
     {
         $this->denyAccessUnlessGranted('add_value', $kpi);
 
-        $kpiValue = $this->kpiValueFactory->create($kpi);
+        $kpiValue = new KPIValue();
+        $kpiValue->setKpi($kpi);
+        $kpiValue->setPeriod($kpi->getCurrentPeriod());
         $currentPeriod = $kpiValue->getPeriod();
 
         $form = $this->createForm(KPIValueType::class, $kpiValue);
@@ -219,7 +216,7 @@ class KPIController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $uploadedFiles = $form->get('uploadedFiles')->getData();
-            $result = $this->kpiValueService->addValue($kpiValue, $uploadedFiles);
+            $result = $this->kpiApplicationService->addValue($kpiValue, $uploadedFiles);
 
             if ('duplicate' === $result['status']) {
                 $period = $kpiValue->getPeriod();

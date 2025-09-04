@@ -12,37 +12,37 @@ use App\Entity\KPI;
 class KPIStatusService
 {
     public function __construct(
-        private KPIAggregate $kpiAggregate,
+        private KPIApplicationService $kpiApplicationService,
     ) {
     }
 
     public function getKpiStatus(KPI $kpi): string
     {
-        return $this->kpiAggregate->getKpiStatus($kpi);
+        return $this->kpiApplicationService->getKpiStatus($kpi);
     }
 
     public function isDueSoon(KPI $kpi): bool
     {
-        return $this->kpiAggregate->isDueSoon($kpi);
+        return $this->kpiApplicationService->isDueSoon($kpi);
     }
 
     public function isOverdue(KPI $kpi): bool
     {
-        return $this->kpiAggregate->isOverdue($kpi);
+        return $this->kpiApplicationService->isOverdue($kpi);
     }
 
     public function calculateDueDate(KPI $kpi): \DateTimeImmutable
     {
-        return $this->kpiAggregate->calculateDueDate($kpi);
+        return $this->kpiApplicationService->calculateDueDate($kpi);
     }
 
     public function getDaysOverdue(KPI $kpi): int
     {
-        return $this->kpiAggregate->getDaysOverdue($kpi);
+        return $this->kpiApplicationService->getDaysOverdue($kpi);
     }
 
     public function getKpisForReminder(array $kpis, int $daysBefore = 3, int $daysAfter = 0): array
     {
-        return $this->kpiAggregate->getKpisForReminder($kpis, $daysBefore, $daysAfter);
+        return $this->kpiApplicationService->getKpisForReminder($kpis, $daysBefore, $daysAfter);
     }
 }
