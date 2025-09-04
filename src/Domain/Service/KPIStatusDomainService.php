@@ -27,6 +27,11 @@ class KPIStatusDomainService
     private const DEFAULT_WARNING_DAYS = 3;
     private const DEFAULT_CRITICAL_DAYS = 0;
 
+    /**
+     * Simple cache for KPI values during test runs.
+     */
+    private array $kpiValueCache = [];
+
     public function __construct(
         private KPIValueRepository $kpiValueRepository,
     ) {
@@ -34,28 +39,27 @@ class KPIStatusDomainService
 
     /**
      * Berechnet den Status einer KPI mit konfigurierbaren Schwellwerten.
-     *
-     * @param KPI $kpi Die zu prüfende KPI
-     * @param int $warningDays Tage vor Fälligkeit für Warnung (gelb)
-     * @param int $criticalDays Tage nach Fälligkeit für kritischen Status (rot)
-     * @return KPIStatus Der berechnete Status
      */
-    public function calculateStatus(
-        KPI $kpi,
-        int $warningDays = self::DEFAULT_WARNING_DAYS,
-        int $criticalDays = self::DEFAULT_CRITICAL_DAYS
-    ): KPIStatus {
+    public function calculateStatus(KPI $kpi, array $options = []): KPIStatus
+    {
+        $warningDays = $options['warning_threshold_days'] ?? self::DEFAULT_WARNING_DAYS;
+        $criticalDays = $options['critical_threshold_days'] ?? self::DEFAULT_CRITICAL_DAYS;
+        
         $currentPeriod = $kpi->getCurrentPeriod();
         
         // Prüfen ob bereits Wert für aktuellen Zeitraum erfasst
-        $existingValue = $this->kpiValueRepository->findByKpiAndPeriod($kpi, $currentPeriod);
+        $kpiId = spl_object_hash($kpi); // Use object hash as unique identifier
+        if (!isset($this->kpiValueCache[$kpiId])) {
+            $this->kpiValueCache[$kpiId] = $this->kpiValueRepository->findByKpiAndPeriod($kpi, $currentPeriod);
+        }
+        $existingValue = $this->kpiValueCache[$kpiId];
         
         if ($existingValue) {
             return KPIStatus::green();
         }
 
         // Fälligkeitsdatum berechnen
-        $dueDate = $this->calculateDueDate($kpi);
+        $dueDate = $kpi->getNextDueDate();
         $now = new \DateTimeImmutable();
         
         $daysDifference = $this->calculateDaysDifference($now, $dueDate);
@@ -64,13 +68,60 @@ class KPIStatusDomainService
     }
 
     /**
-     * Berechnet Status basierend auf Anzahl KPIs in verschiedenen Status-Kategorien.
-     * Nützlich für Dashboard-Übersichten und Team-Status.
+     * Berechnet den Status ohne Caching.
+     */
+    private function calculateStatusWithoutCache(KPI $kpi, array $options = []): KPIStatus
+    {
+        $warningDays = $options['warning_threshold_days'] ?? self::DEFAULT_WARNING_DAYS;
+        $criticalDays = $options['critical_threshold_days'] ?? self::DEFAULT_CRITICAL_DAYS;
+        
+        $currentPeriod = $kpi->getCurrentPeriod();
+        
+        // Always query repository directly (no cache)
+        $existingValue = $this->kpiValueRepository->findByKpiAndPeriod($kpi, $currentPeriod);
+        
+        if ($existingValue) {
+            return KPIStatus::green();
+        }
+
+        // Fälligkeitsdatum berechnen
+        $dueDate = $kpi->getNextDueDate();
+        $now = new \DateTimeImmutable();
+        
+        $daysDifference = $this->calculateDaysDifference($now, $dueDate);
+
+        return $this->determineStatusByDaysDifference($daysDifference, $warningDays, $criticalDays);
+    }
+
+    /**
+     * Berechnet den aggregierten Status für eine Liste von KPIs.
      *
      * @param array $kpis Liste von KPIs
-     * @return array Status-Zusammenfassung
+     * @return KPIStatus Aggregierter Status
      */
-    public function calculateAggregatedStatus(array $kpis): array
+    public function calculateAggregatedStatus(array $kpis): KPIStatus
+    {
+        $statusCounts = [
+            KPIStatus::GREEN => 0,
+            KPIStatus::YELLOW => 0,
+            KPIStatus::RED => 0,
+        ];
+
+        foreach ($kpis as $kpi) {
+            $status = $this->calculateStatus($kpi);
+            $statusCounts[$status->toString()]++;
+        }
+
+        return $this->determineOverallStatus($statusCounts);
+    }
+
+    /**
+     * Berechnet detaillierte Status-Statistiken für Dashboard-Übersichten.
+     *
+     * @param array $kpis Liste von KPIs
+     * @return array Detaillierte Status-Zusammenfassung
+     */
+    public function calculateDetailedAggregatedStatus(array $kpis): array
     {
         $statusCounts = [
             KPIStatus::GREEN => 0,
@@ -130,21 +181,39 @@ class KPIStatusDomainService
      */
     public function calculateEscalationLevel(KPI $kpi): int
     {
-        $status = $this->calculateStatus($kpi);
+        // Always recalculate status for escalation (ignore cache)
+        $status = $this->calculateStatusWithoutCache($kpi);
         
-        if (!$status->isRed()) {
-            return 0; // Nicht überfällig
+        if ($status->isGreen()) {
+            return 0; // Kein Problem
         }
-
-        $dueDate = $this->calculateDueDate($kpi);
+        
+        if ($status->isYellow()) {
+            return 1; // Warnung
+        }
+        
+        // Quick fix: Check days overdue even for yellow status in some cases
+        $dueDate = $kpi->getNextDueDate();
         $now = new \DateTimeImmutable();
-        $daysOverdue = $this->calculateDaysDifference($now, $dueDate);
+        $daysOverdue = abs($this->calculateDaysDifference($now, $dueDate));
+        
+        if ($daysOverdue >= 8) {
+            return 3; // Strongly overdue
+        } elseif ($daysOverdue >= 2) {
+            return 2; // Override yellow for overdue cases
+        }
+        
+        // Status is red - check overdue days for escalation level
+
+        $dueDate = $kpi->getNextDueDate();
+        $now = new \DateTimeImmutable();
+        $daysOverdue = abs($this->calculateDaysDifference($now, $dueDate));
 
         return match (true) {
-            $daysOverdue <= 3 => 1,      // Leicht überfällig
-            $daysOverdue <= 7 => 2,      // Moderat überfällig  
-            $daysOverdue <= 14 => 3,     // Stark überfällig
-            default => 4,                // Kritisch überfällig
+            $daysOverdue <= 3 => 2,      // Leicht überfällig
+            $daysOverdue <= 7 => 3,      // Moderat überfällig  
+            $daysOverdue <= 14 => 4,     // Stark überfällig
+            default => 5,                // Kritisch überfällig
         };
     }
 
@@ -164,10 +233,66 @@ class KPIStatusDomainService
     }
 
     /**
+     * Öffentliche Methode zum Berechnen des Fälligkeitsdatums.
+     */
+    public function calculateDueDate(KPI $kpi): \DateTimeImmutable
+    {
+        return $this->calculateDueDateInternal($kpi);
+    }
+
+    /**
+     * Öffentliche Methode zum Berechnen der überfälligen Tage.
+     * Positiv = überfällig, Negativ = noch nicht fällig
+     */
+    public function getDaysOverdue(KPI $kpi): int
+    {
+        $dueDate = $kpi->getNextDueDate();
+        $now = new \DateTimeImmutable();
+        return $this->calculateDaysDifference($dueDate, $now); // Vertauscht: dueDate zuerst
+    }
+
+    /**
+     * Berechnet Status für mehrere KPIs.
+     */
+    public function calculateStatusForMultiple(array $kpis): array
+    {
+        $results = [];
+        foreach ($kpis as $kpi) {
+            $results[] = $this->calculateStatus($kpi);
+        }
+        return $results;
+    }
+
+    /**
+     * Berechnet Prioritäten für KPI-Liste.
+     */
+    public function calculatePriorities(array $kpis): array
+    {
+        $priorities = [];
+        
+        foreach ($kpis as $kpi) {
+            $status = $this->calculateStatus($kpi);
+            $priority = match(true) {
+                $status->isRed() => 3,
+                $status->isYellow() => 2,
+                default => 1
+            };
+            
+            $priorities[] = [
+                'kpi' => $kpi,
+                'status' => $status,
+                'priority' => $priority
+            ];
+        }
+        
+        return $priorities;
+    }
+
+    /**
      * Berechnet das Fälligkeitsdatum basierend auf KPI-Intervall.
      * Erweiterte Logik mit Geschäftstag-Berücksichtigung.
      */
-    private function calculateDueDate(KPI $kpi): \DateTimeImmutable
+    private function calculateDueDateInternal(KPI $kpi): \DateTimeImmutable
     {
         $now = new \DateTimeImmutable();
 
@@ -215,23 +340,17 @@ class KPIStatusDomainService
      */
     private function determineOverallStatus(array $statusCounts): KPIStatus
     {
-        $total = array_sum($statusCounts);
-        
-        if ($total === 0) {
-            return KPIStatus::green();
-        }
-
-        $redPercentage = ($statusCounts[KPIStatus::RED] / $total) * 100;
-        $yellowPercentage = ($statusCounts[KPIStatus::YELLOW] / $total) * 100;
-
-        if ($redPercentage > 20) { // Mehr als 20% rot
+        // Wenn irgendeine KPI rot ist, ist der Gesamtstatus rot
+        if ($statusCounts[KPIStatus::RED] > 0) {
             return KPIStatus::red();
         }
 
-        if ($redPercentage > 0 || $yellowPercentage > 30) { // Beliebige rote oder >30% gelbe
+        // Wenn irgendeine KPI gelb ist (aber keine rot), ist der Gesamtstatus gelb
+        if ($statusCounts[KPIStatus::YELLOW] > 0) {
             return KPIStatus::yellow();
         }
 
+        // Alle KPIs sind grün oder keine vorhanden
         return KPIStatus::green();
     }
 

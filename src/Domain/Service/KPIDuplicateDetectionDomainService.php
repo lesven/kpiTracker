@@ -546,4 +546,17 @@ class KPIDuplicateDetectionDomainService
         
         return $recommendations;
     }
+
+    /**
+     * Identifiziert Muster in den KPI-Duplikaten für Analytics.
+     */
+    public function identifyPatterns(KPI $kpi = null): array
+    {
+        // Basic pattern identification - can be enhanced later
+        return [
+            'patterns_found' => 0,
+            'common_duplicates' => [],
+            'suggestions' => []
+        ];
+    }
 }

@@ -30,6 +30,11 @@ final class DecimalValue
         return new self($value);
     }
 
+    public static function fromFloat(float $value): self
+    {
+        return new self((string) $value);
+    }
+
     public function toFloat(): float
     {
         return (float) $this->value;

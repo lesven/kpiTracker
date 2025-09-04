@@ -2,6 +2,8 @@
 
 namespace App\Domain\ValueObject;
 
+use JsonSerializable;
+
 /**
  * KPI-Status Value Object für typsichere Status-Repräsentation.
  *
@@ -13,7 +15,7 @@ namespace App\Domain\ValueObject;
  * - YELLOW: KPI wird bald fällig (Warnung innerhalb der nächsten 3 Tage)
  * - RED: KPI ist überfällig, Handlungsbedarf
  */
-readonly class KPIStatus
+readonly class KPIStatus implements JsonSerializable
 {
     /**
      * Status-Konstanten als Enum-ähnliche Implementierung.
@@ -135,6 +137,14 @@ readonly class KPIStatus
     }
 
     /**
+     * Prüft ob dieser Status "OK" ist (nur grün).
+     */
+    public function isOk(): bool
+    {
+        return $this->isGreen();
+    }
+
+    /**
      * Prüft ob dieser Status schlechter (kritischer) als ein anderer ist.
      */
     public function isWorseThan(self $other): bool
@@ -164,9 +174,9 @@ readonly class KPIStatus
     public function getCssClass(): string
     {
         return match ($this->value) {
-            self::GREEN => 'status-success',
-            self::YELLOW => 'status-warning',
-            self::RED => 'status-danger',
+            self::GREEN => 'status-green',
+            self::YELLOW => 'status-yellow',
+            self::RED => 'status-red',
         };
     }
 
@@ -213,6 +223,75 @@ readonly class KPIStatus
     }
 
     /**
+     * Gibt die Hierarchie-Wert für Vergleiche zurück.
+     */
+    public function getHierarchyValue(): int
+    {
+        return self::STATUS_PRIORITIES[$this->value];
+    }
+
+    /**
+     * Berechnet aggregierten Status aus mehreren Status-Objekten.
+     */
+    public static function getAggregatedStatus(array $statuses): self
+    {
+        if (empty($statuses)) {
+            return self::green();
+        }
+
+        $hasRed = false;
+        $hasYellow = false;
+
+        foreach ($statuses as $status) {
+            if ($status->isRed()) {
+                $hasRed = true;
+                break;
+            }
+            if ($status->isYellow()) {
+                $hasYellow = true;
+            }
+        }
+
+        if ($hasRed) {
+            return self::red();
+        }
+        
+        if ($hasYellow) {
+            return self::yellow();
+        }
+
+        return self::green();
+    }
+
+    /**
+     * Gibt Emoji für Status zurück.
+     */
+    public function getEmoji(): string
+    {
+        return $this->getIcon();
+    }
+
+    /**
+     * Gibt benutzerfreundliche Nachricht zurück.
+     */
+    public function getUserFriendlyMessage(): string
+    {
+        return match ($this->value) {
+            self::GREEN => 'Aktuell',
+            self::YELLOW => 'Fällig bald',
+            self::RED => 'Überfällig',
+        };
+    }
+
+    /**
+     * JSON-Serialization Support.
+     */
+    public function jsonSerialize(): string
+    {
+        return $this->value;
+    }
+
+    /**
      * Validiert den Status-Wert.
      * 
      * @throws \InvalidArgumentException Bei ungültigem Status
@@ -222,7 +301,7 @@ readonly class KPIStatus
         if (!in_array($value, self::VALID_STATUSES, true)) {
             $validStatuses = implode(', ', self::VALID_STATUSES);
             throw new \InvalidArgumentException(
-                "Ungültiger KPI-Status: '{$value}'. Erlaubte Werte: {$validStatuses}"
+                "Invalid KPI status: {$value}"
             );
         }
     }
