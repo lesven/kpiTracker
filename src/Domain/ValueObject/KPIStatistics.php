@@ -158,6 +158,22 @@ readonly class KPIStatistics implements JsonSerializable
     }
 
     /**
+     * Getter für variance.
+     */
+    public function getVariance(): ?float
+    {
+        return $this->variance;
+    }
+
+    /**
+     * Getter für standardDeviation.
+     */
+    public function getStandardDeviation(): ?float
+    {
+        return $this->standardDeviation;
+    }
+
+    /**
      * Prüft ob überhaupt Daten vorhanden sind.
      */
     public function hasData(): bool

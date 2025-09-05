@@ -97,7 +97,9 @@ class KPIStatisticsDomainService
         }
 
         // Nur die letzten X Werte für Trend-Analyse verwenden
-        $recentValues = array_slice($numericValues, 0, min($analysisWindow, count($numericValues)));
+        $totalValues = count($numericValues);
+        $windowSize = min($analysisWindow, $totalValues);
+        $recentValues = array_slice($numericValues, $totalValues - $windowSize, $windowSize);
         
         if (count($recentValues) < 2) {
             return KPITrend::noData();
@@ -368,8 +370,8 @@ class KPIStatisticsDomainService
     private function performTrendAnalysis(array $values): array
     {
         $count = count($values);
-        $first = end($values);
-        $last = $values[0];
+        $first = $values[0]; // Erster Wert im Zeitfenster (älterer Wert)
+        $last = $values[count($values) - 1]; // Letzter Wert im Zeitfenster (neuerer Wert)
         
         $percentageChange = $first != 0 ? (($last - $first) / $first) * 100 : 0;
         
@@ -378,7 +380,9 @@ class KPIStatisticsDomainService
         $volatility = $count > 1 ? $this->calculateStandardDeviation($values, $mean) : 0.0;
         
         // Confidence basierend auf Anzahl Datenpunkte und Konsistenz
-        $confidence = min(1.0, ($count / 10) * (1 - min($volatility / $mean, 1.0)));
+        $dataPointsConfidence = min(1.0, $count / 10); // Max bei 10+ Datenpunkten
+        $volatilityPenalty = $mean != 0 ? min($volatility / $mean, 0.5) : 0; // Max Penalty 50%
+        $confidence = max(0.1, $dataPointsConfidence * (1 - $volatilityPenalty)); // Min 10%
         
         return [
             'percentage_change' => $percentageChange,
