@@ -3,13 +3,13 @@
 namespace App\Tests\Domain\Event;
 
 use App\Domain\Event\KPIValueAdded;
-use App\Entity\KPI;
-use App\Entity\KPIValue;
-use App\Entity\User;
 use App\Domain\ValueObject\DecimalValue;
 use App\Domain\ValueObject\EmailAddress;
 use App\Domain\ValueObject\KpiInterval;
 use App\Domain\ValueObject\Period;
+use App\Entity\KPI;
+use App\Entity\KPIValue;
+use App\Entity\User;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -59,7 +59,7 @@ class KPIValueAddedTest extends TestCase
         $this->assertSame($this->kpiValue, $event->kpiValue);
         $this->assertSame($this->user, $event->user);
         $this->assertSame($occurredOn, $event->occurredOn);
-        $this->assertEquals($context, $event->context);
+        $this->assertSame($context, $event->context);
     }
 
     public function testCreateFactoryMethod(): void
@@ -74,7 +74,7 @@ class KPIValueAddedTest extends TestCase
         $this->assertSame($this->kpi, $event->kpi);
         $this->assertSame($this->kpiValue, $event->kpiValue);
         $this->assertSame($this->user, $event->user);
-        $this->assertEquals($context, $event->context);
+        $this->assertSame($context, $event->context);
         $this->assertInstanceOf(\DateTimeImmutable::class, $event->occurredOn);
     }
 
@@ -100,7 +100,7 @@ class KPIValueAddedTest extends TestCase
 
         // Assert
         $expectedId = 'kpi_value_added_123_456_20250904093015';
-        $this->assertEquals($expectedId, $event->getEventId());
+        $this->assertSame($expectedId, $event->getEventId());
     }
 
     public function testGetEventTypeReturnsCorrectType(): void
@@ -109,7 +109,7 @@ class KPIValueAddedTest extends TestCase
         $event = $this->createEvent();
 
         // Assert
-        $this->assertEquals('kpi.value.added', $event->getEventType());
+        $this->assertSame('kpi.value.added', $event->getEventType());
     }
 
     public function testIsFirstValueReturnsTrueWhenFlagSet(): void
@@ -171,7 +171,7 @@ class KPIValueAddedTest extends TestCase
         // Arrange
         $overriddenValue = new KPIValue();
         $overriddenValue->setValue(DecimalValue::fromString('75.25'));
-        
+
         $context = ['overridden_value' => $overriddenValue];
 
         // Act
@@ -263,9 +263,9 @@ class KPIValueAddedTest extends TestCase
             'is_first_value' => true,
             'was_override' => false,
             'uploaded_files_count' => 2,
-            'source' => 'manual_entry'
+            'source' => 'manual_entry',
         ];
-        
+
         $occurredOn = new \DateTimeImmutable('2025-09-04 14:20:30');
 
         // Act
@@ -281,19 +281,19 @@ class KPIValueAddedTest extends TestCase
 
         // Assert
         $this->assertIsArray($array);
-        $this->assertEquals('kpi_value_added_100_200_20250904142030', $array['event_id']);
-        $this->assertEquals('kpi.value.added', $array['event_type']);
-        $this->assertEquals('2025-09-04T14:20:30+00:00', $array['occurred_on']);
-        $this->assertEquals(100, $array['kpi_id']);
-        $this->assertEquals('Revenue KPI', $array['kpi_name']);
-        $this->assertEquals('monthly', $array['kpi_interval']);
-        $this->assertEquals(300, $array['user_id']);
-        $this->assertEquals('test@example.com', $array['user_email']);
-        $this->assertEquals(200, $array['value_id']);
-        $this->assertEquals(1500.75, $array['value_amount']);
-        $this->assertEquals('2025-09', $array['value_period']);
-        $this->assertEquals($context, $array['context']);
-        
+        $this->assertSame('kpi_value_added_100_200_20250904142030', $array['event_id']);
+        $this->assertSame('kpi.value.added', $array['event_type']);
+        $this->assertSame('2025-09-04T14:20:30+00:00', $array['occurred_on']);
+        $this->assertSame(100, $array['kpi_id']);
+        $this->assertSame('Revenue KPI', $array['kpi_name']);
+        $this->assertSame('monthly', $array['kpi_interval']);
+        $this->assertSame(300, $array['user_id']);
+        $this->assertSame('test@example.com', $array['user_email']);
+        $this->assertSame(200, $array['value_id']);
+        $this->assertSame(1500.75, $array['value_amount']);
+        $this->assertSame('2025-09', $array['value_period']);
+        $this->assertSame($context, $array['context']);
+
         // Metadata assertions
         $this->assertTrue($array['metadata']['is_first_value']);
         $this->assertFalse($array['metadata']['was_overridden']);
@@ -338,7 +338,7 @@ class KPIValueAddedTest extends TestCase
         $context = [
             'was_override' => true,
             'overridden_value' => $overriddenValue,
-            'uploaded_files_count' => 0
+            'uploaded_files_count' => 0,
         ];
 
         // Act
@@ -355,7 +355,7 @@ class KPIValueAddedTest extends TestCase
         // Assert
         $this->assertTrue($array['metadata']['was_overridden']);
         $this->assertFalse($array['metadata']['has_files']);
-        $this->assertEquals($context, $array['context']);
+        $this->assertSame($context, $array['context']);
     }
 
     public function testToArrayMetadataConsistency(): void
@@ -364,7 +364,7 @@ class KPIValueAddedTest extends TestCase
         $context = [
             'is_first_value' => false,
             'was_override' => true,
-            'uploaded_files_count' => 1
+            'uploaded_files_count' => 1,
         ];
 
         // Act
@@ -379,9 +379,9 @@ class KPIValueAddedTest extends TestCase
         $array = $event->toArray();
 
         // Assert - Metadata should match method results
-        $this->assertEquals($event->isFirstValue(), $array['metadata']['is_first_value']);
-        $this->assertEquals($event->wasOverridden(), $array['metadata']['was_overridden']);
-        $this->assertEquals($event->hasFileUploads(), $array['metadata']['has_files']);
+        $this->assertSame($event->isFirstValue(), $array['metadata']['is_first_value']);
+        $this->assertSame($event->wasOverridden(), $array['metadata']['was_overridden']);
+        $this->assertSame($event->hasFileUploads(), $array['metadata']['has_files']);
     }
 
     private function createEvent(array $context = []): KPIValueAdded

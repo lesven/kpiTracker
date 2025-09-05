@@ -17,7 +17,7 @@ class KPITrendTest extends TestCase
     /**
      * @test
      */
-    public function kann_steigenden_trend_erstellen(): void
+    public function kannSteigendenTrendErstellen(): void
     {
         $trend = KPITrend::rising();
 
@@ -26,13 +26,13 @@ class KPITrendTest extends TestCase
         $this->assertFalse($trend->isStable());
         $this->assertFalse($trend->isVolatile());
         $this->assertFalse($trend->isNoData());
-        $this->assertEquals('rising', $trend->toString());
+        $this->assertSame('rising', $trend->toString());
     }
 
     /**
      * @test
      */
-    public function kann_fallenden_trend_erstellen(): void
+    public function kannFallendenTrendErstellen(): void
     {
         $trend = KPITrend::falling();
 
@@ -41,13 +41,13 @@ class KPITrendTest extends TestCase
         $this->assertFalse($trend->isStable());
         $this->assertFalse($trend->isVolatile());
         $this->assertFalse($trend->isNoData());
-        $this->assertEquals('falling', $trend->toString());
+        $this->assertSame('falling', $trend->toString());
     }
 
     /**
      * @test
      */
-    public function kann_stabilen_trend_erstellen(): void
+    public function kannStabilenTrendErstellen(): void
     {
         $trend = KPITrend::stable();
 
@@ -56,13 +56,13 @@ class KPITrendTest extends TestCase
         $this->assertTrue($trend->isStable());
         $this->assertFalse($trend->isVolatile());
         $this->assertFalse($trend->isNoData());
-        $this->assertEquals('stable', $trend->toString());
+        $this->assertSame('stable', $trend->toString());
     }
 
     /**
      * @test
      */
-    public function kann_volatilen_trend_erstellen(): void
+    public function kannVolatilenTrendErstellen(): void
     {
         $trend = KPITrend::volatile();
 
@@ -71,13 +71,13 @@ class KPITrendTest extends TestCase
         $this->assertFalse($trend->isStable());
         $this->assertTrue($trend->isVolatile());
         $this->assertFalse($trend->isNoData());
-        $this->assertEquals('volatile', $trend->toString());
+        $this->assertSame('volatile', $trend->toString());
     }
 
     /**
      * @test
      */
-    public function kann_keine_daten_trend_erstellen(): void
+    public function kannKeineDatenTrendErstellen(): void
     {
         $trend = KPITrend::noData();
 
@@ -86,13 +86,13 @@ class KPITrendTest extends TestCase
         $this->assertFalse($trend->isStable());
         $this->assertFalse($trend->isVolatile());
         $this->assertTrue($trend->isNoData());
-        $this->assertEquals('no_data', $trend->toString());
+        $this->assertSame('no_data', $trend->toString());
     }
 
     /**
      * @test
      */
-    public function kann_trend_aus_string_erstellen(): void
+    public function kannTrendAusStringErstellen(): void
     {
         $rising = KPITrend::fromString('rising');
         $falling = KPITrend::fromString('falling');
@@ -110,7 +110,7 @@ class KPITrendTest extends TestCase
     /**
      * @test
      */
-    public function wirft_exception_bei_ungueltigem_string(): void
+    public function wirftExceptionBeiUngueltigemString(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid KPI trend: invalid');
@@ -121,7 +121,7 @@ class KPITrendTest extends TestCase
     /**
      * @test
      */
-    public function kann_trend_aus_numerischen_werten_berechnen(): void
+    public function kannTrendAusNumerischenWertenBerechnen(): void
     {
         // Steigende Werte (>5% Änderung)
         $risingValues = [80.0, 85.0, 90.0, 100.0];
@@ -152,7 +152,7 @@ class KPITrendTest extends TestCase
     /**
      * @test
      */
-    public function kann_trend_aus_kpi_values_berechnen(): void
+    public function kannTrendAusKpiValuesBerechnen(): void
     {
         $values = [
             $this->createMockKPIValue(80.0),
@@ -168,7 +168,7 @@ class KPITrendTest extends TestCase
     /**
      * @test
      */
-    public function kann_erweiterte_trend_analyse_durchfuehren(): void
+    public function kannErweiterteTrendAnalyseDurchfuehren(): void
     {
         // Trend mit Konfidenz und Details
         $values = [100.0, 105.0, 110.0, 120.0, 125.0];
@@ -178,33 +178,33 @@ class KPITrendTest extends TestCase
         $this->assertGreaterThan(80.0, $trend->getConfidence());
         $this->assertGreaterThan(10.0, $trend->getPercentageChange());
         $this->assertLessThan(20.0, $trend->getVolatility());
-        $this->assertEquals('consistent', $trend->getDirection());
+        $this->assertSame('consistent', $trend->getDirection());
     }
 
     /**
      * @test
      */
-    public function kann_trend_staerke_bewerten(): void
+    public function kannTrendStaerkeBewerten(): void
     {
         // Starker steigender Trend
         $strongRising = KPITrend::fromValues([100.0, 120.0, 140.0, 160.0]);
-        $this->assertEquals('strong', $strongRising->getStrength());
+        $this->assertSame('strong', $strongRising->getStrength());
         $this->assertTrue($strongRising->isStrong());
 
         // Schwacher Trend
         $weakTrend = KPITrend::fromValues([100.0, 103.0, 101.0, 104.0]);
-        $this->assertEquals('weak', $weakTrend->getStrength());
+        $this->assertSame('weak', $weakTrend->getStrength());
         $this->assertFalse($weakTrend->isStrong());
 
         // Moderater Trend
         $moderateTrend = KPITrend::fromValues([100.0, 110.0, 115.0, 120.0]);
-        $this->assertEquals('moderate', $moderateTrend->getStrength());
+        $this->assertSame('moderate', $moderateTrend->getStrength());
     }
 
     /**
      * @test
      */
-    public function kann_trend_prognose_erstellen(): void
+    public function kannTrendPrognoseErstellen(): void
     {
         $values = [100.0, 110.0, 120.0, 130.0, 140.0];
         $trend = KPITrend::fromValuesWithAnalysis($values);
@@ -221,60 +221,60 @@ class KPITrendTest extends TestCase
     /**
      * @test
      */
-    public function kann_trend_umkehrpunkte_erkennen(): void
+    public function kannTrendUmkehrpunkteErkennen(): void
     {
         // Trend mit Umkehrpunkt
         $valuesWithTurning = [100.0, 110.0, 120.0, 110.0, 100.0];
         $trend = KPITrend::fromValuesWithAnalysis($valuesWithTurning);
 
         $this->assertTrue($trend->hasTurningPoint());
-        $this->assertEquals(2, $trend->getTurningPointIndex()); // Bei Index 2 (120.0)
+        $this->assertSame(2, $trend->getTurningPointIndex()); // Bei Index 2 (120.0)
     }
 
     /**
      * @test
      */
-    public function kann_benutzerfreundliche_beschreibung_generieren(): void
+    public function kannBenutzerfreundlicheBeschreibungGenerieren(): void
     {
         $risingTrend = KPITrend::rising();
-        $this->assertEquals('Steigend', $risingTrend->getDescription());
-        $this->assertEquals('📈', $risingTrend->getEmoji());
+        $this->assertSame('Steigend', $risingTrend->getDescription());
+        $this->assertSame('📈', $risingTrend->getEmoji());
 
         $fallingTrend = KPITrend::falling();
-        $this->assertEquals('Fallend', $fallingTrend->getDescription());
-        $this->assertEquals('📉', $fallingTrend->getEmoji());
+        $this->assertSame('Fallend', $fallingTrend->getDescription());
+        $this->assertSame('📉', $fallingTrend->getEmoji());
 
         $stableTrend = KPITrend::stable();
-        $this->assertEquals('Stabil', $stableTrend->getDescription());
-        $this->assertEquals('➡️', $stableTrend->getEmoji());
+        $this->assertSame('Stabil', $stableTrend->getDescription());
+        $this->assertSame('➡️', $stableTrend->getEmoji());
 
         $volatileTrend = KPITrend::volatile();
-        $this->assertEquals('Schwankend', $volatileTrend->getDescription());
-        $this->assertEquals('📊', $volatileTrend->getEmoji());
+        $this->assertSame('Schwankend', $volatileTrend->getDescription());
+        $this->assertSame('📊', $volatileTrend->getEmoji());
 
         $noDataTrend = KPITrend::noData();
-        $this->assertEquals('Keine Daten', $noDataTrend->getDescription());
-        $this->assertEquals('❓', $noDataTrend->getEmoji());
+        $this->assertSame('Keine Daten', $noDataTrend->getDescription());
+        $this->assertSame('❓', $noDataTrend->getEmoji());
     }
 
     /**
      * @test
      */
-    public function kann_css_klasse_fuer_styling_abrufen(): void
+    public function kannCssKlasseFuerStylingAbrufen(): void
     {
         $rising = KPITrend::rising();
         $falling = KPITrend::falling();
         $stable = KPITrend::stable();
 
-        $this->assertEquals('trend-rising', $rising->getCssClass());
-        $this->assertEquals('trend-falling', $falling->getCssClass());
-        $this->assertEquals('trend-stable', $stable->getCssClass());
+        $this->assertSame('trend-rising', $rising->getCssClass());
+        $this->assertSame('trend-falling', $falling->getCssClass());
+        $this->assertSame('trend-stable', $stable->getCssClass());
     }
 
     /**
      * @test
      */
-    public function kann_detaillierte_analyse_ausgeben(): void
+    public function kannDetaillierteAnalyseAusgeben(): void
     {
         $values = [100.0, 105.0, 115.0, 110.0, 120.0];
         $trend = KPITrend::fromValuesWithAnalysis($values);
@@ -293,23 +293,23 @@ class KPITrendTest extends TestCase
     /**
      * @test
      */
-    public function kann_json_serialisierung_handhaben(): void
+    public function kannJsonSerialisierungHandhaben(): void
     {
         $trend = KPITrend::rising();
 
         $json = json_encode($trend);
-        $this->assertEquals('"rising"', $json);
+        $this->assertSame('"rising"', $json);
 
         $decoded = json_decode($json, true);
         $recreated = KPITrend::fromString($decoded);
-        
+
         $this->assertTrue($trend->equals($recreated));
     }
 
     /**
      * @test
      */
-    public function kann_gleichheit_pruefen(): void
+    public function kannGleichheitPruefen(): void
     {
         $rising1 = KPITrend::rising();
         $rising2 = KPITrend::rising();
@@ -322,7 +322,7 @@ class KPITrendTest extends TestCase
     /**
      * @test
      */
-    public function value_object_ist_immutable(): void
+    public function valueObjectIstImmutable(): void
     {
         $trend = KPITrend::rising();
         $originalString = $trend->toString();
@@ -331,21 +331,21 @@ class KPITrendTest extends TestCase
         $newTrend = KPITrend::falling();
 
         // Original-Trend sollte unverändert bleiben
-        $this->assertEquals('rising', $originalString);
-        $this->assertEquals('rising', $trend->toString());
-        $this->assertEquals('falling', $newTrend->toString());
+        $this->assertSame('rising', $originalString);
+        $this->assertSame('rising', $trend->toString());
+        $this->assertSame('falling', $newTrend->toString());
     }
 
     /**
      * @test
      */
-    public function kann_string_darstellung_ausgeben(): void
+    public function kannStringDarstellungAusgeben(): void
     {
         $rising = KPITrend::rising();
         $stable = KPITrend::stable();
 
-        $this->assertEquals('rising', (string) $rising);
-        $this->assertEquals('stable', (string) $stable);
+        $this->assertSame('rising', (string) $rising);
+        $this->assertSame('stable', (string) $stable);
     }
 
     /**
@@ -355,7 +355,7 @@ class KPITrendTest extends TestCase
     {
         $kpiValue = $this->createMock(KPIValue::class);
         $kpiValue->method('getValueAsFloat')->willReturn($value);
-        
+
         return $kpiValue;
     }
 }

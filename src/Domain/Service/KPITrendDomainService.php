@@ -2,8 +2,8 @@
 
 namespace App\Domain\Service;
 
-use App\Entity\KPI;
 use App\Domain\ValueObject\KPITrend;
+use App\Entity\KPI;
 
 /**
  * Domain Service für KPI-Trend Analyse und Berechnung.

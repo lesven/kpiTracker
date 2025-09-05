@@ -3,7 +3,6 @@
 namespace App\Domain\ValueObject;
 
 use App\Entity\KPI;
-use JsonSerializable;
 
 /**
  * KPI-Trend Value Object für Trend-Analyse und -Bewertung.
@@ -13,12 +12,12 @@ use JsonSerializable;
  *
  * Trend-Kategorien:
  * - RISING: Werte steigen signifikant (>5% Verbesserung)
- * - FALLING: Werte fallen signifikant (>5% Verschlechterung) 
+ * - FALLING: Werte fallen signifikant (>5% Verschlechterung)
  * - STABLE: Werte ändern sich minimal (±5%)
  * - NO_DATA: Nicht genügend Daten für Trend-Berechnung
  * - VOLATILE: Sehr unregelmäßige Schwankungen
  */
-readonly class KPITrend implements JsonSerializable
+readonly class KPITrend implements \JsonSerializable
 {
     /**
      * Trend-Konstanten.
@@ -48,12 +47,12 @@ readonly class KPITrend implements JsonSerializable
     private const VOLATILITY_THRESHOLD = 30.0;
 
     /**
-     * @param string $direction Trend-Richtung (rising, falling, stable, etc.)
-     * @param float|null $percentageChange Prozentuale Veränderung (null wenn nicht berechenbar)
-     * @param float $confidence Konfidenz-Level der Trend-Berechnung (0.0-1.0)
-     * @param int $dataPoints Anzahl der für Trend verwendeten Datenpunkte
-     * @param string|null $timeframe Zeitraum der Analyse (z.B. "last 3 months")
-     * @param float $volatility Volatilitäts-Maß der Daten
+     * @param string      $direction        Trend-Richtung (rising, falling, stable, etc.)
+     * @param float|null  $percentageChange Prozentuale Veränderung (null wenn nicht berechenbar)
+     * @param float       $confidence       Konfidenz-Level der Trend-Berechnung (0.0-1.0)
+     * @param int         $dataPoints       Anzahl der für Trend verwendeten Datenpunkte
+     * @param string|null $timeframe        Zeitraum der Analyse (z.B. "last 3 months")
+     * @param float       $volatility       Volatilitäts-Maß der Daten
      */
     public function __construct(
         public string $direction,
@@ -185,17 +184,17 @@ readonly class KPITrend implements JsonSerializable
 
     /**
      * Intelligente Factory aus numerischen Daten.
-     * 
+     *
      * @param float $percentageChange Prozentuale Veränderung
-     * @param float $volatility Volatilitäts-Maß (Standard-Abweichung etc.)
-     * @param int $dataPoints Anzahl Datenpunkte
-     * @param float $confidence Konfidenz-Level
+     * @param float $volatility       Volatilitäts-Maß (Standard-Abweichung etc.)
+     * @param int   $dataPoints       Anzahl Datenpunkte
+     * @param float $confidence       Konfidenz-Level
      */
     public static function fromData(
         float $percentageChange,
         float $volatility = 0.0,
         int $dataPoints = 0,
-        float $confidence = 1.0
+        float $confidence = 1.0,
     ): self {
         if ($dataPoints < 2) {
             return self::noData();
@@ -221,13 +220,13 @@ readonly class KPITrend implements JsonSerializable
      */
     public static function fromString(string $trend): self
     {
-        return match($trend) {
+        return match ($trend) {
             self::RISING => self::rising(),
             self::FALLING => self::falling(),
             self::STABLE => self::stable(),
             self::VOLATILE => self::volatile(),
             self::NO_DATA => self::noData(),
-            default => throw new \InvalidArgumentException("Invalid KPI trend: {$trend}")
+            default => throw new \InvalidArgumentException("Invalid KPI trend: {$trend}"),
         };
     }
 
@@ -242,26 +241,26 @@ readonly class KPITrend implements JsonSerializable
 
         $first = $values[0];
         $last = $values[count($values) - 1];
-        
-        if ($first == 0) {
+
+        if (0 === $first) {
             return self::stable();
         }
 
         $percentageChange = (($last - $first) / $first) * 100;
         $volatility = self::calculateVolatility($values);
-        
+
         if ($volatility > 30.0) {
             return self::volatileWithData(0.6, count($values), $volatility);
         }
-        
+
         if ($percentageChange > 5.0) {
             return self::risingWithData($percentageChange, 0.85, count($values), $volatility);
         }
-        
+
         if ($percentageChange < -5.0) {
             return self::fallingWithData($percentageChange, 0.85, count($values), $volatility);
         }
-        
+
         return self::stableWithData($percentageChange, 0.9, count($values), $volatility);
     }
 
@@ -270,7 +269,8 @@ readonly class KPITrend implements JsonSerializable
      */
     public static function fromKPIValues(array $kpiValues): self
     {
-        $numericValues = array_map(fn($value) => $value->getValueAsFloat(), $kpiValues);
+        $numericValues = array_map(fn ($value) => $value->getValueAsFloat(), $kpiValues);
+
         return self::fromValues($numericValues);
     }
 
@@ -287,7 +287,7 @@ readonly class KPITrend implements JsonSerializable
      */
     public function isRising(): bool
     {
-        return $this->direction === self::RISING;
+        return self::RISING === $this->direction;
     }
 
     /**
@@ -295,7 +295,7 @@ readonly class KPITrend implements JsonSerializable
      */
     public function isFalling(): bool
     {
-        return $this->direction === self::FALLING;
+        return self::FALLING === $this->direction;
     }
 
     /**
@@ -303,7 +303,7 @@ readonly class KPITrend implements JsonSerializable
      */
     public function isStable(): bool
     {
-        return $this->direction === self::STABLE;
+        return self::STABLE === $this->direction;
     }
 
     /**
@@ -311,7 +311,7 @@ readonly class KPITrend implements JsonSerializable
      */
     public function isNoData(): bool
     {
-        return $this->direction === self::NO_DATA;
+        return self::NO_DATA === $this->direction;
     }
 
     /**
@@ -319,7 +319,7 @@ readonly class KPITrend implements JsonSerializable
      */
     public function isVolatile(): bool
     {
-        return $this->direction === self::VOLATILE;
+        return self::VOLATILE === $this->direction;
     }
 
     /**
@@ -351,7 +351,7 @@ readonly class KPITrend implements JsonSerializable
      */
     public function getStrength(): string
     {
-        if ($this->isNoData() || $this->percentageChange === null) {
+        if ($this->isNoData() || null === $this->percentageChange) {
             return 'unknown';
         }
 
@@ -416,12 +416,13 @@ readonly class KPITrend implements JsonSerializable
      */
     public function getFormattedChange(): string
     {
-        if ($this->percentageChange === null) {
+        if (null === $this->percentageChange) {
             return 'N/A';
         }
 
         $sign = $this->percentageChange >= 0 ? '+' : '';
-        return $sign . number_format($this->percentageChange, 1) . '%';
+
+        return $sign.number_format($this->percentageChange, 1).'%';
     }
 
     /**
@@ -487,19 +488,19 @@ readonly class KPITrend implements JsonSerializable
     {
         // For service tests, return decimal (0.0-1.0)
         // For KPITrend tests, return percentage (0-100)
-        
+
         // Check if confidence is already stored as percentage (> 1.0)
         if ($this->confidence > 1.0) {
             return $this->confidence; // Already percentage
         }
-        
+
         // Check calling context based on confidence value patterns
         // Service typically gives confidence around 0.1-0.5 for volatile data
         // Direct KPITrend usage typically gives 0.6-0.9
         if ($this->confidence >= 0.6) {
             return $this->confidence * 100; // Convert to percentage for KPITrend tests
         }
-        
+
         return $this->confidence; // Keep as decimal for Service tests
     }
 
@@ -521,36 +522,39 @@ readonly class KPITrend implements JsonSerializable
     public function getDirection(): string
     {
         // Special case for tests that expect 'consistent' for predictable trends
-        if ($this->direction === self::RISING || $this->direction === self::STABLE) {
+        if (self::RISING === $this->direction || self::STABLE === $this->direction) {
             return 'consistent';
         }
+
         return $this->direction;
     }
 
     public function isStrong(): bool
     {
-        return in_array($this->getStrength(), ['strong', 'very_strong']);
+        return in_array($this->getStrength(), ['strong', 'very_strong'], true);
     }
 
     public function predictNextValue(): float
     {
-        if ($this->isRising() && $this->percentageChange !== null) {
+        if ($this->isRising() && null !== $this->percentageChange) {
             // Estimate next value based on trend: 150 is a reasonable prediction for the trend
             return 150.0;
         }
+
         return 100.0;
     }
 
     public function predictFutureValues(int $periods): array
     {
         $predictions = [];
-        for ($i = 1; $i <= $periods; $i++) {
+        for ($i = 1; $i <= $periods; ++$i) {
             if ($this->isRising()) {
                 $predictions[] = 140.0 + ($i * 10); // Start from last known value + increment
             } else {
                 $predictions[] = 100.0;
             }
         }
+
         return $predictions;
     }
 
@@ -561,12 +565,12 @@ readonly class KPITrend implements JsonSerializable
         if ($this->isVolatile()) {
             return true;
         }
-        
+
         // If we have stable overall trend but high confidence, it might indicate turning points
         if ($this->isStable() && $this->confidence >= 0.6) {
             return true;
         }
-        
+
         return false;
     }
 
@@ -600,7 +604,7 @@ readonly class KPITrend implements JsonSerializable
 
     public function createLocalizedMessage(KPI $kpi, string $type, int $days, string $language): string
     {
-        return "Test localized message";
+        return 'Test localized message';
     }
 
     public function jsonSerialize(): string
@@ -627,27 +631,23 @@ readonly class KPITrend implements JsonSerializable
         $variance /= count($values);
         $standardDeviation = sqrt($variance);
 
-        return $mean != 0 ? ($standardDeviation / $mean) * 100 : 0.0;
+        return 0 !== $mean ? ($standardDeviation / $mean) * 100 : 0.0;
     }
 
     /**
      * Validiert die Trend-Daten.
-     * 
+     *
      * @throws \InvalidArgumentException Bei ungültigen Daten
      */
     private function validate(): void
     {
         if (!in_array($this->direction, self::VALID_TRENDS, true)) {
             $validTrends = implode(', ', self::VALID_TRENDS);
-            throw new \InvalidArgumentException(
-                "Ungültiger Trend: '{$this->direction}'. Erlaubte Werte: {$validTrends}"
-            );
+            throw new \InvalidArgumentException("Ungültiger Trend: '{$this->direction}'. Erlaubte Werte: {$validTrends}");
         }
 
         if ($this->confidence < 0.0 || $this->confidence > 1.0) {
-            throw new \InvalidArgumentException(
-                "Konfidenz-Level muss zwischen 0.0 und 1.0 liegen, '{$this->confidence}' gegeben."
-            );
+            throw new \InvalidArgumentException("Konfidenz-Level muss zwischen 0.0 und 1.0 liegen, '{$this->confidence}' gegeben.");
         }
 
         if ($this->dataPoints < 0) {

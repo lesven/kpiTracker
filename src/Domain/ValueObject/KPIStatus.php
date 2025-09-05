@@ -2,8 +2,6 @@
 
 namespace App\Domain\ValueObject;
 
-use JsonSerializable;
-
 /**
  * KPI-Status Value Object für typsichere Status-Repräsentation.
  *
@@ -15,13 +13,13 @@ use JsonSerializable;
  * - YELLOW: KPI wird bald fällig (Warnung innerhalb der nächsten 3 Tage)
  * - RED: KPI ist überfällig, Handlungsbedarf
  */
-readonly class KPIStatus implements JsonSerializable
+readonly class KPIStatus implements \JsonSerializable
 {
     /**
      * Status-Konstanten als Enum-ähnliche Implementierung.
      */
     public const GREEN = 'green';
-    public const YELLOW = 'yellow'; 
+    public const YELLOW = 'yellow';
     public const RED = 'red';
 
     /**
@@ -44,10 +42,11 @@ readonly class KPIStatus implements JsonSerializable
 
     /**
      * @param string $value Der Status-Wert
+     *
      * @throws \InvalidArgumentException Bei ungültigem Status-Wert
      */
     public function __construct(
-        private string $value
+        private string $value,
     ) {
         $this->validate($value);
     }
@@ -78,10 +77,12 @@ readonly class KPIStatus implements JsonSerializable
 
     /**
      * Factory-Methode aus String-Wert.
-     * 
+     *
      * @param string $status Der Status als String
-     * @return self
+     *
      * @throws \InvalidArgumentException Bei ungültigem Status
+     *
+     * @return self
      */
     public static function fromString(string $status): self
     {
@@ -109,7 +110,7 @@ readonly class KPIStatus implements JsonSerializable
      */
     public function isGreen(): bool
     {
-        return $this->value === self::GREEN;
+        return self::GREEN === $this->value;
     }
 
     /**
@@ -117,7 +118,7 @@ readonly class KPIStatus implements JsonSerializable
      */
     public function isYellow(): bool
     {
-        return $this->value === self::YELLOW;
+        return self::YELLOW === $this->value;
     }
 
     /**
@@ -125,7 +126,7 @@ readonly class KPIStatus implements JsonSerializable
      */
     public function isRed(): bool
     {
-        return $this->value === self::RED;
+        return self::RED === $this->value;
     }
 
     /**
@@ -206,7 +207,7 @@ readonly class KPIStatus implements JsonSerializable
 
     /**
      * Gibt alle verfügbaren Status-Werte zurück.
-     * 
+     *
      * @return array<string>
      */
     public static function getAllStatuses(): array
@@ -255,7 +256,7 @@ readonly class KPIStatus implements JsonSerializable
         if ($hasRed) {
             return self::red();
         }
-        
+
         if ($hasYellow) {
             return self::yellow();
         }
@@ -293,16 +294,14 @@ readonly class KPIStatus implements JsonSerializable
 
     /**
      * Validiert den Status-Wert.
-     * 
+     *
      * @throws \InvalidArgumentException Bei ungültigem Status
      */
     private function validate(string $value): void
     {
         if (!in_array($value, self::VALID_STATUSES, true)) {
             $validStatuses = implode(', ', self::VALID_STATUSES);
-            throw new \InvalidArgumentException(
-                "Invalid KPI status: {$value}"
-            );
+            throw new \InvalidArgumentException("Invalid KPI status: {$value}");
         }
     }
 }

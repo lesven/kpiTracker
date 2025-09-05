@@ -2,13 +2,13 @@
 
 namespace App\Tests\Service;
 
+use App\Domain\ValueObject\DecimalValue;
+use App\Domain\ValueObject\EmailAddress;
+use App\Domain\ValueObject\KpiInterval;
 use App\Entity\KPI;
 use App\Entity\User;
 use App\Service\ExcelExportService;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use App\Domain\ValueObject\EmailAddress;
-use App\Domain\ValueObject\KpiInterval;
-use App\Domain\ValueObject\DecimalValue;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 

@@ -21,7 +21,7 @@ class KPIStatusServiceTest extends TestCase
     public function testGetKpiStatusDelegatesToAggregate(): void
     {
         $kpi = $this->createMock(KPI::class);
-        
+
         $this->applicationService->expects($this->once())
             ->method('getKpiStatus')
             ->with($kpi)
@@ -37,15 +37,24 @@ class KPIStatusServiceTest extends TestCase
         $kpi2 = $this->createMock(KPI::class);
         $kpi3 = $this->createMock(KPI::class);
         $kpi4 = $this->createMock(KPI::class);
-        
+
         // Test verschiedene Status-Werte mit separaten Erwartungen
         $this->applicationService->expects($this->exactly(4))
             ->method('getKpiStatus')
-            ->willReturnCallback(function($kpi) use ($kpi1, $kpi2, $kpi3, $kpi4) {
-                if ($kpi === $kpi1) return 'green';
-                if ($kpi === $kpi2) return 'yellow';
-                if ($kpi === $kpi3) return 'red';
-                if ($kpi === $kpi4) return 'gray';
+            ->willReturnCallback(function ($kpi) use ($kpi1, $kpi2, $kpi3, $kpi4) {
+                if ($kpi === $kpi1) {
+                    return 'green';
+                }
+                if ($kpi === $kpi2) {
+                    return 'yellow';
+                }
+                if ($kpi === $kpi3) {
+                    return 'red';
+                }
+                if ($kpi === $kpi4) {
+                    return 'gray';
+                }
+
                 return 'unknown';
             });
 
@@ -59,7 +68,7 @@ class KPIStatusServiceTest extends TestCase
     {
         $kpi = $this->createMock(KPI::class);
         $pastDate = new \DateTimeImmutable('2023-01-01');
-        
+
         $this->applicationService->expects($this->once())
             ->method('calculateDueDate')
             ->with($kpi)
@@ -67,13 +76,13 @@ class KPIStatusServiceTest extends TestCase
 
         $result = $this->service->calculateDueDate($kpi);
         $this->assertInstanceOf(\DateTimeImmutable::class, $result);
-        $this->assertEquals($pastDate, $result);
+        $this->assertSame($pastDate, $result);
     }
 
     public function testIsDueSoonDelegatesToAggregate(): void
     {
         $kpi = $this->createMock(KPI::class);
-        
+
         $this->applicationService->expects($this->once())
             ->method('isDueSoon')
             ->with($kpi)
@@ -86,7 +95,7 @@ class KPIStatusServiceTest extends TestCase
     public function testIsDueSoonReturnsFalse(): void
     {
         $kpi = $this->createMock(KPI::class);
-        
+
         $this->applicationService->expects($this->once())
             ->method('isDueSoon')
             ->with($kpi)
@@ -99,7 +108,7 @@ class KPIStatusServiceTest extends TestCase
     public function testIsOverdueDelegatesToAggregate(): void
     {
         $kpi = $this->createMock(KPI::class);
-        
+
         $this->applicationService->expects($this->once())
             ->method('isOverdue')
             ->with($kpi)
@@ -112,7 +121,7 @@ class KPIStatusServiceTest extends TestCase
     public function testIsOverdueReturnsTrue(): void
     {
         $kpi = $this->createMock(KPI::class);
-        
+
         $this->applicationService->expects($this->once())
             ->method('isOverdue')
             ->with($kpi)
@@ -126,7 +135,7 @@ class KPIStatusServiceTest extends TestCase
     {
         $kpi = $this->createMock(KPI::class);
         $expectedDate = new \DateTimeImmutable();
-        
+
         $this->applicationService->expects($this->once())
             ->method('calculateDueDate')
             ->with($kpi)
@@ -140,7 +149,7 @@ class KPIStatusServiceTest extends TestCase
     {
         $kpi = $this->createMock(KPI::class);
         $pastDate = new \DateTimeImmutable('-1 week');
-        
+
         $this->applicationService->expects($this->once())
             ->method('calculateDueDate')
             ->with($kpi)
@@ -153,7 +162,7 @@ class KPIStatusServiceTest extends TestCase
     public function testGetDaysOverdueDelegatesToAggregate(): void
     {
         $kpi = $this->createMock(KPI::class);
-        
+
         $this->applicationService->expects($this->once())
             ->method('getDaysOverdue')
             ->with($kpi)
@@ -166,7 +175,7 @@ class KPIStatusServiceTest extends TestCase
     public function testGetDaysOverdueReturnsZero(): void
     {
         $kpi = $this->createMock(KPI::class);
-        
+
         $this->applicationService->expects($this->once())
             ->method('getDaysOverdue')
             ->with($kpi)
@@ -180,7 +189,7 @@ class KPIStatusServiceTest extends TestCase
     {
         $kpis = [$this->createMock(KPI::class)];
         $expectedReminders = ['reminder1'];
-        
+
         $this->applicationService->expects($this->once())
             ->method('getKpisForReminder')
             ->with($kpis, 3, 0)
@@ -193,11 +202,11 @@ class KPIStatusServiceTest extends TestCase
     public function testGetKpisForReminderWithCustomParameters(): void
     {
         $kpis = [
-            $this->createMock(KPI::class), 
-            $this->createMock(KPI::class)
+            $this->createMock(KPI::class),
+            $this->createMock(KPI::class),
         ];
         $expectedReminders = ['reminder1', 'reminder2'];
-        
+
         $this->applicationService->expects($this->once())
             ->method('getKpisForReminder')
             ->with($kpis, 5, 1)
@@ -211,7 +220,7 @@ class KPIStatusServiceTest extends TestCase
     {
         $kpis = [];
         $expectedReminders = [];
-        
+
         $this->applicationService->expects($this->once())
             ->method('getKpisForReminder')
             ->with($kpis, 3, 0)

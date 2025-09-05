@@ -22,11 +22,11 @@ class ConfigurableMailerTest extends TestCase
         $settingsRepo->expects($this->exactly(2))
             ->method('findOneBy')
             ->willReturnOnConsecutiveCalls(null, null);
-        
+
         $mailerFactory->expects($this->once())
             ->method('createDefault')
             ->willReturn($defaultMailer);
-        
+
         $defaultMailer->expects($this->once())
             ->method('send')
             ->with($email);
@@ -52,7 +52,7 @@ class ConfigurableMailerTest extends TestCase
             ->method('createFromSettings')
             ->with($settings)
             ->willReturn($configuredMailer);
-        
+
         $configuredMailer->expects($this->once())
             ->method('send')
             ->with($email);
@@ -77,7 +77,7 @@ class ConfigurableMailerTest extends TestCase
             ->method('createFromSettings')
             ->with($settings)
             ->willReturn($configuredMailer);
-        
+
         $configuredMailer->expects($this->once())
             ->method('send')
             ->with($email);

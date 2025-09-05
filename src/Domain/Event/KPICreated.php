@@ -112,26 +112,26 @@ readonly class KPICreated
         $score = 0;
 
         // Basis-Score für grundlegende KPI
-        $score += 1;
+        ++$score;
 
         // Zielwert definiert
         if ($this->kpi->getTarget()) {
-            $score += 1;
+            ++$score;
         }
 
         // Beschreibung vorhanden
         if ($this->kpi->getDescription()) {
-            $score += 1;
+            ++$score;
         }
 
         // Einheit spezifiziert
         if ($this->kpi->getUnit()) {
-            $score += 1;
+            ++$score;
         }
 
         // Quartalsweise KPIs sind komplexer
-        if ($this->kpi->getInterval()?->value === 'quarterly') {
-            $score += 1;
+        if ('quarterly' === $this->kpi->getInterval()?->value) {
+            ++$score;
         }
 
         return match (true) {
@@ -199,21 +199,21 @@ readonly class KPICreated
     public function generateAutoTags(): array
     {
         $tags = [];
-        
+
         // Intervall-basierte Tags
         $tags[] = $this->kpi->getInterval()?->value ?? 'no-interval';
-        
+
         // Name-basierte Tags
-        $name = strtolower($this->kpi->getName());
-        
+        $name = mb_strtolower($this->kpi->getName());
+
         if (str_contains($name, 'umsatz') || str_contains($name, 'revenue')) {
             $tags[] = 'financial';
         }
-        
+
         if (str_contains($name, 'kunde') || str_contains($name, 'customer')) {
             $tags[] = 'customer';
         }
-        
+
         if (str_contains($name, 'kosten') || str_contains($name, 'cost')) {
             $tags[] = 'cost';
         }
@@ -223,10 +223,10 @@ readonly class KPICreated
         }
 
         // Komplexitäts-Tag
-        $tags[] = 'complexity-' . $this->getComplexityLevel();
-        
+        $tags[] = 'complexity-'.$this->getComplexityLevel();
+
         // Quelle-Tag
-        $tags[] = 'source-' . $this->getCreationSource();
+        $tags[] = 'source-'.$this->getCreationSource();
 
         return array_unique($tags);
     }
@@ -244,7 +244,7 @@ readonly class KPICreated
             'kpi_name' => $this->kpi->getName(),
             'kpi_interval' => $this->kpi->getInterval()?->value,
             'kpi_unit' => $this->kpi->getUnit(),
-            'has_target' => $this->kpi->getTarget() !== null,
+            'has_target' => null !== $this->kpi->getTarget(),
             'has_description' => !empty($this->kpi->getDescription()),
             'user_id' => $this->user->getId(),
             'user_email' => $this->user->getEmail(),

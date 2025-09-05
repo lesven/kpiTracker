@@ -16,46 +16,46 @@ class KPIStatusTest extends TestCase
     /**
      * @test
      */
-    public function kann_gruenen_status_erstellen(): void
+    public function kannGruenenStatusErstellen(): void
     {
         $status = KPIStatus::green();
 
         $this->assertTrue($status->isGreen());
         $this->assertFalse($status->isYellow());
         $this->assertFalse($status->isRed());
-        $this->assertEquals('green', $status->toString());
+        $this->assertSame('green', $status->toString());
     }
 
     /**
      * @test
      */
-    public function kann_gelben_status_erstellen(): void
+    public function kannGelbenStatusErstellen(): void
     {
         $status = KPIStatus::yellow();
 
         $this->assertFalse($status->isGreen());
         $this->assertTrue($status->isYellow());
         $this->assertFalse($status->isRed());
-        $this->assertEquals('yellow', $status->toString());
+        $this->assertSame('yellow', $status->toString());
     }
 
     /**
      * @test
      */
-    public function kann_roten_status_erstellen(): void
+    public function kannRotenStatusErstellen(): void
     {
         $status = KPIStatus::red();
 
         $this->assertFalse($status->isGreen());
         $this->assertFalse($status->isYellow());
         $this->assertTrue($status->isRed());
-        $this->assertEquals('red', $status->toString());
+        $this->assertSame('red', $status->toString());
     }
 
     /**
      * @test
      */
-    public function kann_status_aus_string_erstellen(): void
+    public function kannStatusAusStringErstellen(): void
     {
         $greenStatus = KPIStatus::fromString('green');
         $yellowStatus = KPIStatus::fromString('yellow');
@@ -69,7 +69,7 @@ class KPIStatusTest extends TestCase
     /**
      * @test
      */
-    public function wirft_exception_bei_ungueltigem_string(): void
+    public function wirftExceptionBeiUngueltigemString(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid KPI status: invalid');
@@ -80,7 +80,7 @@ class KPIStatusTest extends TestCase
     /**
      * @test
      */
-    public function kann_pruefen_ob_kritisch(): void
+    public function kannPruefenObKritisch(): void
     {
         $green = KPIStatus::green();
         $yellow = KPIStatus::yellow();
@@ -94,7 +94,7 @@ class KPIStatusTest extends TestCase
     /**
      * @test
      */
-    public function kann_pruefen_ob_ok(): void
+    public function kannPruefenObOk(): void
     {
         $green = KPIStatus::green();
         $yellow = KPIStatus::yellow();
@@ -108,7 +108,7 @@ class KPIStatusTest extends TestCase
     /**
      * @test
      */
-    public function kann_status_vergleichen_fuer_verschlechterung(): void
+    public function kannStatusVergleichenFuerVerschlechterung(): void
     {
         $green = KPIStatus::green();
         $yellow = KPIStatus::yellow();
@@ -135,7 +135,7 @@ class KPIStatusTest extends TestCase
     /**
      * @test
      */
-    public function kann_status_vergleichen_fuer_verbesserung(): void
+    public function kannStatusVergleichenFuerVerbesserung(): void
     {
         $green = KPIStatus::green();
         $yellow = KPIStatus::yellow();
@@ -162,7 +162,7 @@ class KPIStatusTest extends TestCase
     /**
      * @test
      */
-    public function kann_gleichheit_pruefen(): void
+    public function kannGleichheitPruefen(): void
     {
         $green1 = KPIStatus::green();
         $green2 = KPIStatus::green();
@@ -175,21 +175,21 @@ class KPIStatusTest extends TestCase
     /**
      * @test
      */
-    public function kann_hierarchie_wert_abrufen(): void
+    public function kannHierarchieWertAbrufen(): void
     {
         $green = KPIStatus::green();
         $yellow = KPIStatus::yellow();
         $red = KPIStatus::red();
 
-        $this->assertEquals(1, $green->getHierarchyValue());
-        $this->assertEquals(2, $yellow->getHierarchyValue());
-        $this->assertEquals(3, $red->getHierarchyValue());
+        $this->assertSame(1, $green->getHierarchyValue());
+        $this->assertSame(2, $yellow->getHierarchyValue());
+        $this->assertSame(3, $red->getHierarchyValue());
     }
 
     /**
      * @test
      */
-    public function kann_aggregierten_status_berechnen(): void
+    public function kannAggregiertenStatusBerechnen(): void
     {
         // Alle grün = grün
         $allGreen = [KPIStatus::green(), KPIStatus::green(), KPIStatus::green()];
@@ -211,49 +211,49 @@ class KPIStatusTest extends TestCase
     /**
      * @test
      */
-    public function kann_css_klasse_abrufen(): void
+    public function kannCssKlasseAbrufen(): void
     {
         $green = KPIStatus::green();
         $yellow = KPIStatus::yellow();
         $red = KPIStatus::red();
 
-        $this->assertEquals('status-green', $green->getCssClass());
-        $this->assertEquals('status-yellow', $yellow->getCssClass());
-        $this->assertEquals('status-red', $red->getCssClass());
+        $this->assertSame('status-green', $green->getCssClass());
+        $this->assertSame('status-yellow', $yellow->getCssClass());
+        $this->assertSame('status-red', $red->getCssClass());
     }
 
     /**
      * @test
      */
-    public function kann_emoji_abrufen(): void
+    public function kannEmojiAbrufen(): void
     {
         $green = KPIStatus::green();
         $yellow = KPIStatus::yellow();
         $red = KPIStatus::red();
 
-        $this->assertEquals('✅', $green->getEmoji());
-        $this->assertEquals('⚠️', $yellow->getEmoji());
-        $this->assertEquals('❌', $red->getEmoji());
+        $this->assertSame('✅', $green->getEmoji());
+        $this->assertSame('⚠️', $yellow->getEmoji());
+        $this->assertSame('❌', $red->getEmoji());
     }
 
     /**
      * @test
      */
-    public function kann_benutzerfreundliche_nachricht_abrufen(): void
+    public function kannBenutzerfreundlicheNachrichtAbrufen(): void
     {
         $green = KPIStatus::green();
         $yellow = KPIStatus::yellow();
         $red = KPIStatus::red();
 
-        $this->assertEquals('Aktuell', $green->getUserFriendlyMessage());
-        $this->assertEquals('Fällig bald', $yellow->getUserFriendlyMessage());
-        $this->assertEquals('Überfällig', $red->getUserFriendlyMessage());
+        $this->assertSame('Aktuell', $green->getUserFriendlyMessage());
+        $this->assertSame('Fällig bald', $yellow->getUserFriendlyMessage());
+        $this->assertSame('Überfällig', $red->getUserFriendlyMessage());
     }
 
     /**
      * @test
      */
-    public function value_object_ist_immutable(): void
+    public function valueObjectIstImmutable(): void
     {
         $status = KPIStatus::green();
         $originalString = $status->toString();
@@ -262,38 +262,38 @@ class KPIStatusTest extends TestCase
         $newStatus = KPIStatus::red();
 
         // Original-Status sollte unverändert bleiben
-        $this->assertEquals('green', $originalString);
-        $this->assertEquals('green', $status->toString());
-        $this->assertEquals('red', $newStatus->toString());
+        $this->assertSame('green', $originalString);
+        $this->assertSame('green', $status->toString());
+        $this->assertSame('red', $newStatus->toString());
     }
 
     /**
      * @test
      */
-    public function kann_string_darstellung_ausgeben(): void
+    public function kannStringDarstellungAusgeben(): void
     {
         $green = KPIStatus::green();
         $yellow = KPIStatus::yellow();
         $red = KPIStatus::red();
 
-        $this->assertEquals('green', (string) $green);
-        $this->assertEquals('yellow', (string) $yellow);
-        $this->assertEquals('red', (string) $red);
+        $this->assertSame('green', (string) $green);
+        $this->assertSame('yellow', (string) $yellow);
+        $this->assertSame('red', (string) $red);
     }
 
     /**
      * @test
      */
-    public function kann_json_serialisierung_handhaben(): void
+    public function kannJsonSerialisierungHandhaben(): void
     {
         $status = KPIStatus::green();
 
         $json = json_encode($status);
-        $this->assertEquals('"green"', $json);
+        $this->assertSame('"green"', $json);
 
         $decoded = json_decode($json, true);
         $recreated = KPIStatus::fromString($decoded);
-        
+
         $this->assertTrue($status->equals($recreated));
     }
 }

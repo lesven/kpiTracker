@@ -183,7 +183,7 @@ class KPI
         ?string $description = null,
         ?string $unit = null,
         ?DecimalValue $target = null,
-        array $context = []
+        array $context = [],
     ): self {
         $kpi = new self();
         $kpi->setName($name);
@@ -192,18 +192,18 @@ class KPI
         $kpi->setDescription($description);
         $kpi->setUnit($unit);
         $kpi->setTarget($target);
-        
+
         // Prüfe ob dies die erste KPI des Benutzers ist
         $isFirstKpi = $user->getKpis()->isEmpty();
-        
+
         // Domain Event: KPI wurde erstellt
         $kpi->recordEvent(
-            \App\Domain\Event\KPICreated::create(
-                $kpi, 
+            KPICreated::create(
+                $kpi,
                 array_merge($context, ['is_first_kpi' => $isFirstKpi])
             )
         );
-        
+
         return $kpi;
     }
 
@@ -394,15 +394,15 @@ class KPI
     {
         if (!$this->values->contains($value)) {
             $isFirstValue = $this->values->isEmpty();
-            
+
             $this->values->add($value);
             $value->setKpi($this);
-            
+
             // Domain Event: KPI-Wert hinzugefügt
             $this->recordEvent(
                 \App\Domain\Event\KPIValueAdded::create(
-                    $this, 
-                    $value, 
+                    $this,
+                    $value,
                     ['is_first_value' => $isFirstValue]
                 )
             );
@@ -556,9 +556,9 @@ class KPI
     public function checkAndRecordStatusChange(string $previousStatus): void
     {
         $currentStatus = $this->getStatus();
-        
+
         // Nur Events aufzeichnen wenn sich Status verschlechtert hat zu rot
-        if ($currentStatus === self::STATUS_RED && $previousStatus !== self::STATUS_RED) {
+        if (self::STATUS_RED === $currentStatus && self::STATUS_RED !== $previousStatus) {
             $this->recordKPIBecameOverdueEvent($previousStatus, $currentStatus);
         }
     }
@@ -571,16 +571,16 @@ class KPI
         $now = new \DateTimeImmutable();
         $dueDate = $this->getNextDueDate();
         $daysOverdue = max(0, $now->diff($dueDate)->days);
-        
+
         // Konvertiere String-Status zu ValueObjects (für Domain Event)
-        $previousStatusVO = match($previousStatus) {
+        $previousStatusVO = match ($previousStatus) {
             self::STATUS_GREEN => \App\Domain\ValueObject\KPIStatus::green(),
             self::STATUS_YELLOW => \App\Domain\ValueObject\KPIStatus::yellow(),
             default => \App\Domain\ValueObject\KPIStatus::red(),
         };
-        
+
         $currentStatusVO = \App\Domain\ValueObject\KPIStatus::red();
-        
+
         $this->recordEvent(
             \App\Domain\Event\KPIBecameOverdue::create(
                 $this,

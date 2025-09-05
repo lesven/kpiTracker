@@ -3,7 +3,6 @@
 namespace App\Tests\Domain\Service;
 
 use App\Domain\Service\KPIStatusDomainService;
-use App\Domain\ValueObject\KPIStatus;
 use App\Domain\ValueObject\KpiInterval;
 use App\Domain\ValueObject\Period;
 use App\Entity\KPI;
@@ -31,7 +30,7 @@ class KPIStatusDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function berechnet_gruenen_status_wenn_wert_vorhanden(): void
+    public function berechnetGruenenStatusWennWertVorhanden(): void
     {
         $kpi = $this->createMockKPI(KpiInterval::WEEKLY);
         $existingValue = $this->createMock(KPIValue::class);
@@ -49,7 +48,7 @@ class KPIStatusDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function berechnet_roten_status_wenn_ueberfaellig(): void
+    public function berechnetRotenStatusWennUeberfaellig(): void
     {
         $kpi = $this->createMockKPI(KpiInterval::WEEKLY);
         $kpi->method('getNextDueDate')
@@ -68,7 +67,7 @@ class KPIStatusDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function berechnet_gelben_status_wenn_bald_faellig(): void
+    public function berechnetGelbenStatusWennBaldFaellig(): void
     {
         $kpi = $this->createMockKPI(KpiInterval::WEEKLY);
         $kpi->method('getNextDueDate')
@@ -87,7 +86,7 @@ class KPIStatusDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function berechnet_gruenen_status_wenn_noch_zeit(): void
+    public function berechnetGruenenStatusWennNochZeit(): void
     {
         $kpi = $this->createMockKPI(KpiInterval::WEEKLY);
         $kpi->method('getNextDueDate')
@@ -106,50 +105,50 @@ class KPIStatusDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function kann_faelligkeitsdatum_fuer_woechentliches_intervall_berechnen(): void
+    public function kannFaelligkeitsdatumFuerWoechentlichesIntervallBerechnen(): void
     {
         $kpi = $this->createMockKPI(KpiInterval::WEEKLY);
-        
+
         $dueDate = $this->service->calculateDueDate($kpi);
-        
+
         // Sollte der nächste Montag sein
-        $this->assertEquals(1, $dueDate->format('N')); // ISO-8601: 1 = Montag
+        $this->assertSame(1, $dueDate->format('N')); // ISO-8601: 1 = Montag
         $this->assertGreaterThan(new \DateTimeImmutable(), $dueDate);
     }
 
     /**
      * @test
      */
-    public function kann_faelligkeitsdatum_fuer_monatliches_intervall_berechnen(): void
+    public function kannFaelligkeitsdatumFuerMonatlichesIntervallBerechnen(): void
     {
         $kpi = $this->createMockKPI(KpiInterval::MONTHLY);
-        
+
         $dueDate = $this->service->calculateDueDate($kpi);
-        
+
         // Sollte der erste Tag des nächsten Monats sein
-        $this->assertEquals('01', $dueDate->format('d'));
+        $this->assertSame('01', $dueDate->format('d'));
         $this->assertGreaterThan(new \DateTimeImmutable(), $dueDate);
     }
 
     /**
      * @test
      */
-    public function kann_faelligkeitsdatum_fuer_quartalsmaessiges_intervall_berechnen(): void
+    public function kannFaelligkeitsdatumFuerQuartalsmaessigesIntervallBerechnen(): void
     {
         $kpi = $this->createMockKPI(KpiInterval::QUARTERLY);
-        
+
         $dueDate = $this->service->calculateDueDate($kpi);
-        
+
         // Sollte der erste Tag eines Quartals sein (Jan, Apr, Jul, Okt)
         $month = (int) $dueDate->format('n');
         $this->assertContains($month, [1, 4, 7, 10]);
-        $this->assertEquals('01', $dueDate->format('d'));
+        $this->assertSame('01', $dueDate->format('d'));
     }
 
     /**
      * @test
      */
-    public function kann_tage_ueberfaellig_berechnen(): void
+    public function kannTageUeberfaelligBerechnen(): void
     {
         $kpi = $this->createMockKPI(KpiInterval::WEEKLY);
         $kpi->method('getNextDueDate')
@@ -157,13 +156,13 @@ class KPIStatusDomainServiceTest extends TestCase
 
         $daysOverdue = $this->service->getDaysOverdue($kpi);
 
-        $this->assertEquals(3, $daysOverdue); // Positiv = überfällig
+        $this->assertSame(3, $daysOverdue); // Positiv = überfällig
     }
 
     /**
      * @test
      */
-    public function kann_negative_tage_bis_faelligkeit_berechnen(): void
+    public function kannNegativeTageBisFaelligkeitBerechnen(): void
     {
         $kpi = $this->createMockKPI(KpiInterval::WEEKLY);
         $kpi->method('getNextDueDate')
@@ -177,7 +176,7 @@ class KPIStatusDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function kann_status_fuer_mehrere_kpis_berechnen(): void
+    public function kannStatusFuerMehrereKpisBerechnen(): void
     {
         $kpi1 = $this->createMockKPI(KpiInterval::WEEKLY);
         $kpi2 = $this->createMockKPI(KpiInterval::MONTHLY);
@@ -207,7 +206,7 @@ class KPIStatusDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function kann_aggregierten_status_berechnen(): void
+    public function kannAggregiertenStatusBerechnen(): void
     {
         $greenKPI = $this->createMockKPI(KpiInterval::WEEKLY);
         $yellowKPI = $this->createMockKPI(KpiInterval::MONTHLY);
@@ -216,10 +215,11 @@ class KPIStatusDomainServiceTest extends TestCase
         // Separate Mock-Konfiguration für jeden KPI
         $this->kpiValueRepository
             ->method('findByKpiAndPeriod')
-            ->willReturnCallback(function($kpi, $period) use ($greenKPI, $yellowKPI, $redKPI) {
+            ->willReturnCallback(function ($kpi, $period) use ($greenKPI) {
                 if ($kpi === $greenKPI) {
                     return $this->createMock(KPIValue::class); // grün
                 }
+
                 return null; // gelb/rot
             });
 
@@ -243,49 +243,49 @@ class KPIStatusDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function kann_eskalationslevel_berechnen(): void
+    public function kannEskalationslevelBerechnen(): void
     {
         $kpi = $this->createMockKPI(KpiInterval::WEEKLY);
-        
+
         // Level 1 bei gelbem Status - noch nicht überfällig
         $kpi->method('getNextDueDate')->willReturn(new \DateTimeImmutable('+2 days'));
         $this->kpiValueRepository->method('findByKpiAndPeriod')->willReturn(null);
-        
+
         $escalationLevel = $this->service->calculateEscalationLevel($kpi);
-        $this->assertEquals(1, $escalationLevel);
+        $this->assertSame(1, $escalationLevel);
 
         // Level 1 bei gelbem Status
         $this->kpiValueRepository->method('findByKpiAndPeriod')->willReturn(null);
         $kpi->method('getNextDueDate')->willReturn(new \DateTimeImmutable('+2 days'));
-        
+
         $escalationLevel = $this->service->calculateEscalationLevel($kpi);
-        $this->assertEquals(1, $escalationLevel);
+        $this->assertSame(1, $escalationLevel);
 
         // Level 2 bei rotem Status (leicht überfällig) - mit klarer Mock Konfiguration
         $overdueKpi = $this->createMock(KPI::class);
         $overdueKpi->method('getInterval')->willReturn(KpiInterval::MONTHLY);
         $overdueKpi->method('getCurrentPeriod')->willReturn(Period::fromString('2024-01'));
         $overdueKpi->method('getNextDueDate')->willReturn(new \DateTimeImmutable('-2 days'));
-        
+
         $this->kpiValueRepository->method('findByKpiAndPeriod')->willReturn(null); // Kein Wert vorhanden
-        
+
         $escalationLevel = $this->service->calculateEscalationLevel($overdueKpi);
-        $this->assertEquals(2, $escalationLevel);
+        $this->assertSame(2, $escalationLevel);
 
         // Level 3 bei stark überfällig
         $stronglyOverdueKpi = $this->createMock(KPI::class);
         $stronglyOverdueKpi->method('getInterval')->willReturn(KpiInterval::MONTHLY);
         $stronglyOverdueKpi->method('getCurrentPeriod')->willReturn(Period::fromString('2024-01'));
         $stronglyOverdueKpi->method('getNextDueDate')->willReturn(new \DateTimeImmutable('-8 days'));
-        
+
         $escalationLevel = $this->service->calculateEscalationLevel($stronglyOverdueKpi);
-        $this->assertEquals(3, $escalationLevel);
+        $this->assertSame(3, $escalationLevel);
     }
 
     /**
      * @test
      */
-    public function kann_konfigurierbare_schwellwerte_verwenden(): void
+    public function kannKonfigurierbareSchwellwerteVerwenden(): void
     {
         $kpi = $this->createMockKPI(KpiInterval::WEEKLY);
         $kpi->method('getNextDueDate')->willReturn(new \DateTimeImmutable('+5 days'));
@@ -303,7 +303,7 @@ class KPIStatusDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function kann_status_prioritaet_berechnen(): void
+    public function kannStatusPrioritaetBerechnen(): void
     {
         $redKPI = $this->createMockKPI(KpiInterval::WEEKLY);
         $yellowKPI = $this->createMockKPI(KpiInterval::MONTHLY);
@@ -319,9 +319,9 @@ class KPIStatusDomainServiceTest extends TestCase
 
         $priorities = $this->service->calculatePriorities([$redKPI, $yellowKPI, $greenKPI]);
 
-        $this->assertEquals(3, $priorities[0]['priority']); // rot = höchste Priorität
-        $this->assertEquals(2, $priorities[1]['priority']); // gelb = mittlere Priorität
-        $this->assertEquals(1, $priorities[2]['priority']); // grün = niedrige Priorität
+        $this->assertSame(3, $priorities[0]['priority']); // rot = höchste Priorität
+        $this->assertSame(2, $priorities[1]['priority']); // gelb = mittlere Priorität
+        $this->assertSame(1, $priorities[2]['priority']); // grün = niedrige Priorität
     }
 
     /**
@@ -332,7 +332,7 @@ class KPIStatusDomainServiceTest extends TestCase
         $kpi = $this->createMock(KPI::class);
         $kpi->method('getInterval')->willReturn($interval);
         $kpi->method('getCurrentPeriod')->willReturn(Period::fromString('2024-W01'));
-        
+
         return $kpi;
     }
 }

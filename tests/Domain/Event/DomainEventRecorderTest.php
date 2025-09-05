@@ -3,9 +3,6 @@
 namespace App\Tests\Domain\Event;
 
 use App\Domain\Event\DomainEventRecorder;
-use App\Domain\Event\KPICreated;
-use App\Entity\KPI;
-use App\Entity\User;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -46,7 +43,7 @@ class DomainEventRecorderTest extends TestCase
 
         // Assert
         $this->assertCount(2, $this->entity->peekRecordedEvents());
-        $this->assertEquals(2, $this->entity->getRecordedEventCount());
+        $this->assertSame(2, $this->entity->getRecordedEventCount());
     }
 
     public function testGetRecordedEventsClearsCollection(): void
@@ -93,7 +90,7 @@ class DomainEventRecorderTest extends TestCase
         // Assert
         $this->assertFalse($this->entity->hasRecordedEvents());
         $this->assertCount(0, $this->entity->peekRecordedEvents());
-        $this->assertEquals(0, $this->entity->getRecordedEventCount());
+        $this->assertSame(0, $this->entity->getRecordedEventCount());
     }
 
     public function testHasRecordedEventsReturnsFalseWhenEmpty(): void
@@ -105,7 +102,7 @@ class DomainEventRecorderTest extends TestCase
     public function testGetRecordedEventCountReturnsCorrectCount(): void
     {
         // Assert - Initially empty
-        $this->assertEquals(0, $this->entity->getRecordedEventCount());
+        $this->assertSame(0, $this->entity->getRecordedEventCount());
 
         // Act - Add events
         $this->entity->recordTestEvent($this->createMockEvent());
@@ -113,7 +110,7 @@ class DomainEventRecorderTest extends TestCase
         $this->entity->recordTestEvent($this->createMockEvent());
 
         // Assert - Count should be 3
-        $this->assertEquals(3, $this->entity->getRecordedEventCount());
+        $this->assertSame(3, $this->entity->getRecordedEventCount());
     }
 
     public function testEventsAreMaintainedInOrder(): void

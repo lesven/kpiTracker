@@ -3,11 +3,11 @@
 namespace App\Tests\Domain\Event;
 
 use App\Domain\Event\KPICreated;
-use App\Entity\KPI;
-use App\Entity\User;
 use App\Domain\ValueObject\DecimalValue;
 use App\Domain\ValueObject\EmailAddress;
 use App\Domain\ValueObject\KpiInterval;
+use App\Entity\KPI;
+use App\Entity\User;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -49,7 +49,7 @@ class KPICreatedTest extends TestCase
         $this->assertSame($this->kpi, $event->kpi);
         $this->assertSame($this->user, $event->user);
         $this->assertSame($occurredOn, $event->occurredOn);
-        $this->assertEquals($context, $event->context);
+        $this->assertSame($context, $event->context);
     }
 
     public function testCreateFactoryMethod(): void
@@ -63,7 +63,7 @@ class KPICreatedTest extends TestCase
         // Assert
         $this->assertSame($this->kpi, $event->kpi);
         $this->assertSame($this->user, $event->user);
-        $this->assertEquals($context, $event->context);
+        $this->assertSame($context, $event->context);
         $this->assertInstanceOf(\DateTimeImmutable::class, $event->occurredOn);
     }
 
@@ -85,7 +85,7 @@ class KPICreatedTest extends TestCase
 
         // Assert
         $expectedId = 'kpi_created_456_20250904101530';
-        $this->assertEquals($expectedId, $event->getEventId());
+        $this->assertSame($expectedId, $event->getEventId());
     }
 
     public function testGetEventTypeReturnsCorrectType(): void
@@ -94,7 +94,7 @@ class KPICreatedTest extends TestCase
         $event = $this->createEvent();
 
         // Assert
-        $this->assertEquals('kpi.created', $event->getEventType());
+        $this->assertSame('kpi.created', $event->getEventType());
     }
 
     public function testIsFirstKpiForUserReturnsTrueWhenFlagSet(): void
@@ -164,7 +164,7 @@ class KPICreatedTest extends TestCase
         );
 
         // Assert
-        $this->assertEquals($templateId, $event->getTemplateId());
+        $this->assertSame($templateId, $event->getTemplateId());
     }
 
     public function testGetTemplateIdReturnsNullWhenNotPresent(): void
@@ -216,7 +216,7 @@ class KPICreatedTest extends TestCase
         );
 
         // Assert
-        $this->assertEquals($expectedSource, $event->getCreationSource());
+        $this->assertSame($expectedSource, $event->getCreationSource());
     }
 
     public static function creationSourceProvider(): array
@@ -237,7 +237,7 @@ class KPICreatedTest extends TestCase
         ?string $description,
         ?string $unit,
         KpiInterval $interval,
-        string $expectedComplexity
+        string $expectedComplexity,
     ): void {
         // Arrange
         $this->kpi->setTarget($target)
@@ -249,7 +249,7 @@ class KPICreatedTest extends TestCase
         $event = $this->createEvent();
 
         // Assert
-        $this->assertEquals($expectedComplexity, $event->getComplexityLevel());
+        $this->assertSame($expectedComplexity, $event->getComplexityLevel());
     }
 
     public static function complexityLevelProvider(): array
@@ -272,13 +272,13 @@ class KPICreatedTest extends TestCase
         // Assert
         $this->assertIsArray($steps);
         $this->assertNotEmpty($steps);
-        
-        $addValueStep = array_filter($steps, fn($step) => $step['type'] === 'add_first_value');
+
+        $addValueStep = array_filter($steps, fn ($step) => 'add_first_value' === $step['type']);
         $this->assertNotEmpty($addValueStep);
-        
+
         $step = array_values($addValueStep)[0];
-        $this->assertEquals('Ersten KPI-Wert erfassen', $step['label']);
-        $this->assertEquals('high', $step['priority']);
+        $this->assertSame('Ersten KPI-Wert erfassen', $step['label']);
+        $this->assertSame('high', $step['priority']);
     }
 
     public function testGetRecommendedNextStepsIncludesSetTargetWhenMissing(): void
@@ -291,12 +291,12 @@ class KPICreatedTest extends TestCase
         $steps = $event->getRecommendedNextSteps();
 
         // Assert
-        $setTargetSteps = array_filter($steps, fn($step) => $step['type'] === 'set_target');
+        $setTargetSteps = array_filter($steps, fn ($step) => 'set_target' === $step['type']);
         $this->assertNotEmpty($setTargetSteps);
-        
+
         $step = array_values($setTargetSteps)[0];
-        $this->assertEquals('Zielwert definieren', $step['label']);
-        $this->assertEquals('medium', $step['priority']);
+        $this->assertSame('Zielwert definieren', $step['label']);
+        $this->assertSame('medium', $step['priority']);
     }
 
     public function testGetRecommendedNextStepsDoesNotIncludeSetTargetWhenPresent(): void
@@ -309,7 +309,7 @@ class KPICreatedTest extends TestCase
         $steps = $event->getRecommendedNextSteps();
 
         // Assert
-        $setTargetSteps = array_filter($steps, fn($step) => $step['type'] === 'set_target');
+        $setTargetSteps = array_filter($steps, fn ($step) => 'set_target' === $step['type']);
         $this->assertEmpty($setTargetSteps);
     }
 
@@ -323,12 +323,12 @@ class KPICreatedTest extends TestCase
         $steps = $event->getRecommendedNextSteps();
 
         // Assert
-        $addDescriptionSteps = array_filter($steps, fn($step) => $step['type'] === 'add_description');
+        $addDescriptionSteps = array_filter($steps, fn ($step) => 'add_description' === $step['type']);
         $this->assertNotEmpty($addDescriptionSteps);
-        
+
         $step = array_values($addDescriptionSteps)[0];
-        $this->assertEquals('Beschreibung hinzufügen', $step['label']);
-        $this->assertEquals('low', $step['priority']);
+        $this->assertSame('Beschreibung hinzufügen', $step['label']);
+        $this->assertSame('low', $step['priority']);
     }
 
     public function testGetRecommendedNextStepsIncludesTutorialForFirstKpi(): void
@@ -343,19 +343,19 @@ class KPICreatedTest extends TestCase
             new \DateTimeImmutable(),
             $context
         );
-        
+
         $steps = $event->getRecommendedNextSteps();
 
         // Assert
-        $tutorialSteps = array_filter($steps, fn($step) => $step['type'] === 'tutorial');
+        $tutorialSteps = array_filter($steps, fn ($step) => 'tutorial' === $step['type']);
         $this->assertNotEmpty($tutorialSteps);
-        
+
         $step = array_values($tutorialSteps)[0];
-        $this->assertEquals('KPI-Tutorial starten', $step['label']);
-        $this->assertEquals('high', $step['priority']);
-        
+        $this->assertSame('KPI-Tutorial starten', $step['label']);
+        $this->assertSame('high', $step['priority']);
+
         // Tutorial should be first step
-        $this->assertEquals('tutorial', $steps[0]['type']);
+        $this->assertSame('tutorial', $steps[0]['type']);
     }
 
     /**
@@ -364,7 +364,7 @@ class KPICreatedTest extends TestCase
     public function testGenerateAutoTagsBasedOnKpiProperties(
         string $kpiName,
         KpiInterval $interval,
-        array $expectedTags
+        array $expectedTags,
     ): void {
         // Arrange
         $this->kpi->setName($kpiName)->setInterval($interval);
@@ -383,24 +383,24 @@ class KPICreatedTest extends TestCase
     {
         return [
             'financial umsatz' => [
-                'Monatlicher Umsatz', 
-                KpiInterval::MONTHLY, 
-                ['monthly', 'financial', 'complexity-simple', 'source-manual']
+                'Monatlicher Umsatz',
+                KpiInterval::MONTHLY,
+                ['monthly', 'financial', 'complexity-simple', 'source-manual'],
             ],
             'customer related' => [
-                'Anzahl Kunden', 
-                KpiInterval::WEEKLY, 
-                ['weekly', 'customer', 'complexity-simple', 'source-manual']
+                'Anzahl Kunden',
+                KpiInterval::WEEKLY,
+                ['weekly', 'customer', 'complexity-simple', 'source-manual'],
             ],
             'cost tracking' => [
-                'Betriebskosten', 
-                KpiInterval::QUARTERLY, 
-                ['quarterly', 'cost', 'complexity-simple', 'source-manual']
+                'Betriebskosten',
+                KpiInterval::QUARTERLY,
+                ['quarterly', 'cost', 'complexity-simple', 'source-manual'],
             ],
             'percentage kpi' => [
-                'Conversion Rate %', 
-                KpiInterval::MONTHLY, 
-                ['monthly', 'percentage', 'complexity-simple', 'source-manual']
+                'Conversion Rate %',
+                KpiInterval::MONTHLY,
+                ['monthly', 'percentage', 'complexity-simple', 'source-manual'],
             ],
         ];
     }
@@ -412,7 +412,7 @@ class KPICreatedTest extends TestCase
                   ->setDescription('Complex KPI')
                   ->setUnit('Euro')
                   ->setInterval(KpiInterval::QUARTERLY);
-        
+
         $context = ['source' => 'import'];
 
         // Act
@@ -422,7 +422,7 @@ class KPICreatedTest extends TestCase
             new \DateTimeImmutable(),
             $context
         );
-        
+
         $tags = $event->generateAutoTags();
 
         // Assert
@@ -442,7 +442,7 @@ class KPICreatedTest extends TestCase
         $kpiMock->method('getTarget')->willReturn(DecimalValue::fromString('50000.00'));
         $kpiMock->method('getDescription')->willReturn('Quarterly revenue tracking');
         $kpiMock->method('getUser')->willReturn($this->user);
-        
+
         $userMock = $this->createMock(User::class);
         $userMock->method('getId')->willReturn(101);
         $userMock->method('getEmail')->willReturn(EmailAddress::fromString('user@example.com'));
@@ -462,24 +462,24 @@ class KPICreatedTest extends TestCase
 
         // Assert
         $this->assertIsArray($array);
-        $this->assertEquals('kpi_created_789_20250904164500', $array['event_id']);
-        $this->assertEquals('kpi.created', $array['event_type']);
-        $this->assertEquals('2025-09-04T16:45:00+00:00', $array['occurred_on']);
-        $this->assertEquals(789, $array['kpi_id']);
-        $this->assertEquals('Revenue KPI', $array['kpi_name']);
-        $this->assertEquals('quarterly', $array['kpi_interval']);
-        $this->assertEquals('Euro', $array['kpi_unit']);
+        $this->assertSame('kpi_created_789_20250904164500', $array['event_id']);
+        $this->assertSame('kpi.created', $array['event_type']);
+        $this->assertSame('2025-09-04T16:45:00+00:00', $array['occurred_on']);
+        $this->assertSame(789, $array['kpi_id']);
+        $this->assertSame('Revenue KPI', $array['kpi_name']);
+        $this->assertSame('quarterly', $array['kpi_interval']);
+        $this->assertSame('Euro', $array['kpi_unit']);
         $this->assertTrue($array['has_target']);
         $this->assertTrue($array['has_description']);
-        $this->assertEquals(101, $array['user_id']);
-        $this->assertEquals('user@example.com', $array['user_email']);
-        $this->assertEquals('manual', $array['creation_source']);
-        $this->assertEquals('complex', $array['complexity_level']);
+        $this->assertSame(101, $array['user_id']);
+        $this->assertSame('user@example.com', $array['user_email']);
+        $this->assertSame('manual', $array['creation_source']);
+        $this->assertSame('complex', $array['complexity_level']);
         $this->assertTrue($array['is_first_kpi']);
         $this->assertNull($array['template_id']);
         $this->assertArrayHasKey('auto_tags', $array);
         $this->assertArrayHasKey('recommended_next_steps', $array);
-        $this->assertEquals($context, $array['context']);
+        $this->assertSame($context, $array['context']);
     }
 
     public function testToArrayHandlesNullValues(): void
@@ -508,8 +508,8 @@ class KPICreatedTest extends TestCase
         $this->assertNull($array['kpi_unit']);
         $this->assertFalse($array['has_target']);
         $this->assertFalse($array['has_description']);
-        $this->assertEquals('manual', $array['creation_source']);
-        $this->assertEquals('simple', $array['complexity_level']);
+        $this->assertSame('manual', $array['creation_source']);
+        $this->assertSame('simple', $array['complexity_level']);
         $this->assertFalse($array['is_first_kpi']);
     }
 

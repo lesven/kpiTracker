@@ -6,8 +6,8 @@ use App\Service\FileUploadService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\String\UnicodeString;
 
@@ -78,7 +78,7 @@ class FileUploadServiceTest extends TestCase
     {
         $kpiValue = $this->createMock(\App\Entity\KPIValue::class);
         $kpiValue->method('getId')->willReturn(1);
-        
+
         $uploadedFile = $this->createMock(UploadedFile::class);
         $uploadedFile->method('getClientOriginalName')->willReturn('test.pdf');
         $uploadedFile->method('getSize')->willReturn(1024);
@@ -86,7 +86,7 @@ class FileUploadServiceTest extends TestCase
         $uploadedFile->method('getError')->willReturn(UPLOAD_ERR_OK);
         $uploadedFile->method('isValid')->willReturn(true);
         $uploadedFile->method('guessExtension')->willReturn('pdf');
-        
+
         // UnicodeString-Mock erstellen
         $unicodeString = new UnicodeString('test-file');
         $this->slugger->method('slug')->willReturn($unicodeString);

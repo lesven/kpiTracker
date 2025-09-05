@@ -35,7 +35,7 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function validiert_gueltige_kpi_ohne_fehler(): void
+    public function validiertGueltigeKpiOhneFehler(): void
     {
         $kpi = $this->createValidKPI();
 
@@ -47,7 +47,7 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function erkennt_fehlenden_kpi_namen(): void
+    public function erkenntFehlendenKpiNamen(): void
     {
         $user = $this->createMock(User::class);
         $target = DecimalValue::fromFloat(1000.0);
@@ -66,7 +66,7 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function erkennt_leeren_kpi_namen(): void
+    public function erkenntLeerenKpiNamen(): void
     {
         $user = $this->createMock(User::class);
 
@@ -84,7 +84,7 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function erkennt_zu_langen_kpi_namen(): void
+    public function erkenntZuLangenKpiNamen(): void
     {
         $user = $this->createMock(User::class);
         $longName = str_repeat('a', 256); // 256 Zeichen (über Limit)
@@ -103,7 +103,7 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function erkennt_fehlendes_intervall(): void
+    public function erkenntFehlendesIntervall(): void
     {
         $user = $this->createMock(User::class);
 
@@ -121,7 +121,7 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function erkennt_fehlenden_benutzer(): void
+    public function erkenntFehlendenBenutzer(): void
     {
         $kpi = $this->createMock(KPI::class);
         $kpi->method('getName')->willReturn('Test KPI');
@@ -137,7 +137,7 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function validiert_negativen_zielwert_bei_entsprechendem_kontext(): void
+    public function validiertNegativenZielwertBeiEntsprechendemKontext(): void
     {
         $user = $this->createMock(User::class);
         $negativeTarget = DecimalValue::fromFloat(-100.0);
@@ -161,10 +161,10 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function kann_kpi_wert_validieren(): void
+    public function kannKpiWertValidieren(): void
     {
         $kpiValue = $this->createValidKPIValue();
-        
+
         // Validate using the simple method that should return empty array for valid values
         $errors = $this->service->validateKpiValue($kpiValue);
 
@@ -175,7 +175,7 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function erkennt_kpi_wert_ohne_kpi_zuordnung(): void
+    public function erkenntKpiWertOhneKpiZuordnung(): void
     {
         $period = Period::fromString('2024-01');
         $value = DecimalValue::fromFloat(1200.0);
@@ -194,7 +194,7 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function erkennt_kpi_wert_ohne_periode(): void
+    public function erkenntKpiWertOhnePeriode(): void
     {
         $kpi = $this->createValidKPI();
         $value = DecimalValue::fromFloat(1200.0);
@@ -213,7 +213,7 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function erkennt_ungueltige_kpi_werte(): void
+    public function erkenntUngueltigeKpiWerte(): void
     {
         $kpi = $this->createValidKPI();
         $period = Period::fromString('2024-01');
@@ -243,10 +243,10 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function kann_mehrere_kpis_validieren(): void
+    public function kannMehrereKpisValidieren(): void
     {
         $validKpi = $this->createValidKPI();
-        
+
         $user = $this->createMock(User::class);
         $invalidKpi = $this->createMock(KPI::class);
         $invalidKpi->method('getName')->willReturn(null);
@@ -265,7 +265,7 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function kann_kpi_daten_array_validieren(): void
+    public function kannKpiDatenArrayValidieren(): void
     {
         $validData = [
             'name' => 'Test KPI',
@@ -273,7 +273,7 @@ class KPIValidationDomainServiceTest extends TestCase
             'user' => $this->createMock(User::class),
             'description' => 'Test Description',
             'unit' => '€',
-            'target' => DecimalValue::fromFloat(1000.0)
+            'target' => DecimalValue::fromFloat(1000.0),
         ];
 
         $errors = $this->service->validateKpiData($validData);
@@ -284,10 +284,10 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function erkennt_fehlende_pflichtfelder_in_kpi_daten(): void
+    public function erkenntFehlendePflichtfelderInKpiDaten(): void
     {
         $incompleteData = [
-            'description' => 'Test Description'
+            'description' => 'Test Description',
             // name, interval, user fehlen
         ];
 
@@ -301,20 +301,20 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function validiert_business_rules_mit_kontext(): void
+    public function validiertBusinessRulesMitKontext(): void
     {
         $user = $this->createMock(User::class);
-        
+
         $kpi = $this->createMock(KPI::class);
         $kpi->method('getName')->willReturn('Test KPI'); // Bereits existiert
         $kpi->method('getInterval')->willReturn(KpiInterval::MONTHLY);
         $kpi->method('getUser')->willReturn($user);
         $kpi->method('getTargetAsFloat')->willReturn(1000.0);
-        
+
         // Regel: KPI-Namen müssen eindeutig pro Benutzer sein
         $context = [
             'check_unique_name' => true,
-            'existing_kpi_names' => ['Test KPI', 'Another KPI']
+            'existing_kpi_names' => ['Test KPI', 'Another KPI'],
         ];
 
         $errors = $this->service->validateWithContext($kpi, $context);
@@ -325,11 +325,11 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function kann_cross_entity_konsistenz_pruefen(): void
+    public function kannCrossEntityKonsistenzPruefen(): void
     {
         $kpi = $this->createValidKPI();
         $kpiValue = $this->createValidKPIValue();
-        
+
         // Simuliere Inkonsistenz: KPI-Wert gehört zu anderer KPI
         $otherKpi = $this->createValidKPI();
         $kpiValue->method('getKpi')->willReturn($otherKpi);
@@ -343,14 +343,14 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function kann_bulk_validation_durchfuehren(): void
+    public function kannBulkValidationDurchfuehren(): void
     {
         $user = $this->createMock(User::class);
-        
+
         $kpis = [
             $this->createValidKPI(),
             $this->createValidKPI(),
-            $this->createValidKPI()
+            $this->createValidKPI(),
         ];
 
         // Einen KPI ungültig machen - frischen Mock erstellen
@@ -364,24 +364,24 @@ class KPIValidationDomainServiceTest extends TestCase
         $results = $this->service->validateBulk($kpis);
 
         $this->assertCount(3, $results['individual_results']);
-        $this->assertEquals(1, $results['total_errors']);
-        $this->assertEquals(2, $results['valid_count']);
-        $this->assertEquals(1, $results['invalid_count']);
+        $this->assertSame(1, $results['total_errors']);
+        $this->assertSame(2, $results['valid_count']);
+        $this->assertSame(1, $results['invalid_count']);
     }
 
     /**
      * @test
      */
-    public function kann_geschaeftslogik_validierungen_durchfuehren(): void
+    public function kannGeschaeftslogikValidierungenDurchfuehren(): void
     {
         $kpi = $this->createValidKPI();
-        
+
         // Test verschiedener Business Rules
         $context = [
             'business_rules' => [
                 'max_kpis_per_user' => 10,
-                'current_kpi_count' => 15 // Über Limit
-            ]
+                'current_kpi_count' => 15, // Über Limit
+            ],
         ];
 
         $result = $this->service->validateBusinessRules($kpi, $context);
@@ -392,19 +392,19 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function kann_erweiterte_validierung_mit_externen_daten(): void
+    public function kannErweiterteValidierungMitExternenDaten(): void
     {
         $user = $this->createMock(User::class);
-        
+
         $kpi = $this->createMock(KPI::class);
         $kpi->method('getName')->willReturn('Test KPI');
         $kpi->method('getInterval')->willReturn(KpiInterval::MONTHLY);
         $kpi->method('getUser')->willReturn($user);
         $kpi->method('getTargetAsFloat')->willReturn(1000.0);
-        
+
         $context = [
             'external_validation' => true,
-            'forbidden_names' => ['Admin', 'System', 'Test KPI']
+            'forbidden_names' => ['Admin', 'System', 'Test KPI'],
         ];
 
         $errors = $this->service->validateWithExternalContext($kpi, $context);
@@ -415,29 +415,29 @@ class KPIValidationDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function kann_validierungsregeln_konfigurieren(): void
+    public function kannValidierungsregelnKonfigurieren(): void
     {
         $user = $this->createMock(User::class);
         $shortName = 'AB'; // Nur 2 Zeichen
-        
+
         // Für Standard-Regel Test
         $kpi1 = $this->createMock(KPI::class);
         $kpi1->method('getName')->willReturn($shortName);
         $kpi1->method('getInterval')->willReturn(KpiInterval::MONTHLY);
         $kpi1->method('getUser')->willReturn($user);
         $kpi1->method('getTargetAsFloat')->willReturn(1000.0);
-        
+
         // Standard-Regel: min. 3 Zeichen
         $errors = $this->service->validateKpi($kpi1);
         $this->assertContains('KPI-Name muss mindestens 3 Zeichen lang sein.', $errors);
-        
+
         // Für Konfigurierte Regel Test
         $kpi2 = $this->createMock(KPI::class);
         $kpi2->method('getName')->willReturn($shortName);
         $kpi2->method('getInterval')->willReturn(KpiInterval::MONTHLY);
         $kpi2->method('getUser')->willReturn($user);
         $kpi2->method('getTargetAsFloat')->willReturn(1000.0);
-        
+
         // Konfigurierte Regel: min. 1 Zeichen
         $config = ['min_name_length' => 1];
         $errors = $this->service->validateWithConfig($kpi2, $config);

@@ -54,7 +54,7 @@ class DashboardServiceTest extends TestCase
         $this->assertArrayHasKey('due_soon_count', $stats);
         $this->assertArrayHasKey('up_to_date_count', $stats);
         $this->assertArrayHasKey('recent_values', $stats);
-        
+
         $this->assertSame(2, $stats['total_kpis']);
         $this->assertSame(1, $stats['overdue_count']);
         $this->assertSame(0, $stats['due_soon_count']);
@@ -185,9 +185,9 @@ class DashboardServiceTest extends TestCase
 
         $this->assertCount(2, $result);
         // Prüfe dass Einträge mit Datum vor null-Einträgen kommen
-        $hasDateFirst = $result[0]->nextDueDate !== null;
-        $hasDateSecond = $result[1]->nextDueDate !== null;
-        
+        $hasDateFirst = null !== $result[0]->nextDueDate;
+        $hasDateSecond = null !== $result[1]->nextDueDate;
+
         // Entweder: [mit Datum, ohne Datum] oder beide haben/haben keine Daten
         $this->assertTrue($hasDateFirst || !$hasDateSecond);
     }

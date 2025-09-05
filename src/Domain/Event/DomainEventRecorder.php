@@ -25,19 +25,20 @@ trait DomainEventRecorder
 
     /**
      * Gibt alle aufgezeichneten Events zurück und löscht sie.
-     * 
+     *
      * @return object[]
      */
     public function getRecordedEvents(): array
     {
         $events = $this->recordedEvents;
         $this->recordedEvents = [];
+
         return $events;
     }
 
     /**
      * Gibt alle Events zurück ohne sie zu löschen (für Tests).
-     * 
+     *
      * @return object[]
      */
     public function peekRecordedEvents(): array

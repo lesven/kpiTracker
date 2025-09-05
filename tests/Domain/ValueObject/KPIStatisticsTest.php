@@ -18,11 +18,11 @@ class KPIStatisticsTest extends TestCase
     /**
      * @test
      */
-    public function kann_leere_statistik_erstellen(): void
+    public function kannLeereStatistikErstellen(): void
     {
         $stats = KPIStatistics::empty();
 
-        $this->assertEquals(0, $stats->getTotalEntries());
+        $this->assertSame(0, $stats->getTotalEntries());
         $this->assertNull($stats->getAverageValue());
         $this->assertNull($stats->getMinValue());
         $this->assertNull($stats->getMaxValue());
@@ -35,7 +35,7 @@ class KPIStatisticsTest extends TestCase
     /**
      * @test
      */
-    public function kann_statistik_mit_einzelwert_erstellen(): void
+    public function kannStatistikMitEinzelwertErstellen(): void
     {
         $kpiValue = $this->createMockKPIValue(100.0);
         $trend = KPITrend::noData();
@@ -49,11 +49,11 @@ class KPIStatisticsTest extends TestCase
             trend: $trend
         );
 
-        $this->assertEquals(1, $stats->getTotalEntries());
-        $this->assertEquals(100.0, $stats->getAverageValue());
-        $this->assertEquals(100.0, $stats->getMinValue());
-        $this->assertEquals(100.0, $stats->getMaxValue());
-        $this->assertEquals($kpiValue, $stats->getLatestValue());
+        $this->assertSame(1, $stats->getTotalEntries());
+        $this->assertSame(100.0, $stats->getAverageValue());
+        $this->assertSame(100.0, $stats->getMinValue());
+        $this->assertSame(100.0, $stats->getMaxValue());
+        $this->assertSame($kpiValue, $stats->getLatestValue());
         $this->assertTrue($stats->hasData());
         $this->assertFalse($stats->isEmpty());
     }
@@ -61,7 +61,7 @@ class KPIStatisticsTest extends TestCase
     /**
      * @test
      */
-    public function kann_statistik_mit_mehreren_werten_erstellen(): void
+    public function kannStatistikMitMehrerenWertenErstellen(): void
     {
         $latestValue = $this->createMockKPIValue(150.0);
         $trend = KPITrend::rising();
@@ -75,18 +75,18 @@ class KPIStatisticsTest extends TestCase
             trend: $trend
         );
 
-        $this->assertEquals(5, $stats->getTotalEntries());
-        $this->assertEquals(120.0, $stats->getAverageValue());
-        $this->assertEquals(50.0, $stats->getMinValue());
-        $this->assertEquals(200.0, $stats->getMaxValue());
-        $this->assertEquals($latestValue, $stats->getLatestValue());
+        $this->assertSame(5, $stats->getTotalEntries());
+        $this->assertSame(120.0, $stats->getAverageValue());
+        $this->assertSame(50.0, $stats->getMinValue());
+        $this->assertSame(200.0, $stats->getMaxValue());
+        $this->assertSame($latestValue, $stats->getLatestValue());
         $this->assertTrue($stats->getTrend()->isRising());
     }
 
     /**
      * @test
      */
-    public function kann_erweiterte_statistiken_berechnen(): void
+    public function kannErweiterteStatistikenBerechnen(): void
     {
         $stats = KPIStatistics::fromData(
             totalEntries: 10,
@@ -98,19 +98,19 @@ class KPIStatisticsTest extends TestCase
         );
 
         // Range-Berechnung
-        $this->assertEquals(40.0, $stats->getRange());
+        $this->assertSame(40.0, $stats->getRange());
 
         // Coefficient of Variation (20% Standardabweichung angenommen)
-        $this->assertEquals(20.0, $stats->getCoefficientOfVariation());
+        $this->assertSame(20.0, $stats->getCoefficientOfVariation());
 
         // Stability Rating basierend auf CV
-        $this->assertEquals('moderate', $stats->getStabilityRating());
+        $this->assertSame('moderate', $stats->getStabilityRating());
     }
 
     /**
      * @test
      */
-    public function kann_stability_rating_korrekt_berechnen(): void
+    public function kannStabilityRatingKorrektBerechnen(): void
     {
         // Sehr stabil (CV < 10%)
         $stableStats = KPIStatistics::fromData(
@@ -121,7 +121,7 @@ class KPIStatisticsTest extends TestCase
             latestValue: $this->createMockKPIValue(100.0),
             trend: KPITrend::stable()
         );
-        $this->assertEquals('high', $stableStats->getStabilityRating());
+        $this->assertSame('high', $stableStats->getStabilityRating());
 
         // Mäßig stabil (10% <= CV < 25%)
         $moderateStats = KPIStatistics::fromData(
@@ -132,7 +132,7 @@ class KPIStatisticsTest extends TestCase
             latestValue: $this->createMockKPIValue(100.0),
             trend: KPITrend::stable()
         );
-        $this->assertEquals('moderate', $moderateStats->getStabilityRating());
+        $this->assertSame('moderate', $moderateStats->getStabilityRating());
 
         // Instabil (CV >= 25%)
         $unstableStats = KPIStatistics::fromData(
@@ -143,13 +143,13 @@ class KPIStatisticsTest extends TestCase
             latestValue: $this->createMockKPIValue(100.0),
             trend: KPITrend::volatile()
         );
-        $this->assertEquals('low', $unstableStats->getStabilityRating());
+        $this->assertSame('low', $unstableStats->getStabilityRating());
     }
 
     /**
      * @test
      */
-    public function kann_performance_gegen_zielwert_bewerten(): void
+    public function kannPerformanceGegenZielwertBewerten(): void
     {
         $stats = KPIStatistics::fromData(
             totalEntries: 5,
@@ -161,22 +161,22 @@ class KPIStatisticsTest extends TestCase
         );
 
         // Über Zielwert
-        $this->assertEquals(20.0, $stats->getPerformanceVsTarget(100.0));
-        $this->assertEquals('above_target', $stats->getPerformanceRating(100.0));
+        $this->assertSame(20.0, $stats->getPerformanceVsTarget(100.0));
+        $this->assertSame('above_target', $stats->getPerformanceRating(100.0));
 
         // Genau Zielwert
-        $this->assertEquals(0.0, $stats->getPerformanceVsTarget(120.0));
-        $this->assertEquals('on_target', $stats->getPerformanceRating(120.0));
+        $this->assertSame(0.0, $stats->getPerformanceVsTarget(120.0));
+        $this->assertSame('on_target', $stats->getPerformanceRating(120.0));
 
         // Unter Zielwert
-        $this->assertEquals(-16.67, $stats->getPerformanceVsTarget(150.0));
-        $this->assertEquals('below_target', $stats->getPerformanceRating(150.0));
+        $this->assertSame(-16.67, $stats->getPerformanceVsTarget(150.0));
+        $this->assertSame('below_target', $stats->getPerformanceRating(150.0));
     }
 
     /**
      * @test
      */
-    public function kann_array_darstellung_ausgeben(): void
+    public function kannArrayDarstellungAusgeben(): void
     {
         $kpiValue = $this->createMockKPIValue(110.0);
         $stats = KPIStatistics::fromData(
@@ -191,21 +191,21 @@ class KPIStatisticsTest extends TestCase
         $array = $stats->toArray();
 
         $this->assertIsArray($array);
-        $this->assertEquals(5, $array['total_entries']);
-        $this->assertEquals(100.0, $array['average_value']);
-        $this->assertEquals(80.0, $array['min_value']);
-        $this->assertEquals(120.0, $array['max_value']);
-        $this->assertEquals($kpiValue, $array['latest_value']);
-        $this->assertEquals('rising', $array['trend']);
-        $this->assertEquals(40.0, $array['range']);
-        $this->assertEquals(20.0, $array['coefficient_of_variation']);
-        $this->assertEquals('moderate', $array['stability_rating']);
+        $this->assertSame(5, $array['total_entries']);
+        $this->assertSame(100.0, $array['average_value']);
+        $this->assertSame(80.0, $array['min_value']);
+        $this->assertSame(120.0, $array['max_value']);
+        $this->assertSame($kpiValue, $array['latest_value']);
+        $this->assertSame('rising', $array['trend']);
+        $this->assertSame(40.0, $array['range']);
+        $this->assertSame(20.0, $array['coefficient_of_variation']);
+        $this->assertSame('moderate', $array['stability_rating']);
     }
 
     /**
      * @test
      */
-    public function kann_json_serialisierung_handhaben(): void
+    public function kannJsonSerialisierungHandhaben(): void
     {
         $stats = KPIStatistics::fromData(
             totalEntries: 3,
@@ -218,17 +218,17 @@ class KPIStatisticsTest extends TestCase
 
         $json = json_encode($stats);
         $this->assertIsString($json);
-        
+
         $decoded = json_decode($json, true);
         $this->assertIsArray($decoded);
-        $this->assertEquals(3, $decoded['total_entries']);
-        $this->assertEquals(100.0, $decoded['average_value']);
+        $this->assertSame(3, $decoded['total_entries']);
+        $this->assertSame(100.0, $decoded['average_value']);
     }
 
     /**
      * @test
      */
-    public function kann_zusammenfassung_generieren(): void
+    public function kannZusammenfassungGenerieren(): void
     {
         $stats = KPIStatistics::fromData(
             totalEntries: 10,
@@ -250,7 +250,7 @@ class KPIStatisticsTest extends TestCase
     /**
      * @test
      */
-    public function kann_outlier_erkennen(): void
+    public function kannOutlierErkennen(): void
     {
         $stats = KPIStatistics::fromData(
             totalEntries: 100,
@@ -267,7 +267,7 @@ class KPIStatisticsTest extends TestCase
     /**
      * @test
      */
-    public function kann_qualitaetsbewertung_erstellen(): void
+    public function kannQualitaetsbewertungErstellen(): void
     {
         // Hohe Qualität: Viele Werte, stabil, keine Outlier
         $highQuality = KPIStatistics::fromData(
@@ -281,7 +281,7 @@ class KPIStatisticsTest extends TestCase
 
         $qualityScore = $highQuality->getDataQualityScore();
         $this->assertGreaterThan(80, $qualityScore);
-        $this->assertEquals('high', $highQuality->getDataQualityRating());
+        $this->assertSame('high', $highQuality->getDataQualityRating());
 
         // Niedrige Qualität: Wenige Werte, instabil
         $lowQuality = KPIStatistics::fromData(
@@ -295,13 +295,13 @@ class KPIStatisticsTest extends TestCase
 
         $qualityScore = $lowQuality->getDataQualityScore();
         $this->assertLessThan(50, $qualityScore);
-        $this->assertEquals('low', $lowQuality->getDataQualityRating());
+        $this->assertSame('low', $lowQuality->getDataQualityRating());
     }
 
     /**
      * @test
      */
-    public function value_object_ist_immutable(): void
+    public function valueObjectIstImmutable(): void
     {
         $originalStats = KPIStatistics::fromData(
             totalEntries: 5,
@@ -323,10 +323,10 @@ class KPIStatisticsTest extends TestCase
         );
 
         // Original sollte unverändert sein
-        $this->assertEquals(5, $originalStats->getTotalEntries());
-        $this->assertEquals(100.0, $originalStats->getAverageValue());
-        $this->assertEquals(10, $newStats->getTotalEntries());
-        $this->assertEquals(200.0, $newStats->getAverageValue());
+        $this->assertSame(5, $originalStats->getTotalEntries());
+        $this->assertSame(100.0, $originalStats->getAverageValue());
+        $this->assertSame(10, $newStats->getTotalEntries());
+        $this->assertSame(200.0, $newStats->getAverageValue());
     }
 
     /**
@@ -336,7 +336,7 @@ class KPIStatisticsTest extends TestCase
     {
         $kpiValue = $this->createMock(KPIValue::class);
         $kpiValue->method('getValueAsFloat')->willReturn($value);
-        
+
         return $kpiValue;
     }
 }

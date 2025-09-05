@@ -69,7 +69,7 @@ class UserServiceTest extends TestCase
         $this->entityManager->expects($this->once())->method('beginTransaction');
         $this->entityManager->expects($this->once())->method('remove')->willThrowException(new \Exception('Database error'));
         $this->entityManager->expects($this->once())->method('rollback');
-        
+
         $this->logger->expects($this->once())
             ->method('error')
             ->with('GDPR user deletion failed', $this->isType('array'));

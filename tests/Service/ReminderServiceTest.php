@@ -47,9 +47,9 @@ class ReminderServiceTest extends TestCase
     public function testSendDueRemindersReturnsArray(): void
     {
         $this->kpiRepository->method('findDueForReminder')->willReturn([]);
-        
+
         $result = $this->service->sendDueReminders();
-        
+
         $this->assertIsArray($result);
         $this->assertArrayHasKey('sent', $result);
         $this->assertArrayHasKey('failed', $result);
@@ -101,10 +101,10 @@ class ReminderServiceTest extends TestCase
         $kpi->method('getId')->willReturn(1);
 
         $this->kpiRepository->method('findDueForReminder')->willReturn([$kpi]);
-        
+
         // Mock statusService to return empty arrays for different reminder types
         $this->statusService->method('getKpisForReminder')->willReturn([]);
-        
+
         $email = new Email();
         $this->factory->method('createUpcomingReminder')->willReturn($email);
         $this->mailer->method('send'); // send() returns void
@@ -129,7 +129,7 @@ class ReminderServiceTest extends TestCase
         $kpi->method('getId')->willReturn(1);
 
         $this->kpiRepository->method('findDueForReminder')->willReturn([$kpi]);
-        
+
         // Mock statusService um leere Arrays zurückzugeben (kein Email-Versand)
         $this->statusService->method('getKpisForReminder')->willReturn([]);
 
@@ -170,7 +170,7 @@ class ReminderServiceTest extends TestCase
         $kpi3->method('getId')->willReturn(3);
 
         $this->kpiRepository->method('findDueForReminder')->willReturn([$kpi1, $kpi2, $kpi3]);
-        
+
         // Mock statusService to return empty arrays to avoid actual email sending
         $this->statusService->method('getKpisForReminder')->willReturn([]);
 
@@ -204,7 +204,7 @@ class ReminderServiceTest extends TestCase
         $kpi->method('getId')->willReturn(1);
 
         $this->kpiRepository->method('findDueForReminder')->willReturn([$kpi]);
-        
+
         // Mock statusService um leere Arrays zurückzugeben (keine Eskalation)
         $this->statusService->method('getKpisForReminder')->willReturn([]);
 
@@ -231,7 +231,7 @@ class ReminderServiceTest extends TestCase
 
         $this->kpiRepository->method('findDueForReminder')->willReturn([$kpi]);
 
-        // Mock statusService to return empty arrays 
+        // Mock statusService to return empty arrays
         $this->statusService->method('getKpisForReminder')->willReturn([]);
 
         $result = $this->service->sendDueReminders();

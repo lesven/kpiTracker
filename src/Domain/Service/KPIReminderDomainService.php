@@ -2,7 +2,6 @@
 
 namespace App\Domain\Service;
 
-use App\Domain\ValueObject\KPIStatus;
 use App\Entity\KPI;
 use App\Entity\User;
 use App\Repository\KPIValueRepository;
@@ -13,7 +12,7 @@ use App\Repository\KPIValueRepository;
  * Implementiert komplexe Geschäftsregeln für:
  * - Erinnerungs-Timing und -Eskalation
  * - Benutzer-spezifische Einstellungen
- * - Kontext-aware Notifications 
+ * - Kontext-aware Notifications
  * - Anti-Spam und Intelligente Gruppierung
  * - Priorisierung und Kategorisierung
  */
@@ -24,7 +23,7 @@ class KPIReminderDomainService
      */
     private const DEFAULT_WARNING_DAYS = 3;
     private const DEFAULT_OVERDUE_ESCALATION = [1, 3, 7, 14]; // Tage nach Fälligkeit
-    
+
     /**
      * Anti-Spam Limits.
      */
@@ -40,8 +39,9 @@ class KPIReminderDomainService
     /**
      * Ermittelt alle KPIs die eine Erinnerung benötigen.
      *
-     * @param array $kpis Liste von KPIs zur Prüfung
+     * @param array $kpis           Liste von KPIs zur Prüfung
      * @param array $reminderConfig Erinnerungs-Konfiguration
+     *
      * @return array Gruppierte Erinnerungs-Objekte
      */
     public function getKpisNeedingReminder(array $kpis, array $reminderConfig = []): array
@@ -56,8 +56,8 @@ class KPIReminderDomainService
 
         foreach ($kpis as $kpi) {
             $reminderData = $this->analyzeKpiForReminder($kpi, $config);
-            
-            if ($reminderData !== null) {
+
+            if (null !== $reminderData) {
                 $category = $this->categorizeReminder($reminderData);
                 $reminderGroups[$category][] = $reminderData;
             }
@@ -73,28 +73,29 @@ class KPIReminderDomainService
     {
         $config = [];
         $result = $this->getKpisNeedingReminder($kpis, $config);
-        
-        return match($type) {
+
+        return match ($type) {
             'upcoming' => $result['upcoming'] ?? [],
             'due_today' => $result['due_today'] ?? [],
             'overdue' => $result['overdue'] ?? [],
             'critical' => $result['critical'] ?? [],
-            default => array_merge(...array_values($result))
+            default => array_merge(...array_values($result)),
         };
     }
 
     /**
      * Prüft ob für eine spezifische KPI eine Erinnerung gesendet werden sollte.
      *
-     * @param KPI $kpi Die zu prüfende KPI
-     * @param array $userPreferences Benutzer-spezifische Einstellungen
+     * @param KPI                 $kpi              Die zu prüfende KPI
+     * @param array               $userPreferences  Benutzer-spezifische Einstellungen
      * @param ?\DateTimeImmutable $lastReminderSent Zeitpunkt der letzten Erinnerung
+     *
      * @return bool true wenn Erinnerung gesendet werden soll
      */
     public function shouldSendReminder(
-        KPI $kpi, 
-        array $userPreferences = [], 
-        ?\DateTimeImmutable $lastReminderSent = null
+        KPI $kpi,
+        array $userPreferences = [],
+        ?\DateTimeImmutable $lastReminderSent = null,
     ): bool {
         // Anti-Spam Prüfung
         if ($lastReminderSent && $this->isTooSoon($lastReminderSent)) {
@@ -108,21 +109,22 @@ class KPIReminderDomainService
 
         // Status-basierte Erinnerungs-Berechtigung
         $reminderData = $this->analyzeKpiForReminder($kpi);
-        
-        return $reminderData !== null && $this->meetsReminderCriteria($reminderData, $userPreferences);
+
+        return null !== $reminderData && $this->meetsReminderCriteria($reminderData, $userPreferences);
     }
 
     /**
      * Berechnet den optimalen Zeitpunkt für die nächste Erinnerung.
      *
-     * @param KPI $kpi Die KPI für die Erinnerung
+     * @param KPI    $kpi          Die KPI für die Erinnerung
      * @param string $reminderType Art der Erinnerung (upcoming, overdue, etc.)
+     *
      * @return ?\DateTimeImmutable Optimaler Zeitpunkt oder null wenn keine weitere Erinnerung
      */
     public function calculateNextReminderTime(KPI $kpi, string $reminderType): ?\DateTimeImmutable
     {
         $now = new \DateTimeImmutable();
-        
+
         return match ($reminderType) {
             'upcoming' => $this->calculateUpcomingReminderTime($kpi),
             'due_today' => $now->setTime(9, 0), // Morgens um 9 Uhr
@@ -136,7 +138,8 @@ class KPIReminderDomainService
      * Erstellt personalisierte Erinnerungs-Nachrichten.
      *
      * @param array $reminderData Erinnerungs-Daten aus analyzeKpiForReminder()
-     * @param User $user Empfänger der Erinnerung
+     * @param User  $user         Empfänger der Erinnerung
+     *
      * @return array Strukturierte Nachricht mit Titel, Text, Aktionen
      */
     public function createReminderMessage(array $reminderData, User $user): array
@@ -167,14 +170,15 @@ class KPIReminderDomainService
     /**
      * Berechnet Erinnerungs-Statistiken für Dashboard/Reporting.
      *
-     * @param User $user Benutzer für den die Statistiken berechnet werden
-     * @param int $timeframeDays Zeitraum in Tagen für Analyse
+     * @param User $user          Benutzer für den die Statistiken berechnet werden
+     * @param int  $timeframeDays Zeitraum in Tagen für Analyse
+     *
      * @return array Statistische Auswertung
      */
     public function calculateReminderStatistics(User $user, int $timeframeDays = 30): array
     {
         $userKpis = $user->getKpis()->toArray();
-        
+
         if (empty($userKpis)) {
             return ['status' => 'no_kpis'];
         }
@@ -189,16 +193,16 @@ class KPIReminderDomainService
         ];
 
         $reminderData = $this->getKpisNeedingReminder($userKpis);
-        
+
         foreach ($reminderData as $category => $reminders) {
-            $stats[$category . '_count'] = count($reminders);
+            $stats[$category.'_count'] = count($reminders);
             $stats['reminders_needed'] += count($reminders);
         }
 
         // Completion Rate berechnen
         $completedKpis = $stats['total_kpis'] - $stats['reminders_needed'];
-        $stats['completion_rate'] = $stats['total_kpis'] > 0 
-            ? round(($completedKpis / $stats['total_kpis']) * 100, 1) 
+        $stats['completion_rate'] = $stats['total_kpis'] > 0
+            ? round(($completedKpis / $stats['total_kpis']) * 100, 1)
             : 0;
 
         $stats['health_score'] = $this->calculateHealthScore($stats);
@@ -221,10 +225,10 @@ class KPIReminderDomainService
         $dueDate = $this->calculateDueDate($kpi);
         $now = new \DateTimeImmutable();
         $daysDifference = $this->calculateDaysDifference($now, $dueDate);
-        
+
         // Debug: Log the calculation for troubleshooting
         // Today vs due date comparison should work correctly
-        
+
         $warningDays = $config['warning_days'] ?? self::DEFAULT_WARNING_DAYS;
 
         // Bestimme Erinnerungs-Typ
@@ -234,18 +238,18 @@ class KPIReminderDomainService
         // Use absolute date comparison for more reliable results
         $dueDateString = $dueDate->format('Y-m-d');
         $nowDateString = $now->format('Y-m-d');
-        
+
         if ($daysDifference < 0) { // Überfällig
             $daysOverdue = abs($daysDifference);
             $type = 'overdue';
             $escalationLevel = $this->calculateEscalationLevelFromDays($daysOverdue);
-        } elseif ($daysDifference === 0) { // Heute fällig
+        } elseif (0 === $daysDifference) { // Heute fällig
             $type = 'due_today';
         } elseif ($daysDifference > 0 && $daysDifference <= $warningDays) { // Bald fällig
             $type = 'upcoming';
         }
 
-        if ($type === null) {
+        if (null === $type) {
             return null; // Noch zu früh für Erinnerung
         }
 
@@ -282,8 +286,8 @@ class KPIReminderDomainService
     {
         $type = $reminderData['type'];
         $escalationLevel = $reminderData['escalation_level'] ?? 1;
-        
-        if ($type === 'overdue' && $escalationLevel >= 3) {
+
+        if ('overdue' === $type && $escalationLevel >= 3) {
             return 'critical';
         }
 
@@ -297,7 +301,7 @@ class KPIReminderDomainService
     {
         // Nach Dringlichkeit sortieren
         foreach ($reminderGroups as &$group) {
-            usort($group, fn($a, $b) => $b['urgency'] <=> $a['urgency']);
+            usort($group, fn ($a, $b) => $b['urgency'] <=> $a['urgency']);
         }
 
         // Limitierung anwenden
@@ -323,7 +327,7 @@ class KPIReminderDomainService
      */
     private function isTooSoon(?\DateTimeImmutable $lastReminderSent): bool
     {
-        if ($lastReminderSent === null) {
+        if (null === $lastReminderSent) {
             return false;
         }
 
@@ -357,9 +361,9 @@ class KPIReminderDomainService
     {
         $type = $reminderData['type'];
         $urgency = $reminderData['urgency'];
-        
+
         $minUrgency = $userPreferences['min_urgency_level'] ?? 1;
-        
+
         return $urgency >= $minUrgency;
     }
 
@@ -379,10 +383,10 @@ class KPIReminderDomainService
         // Normalize to start of day for consistent comparison
         $fromDate = $from->setTime(0, 0);
         $toDate = $to->setTime(0, 0);
-        
+
         $interval = $fromDate->diff($toDate);
         $days = (int) $interval->days;
-        
+
         return $fromDate > $toDate ? -$days : $days;
     }
 
@@ -415,9 +419,9 @@ class KPIReminderDomainService
 
         // Escalation multiplier
         $escalationMultiplier = 1 + ($escalationLevel * 0.5);
-        
+
         // Business Impact (beispielhaft über KPI-Name)
-        $businessImpact = str_contains(strtolower($kpi->getName()), 'umsatz') ? 2 : 1;
+        $businessImpact = str_contains(mb_strtolower($kpi->getName()), 'umsatz') ? 2 : 1;
 
         return (int) ($baseScore * $escalationMultiplier * $businessImpact);
     }
@@ -428,7 +432,7 @@ class KPIReminderDomainService
     private function calculateUpcomingReminderTime(KPI $kpi): \DateTimeImmutable
     {
         $dueDate = $this->calculateDueDate($kpi);
-        
+
         // 1 Tag vor Fälligkeit, morgens um 9 Uhr
         return $dueDate->modify('-1 day')->setTime(9, 0);
     }
@@ -441,7 +445,7 @@ class KPIReminderDomainService
         $now = new \DateTimeImmutable();
         $dueDate = $this->calculateDueDate($kpi);
         $daysOverdue = abs($this->calculateDaysDifference($now, $dueDate));
-        
+
         // Nächster Eskalations-Punkt
         foreach (self::DEFAULT_OVERDUE_ESCALATION as $threshold) {
             if ($daysOverdue < $threshold) {
@@ -459,7 +463,7 @@ class KPIReminderDomainService
     private function generateBaseMessage(KPI $kpi, string $type, array $data): array
     {
         $kpiName = $kpi->getName();
-        
+
         return match ($type) {
             'upcoming' => [
                 'title' => "KPI '{$kpiName}' wird bald fällig",
@@ -490,10 +494,10 @@ class KPIReminderDomainService
     private function personalizeMessage(array $baseMessage, User $user): array
     {
         $firstName = $user->getFirstName() ?? 'Benutzer';
-        
+
         return [
             'title' => $baseMessage['title'],
-            'body' => "Hallo {$firstName},\n\n" . $baseMessage['body'],
+            'body' => "Hallo {$firstName},\n\n".$baseMessage['body'],
         ];
     }
 
@@ -503,7 +507,7 @@ class KPIReminderDomainService
     private function generateActionItems(KPI $kpi, string $type): array
     {
         $kpiId = $kpi->getId();
-        
+
         $baseActions = [
             [
                 'label' => 'Wert erfassen',
@@ -517,7 +521,7 @@ class KPIReminderDomainService
             ],
         ];
 
-        if ($type === 'critical' || $type === 'overdue') {
+        if ('critical' === $type || 'overdue' === $type) {
             array_unshift($baseActions, [
                 'label' => 'Erinnerung stummschalten (24h)',
                 'action' => 'snooze_reminder',
@@ -534,7 +538,7 @@ class KPIReminderDomainService
     private function calculateUrgencyLevel(array $reminderData): string
     {
         $urgencyScore = $reminderData['urgency'];
-        
+
         return match (true) {
             $urgencyScore >= 80 => 'critical',
             $urgencyScore >= 40 => 'high',
@@ -548,7 +552,7 @@ class KPIReminderDomainService
      */
     private function calculateHealthScore(array $stats): int
     {
-        if ($stats['total_kpis'] === 0) {
+        if (0 === $stats['total_kpis']) {
             return 100;
         }
 
@@ -575,49 +579,50 @@ class KPIReminderDomainService
     /**
      * Öffentliche Methode für Eskalationslevel-Berechnung.
      */
-    public function calculateEscalationLevel(KPI $kpi, int $daysOverdue = null): array|int
+    public function calculateEscalationLevel(KPI $kpi, ?int $daysOverdue = null): array|int
     {
-        if ($daysOverdue === null) {
+        if (null === $daysOverdue) {
             // Alte Signatur - gebe nur Level zurück
             $dueDate = $kpi->getNextDueDate();
             $now = new \DateTimeImmutable();
             $calculatedDays = max(0, $this->calculateDaysDifference($dueDate, $now));
-            
+
             foreach (self::DEFAULT_OVERDUE_ESCALATION as $level => $threshold) {
                 if ($calculatedDays >= $threshold) {
                     continue;
                 }
+
                 return $level;
             }
-            
+
             return count(self::DEFAULT_OVERDUE_ESCALATION);
         }
-        
+
         // Neue Signatur - gebe Array zurück
         $level = match (true) {
             $daysOverdue <= 1 => 1,
             $daysOverdue <= 3 => 2,
             $daysOverdue <= 7 => 3,
-            default => 4
+            default => 4,
         };
-        
+
         $urgency = match ($level) {
             1 => 'low',
-            2 => 'medium', 
+            2 => 'medium',
             3 => 'high',
-            4 => 'critical'
+            4 => 'critical',
         };
-        
+
         $notifyRoles = match ($level) {
             1, 2 => ['User'],
             3 => ['User', 'Team Lead'],
-            4 => ['User', 'Team Lead', 'Management']
+            4 => ['User', 'Team Lead', 'Management'],
         };
-        
+
         return [
             'level' => $level,
             'urgency' => $urgency,
-            'notify_roles' => $notifyRoles
+            'notify_roles' => $notifyRoles,
         ];
     }
 
@@ -629,15 +634,15 @@ class KPIReminderDomainService
         $results = [];
         foreach ($kpis as $kpi) {
             $reminderData = $this->analyzeKpiForReminder($kpi, $options);
-            if ($reminderData !== null) {
+            if (null !== $reminderData) {
                 $results[] = $reminderData;
             }
         }
-        
+
         return [
             'total_processed' => count($kpis),
             'reminders_created' => count($results),
-            'reminders' => $results
+            'reminders' => $results,
         ];
     }
 
@@ -649,16 +654,16 @@ class KPIReminderDomainService
         $templates = [
             'upcoming' => [
                 'de' => 'Die KPI "{kpi_name}" wird in {days} Tagen fällig.',
-                'en' => 'KPI "{kpi_name}" is due in {days} days.'
+                'en' => 'KPI "{kpi_name}" is due in {days} days.',
             ],
             'due_today' => [
                 'de' => 'Die KPI "{kpi_name}" ist heute fällig.',
-                'en' => 'KPI "{kpi_name}" is due today.'
+                'en' => 'KPI "{kpi_name}" is due today.',
             ],
             'overdue' => [
                 'de' => 'Die KPI "{kpi_name}" ist seit {days} Tagen überfällig.',
-                'en' => 'KPI "{kpi_name}" is {days} days overdue.'
-            ]
+                'en' => 'KPI "{kpi_name}" is {days} days overdue.',
+            ],
         ];
 
         return $templates[$type][$language] ?? $templates['upcoming']['de'];
@@ -670,7 +675,7 @@ class KPIReminderDomainService
     public function createLocalizedMessage(KPI $kpi, string $type, int $days, string $language = 'de'): string
     {
         $template = $this->getMessageTemplate($type, $language);
-        
+
         return str_replace(
             ['{name}', '{days}'],
             [$kpi->getName(), $days],
@@ -689,7 +694,7 @@ class KPIReminderDomainService
             'due_today_count' => 0,
             'overdue_count' => 0,
             'critical_count' => 0,
-            'completion_rate' => 0
+            'completion_rate' => 0,
         ];
 
         $reminderData = $this->getKpisForReminder($kpis);
@@ -708,22 +713,22 @@ class KPIReminderDomainService
         } catch (\Exception $e) {
             $stats['health_score'] = 100; // Fallback value
         }
-        
+
         $stats['needs_reminder'] = $stats['upcoming_count'] + $stats['due_today_count'] + $stats['overdue_count'];
-        
+
         // Add required keys for test
         $stats['by_type'] = [
             'upcoming' => $stats['upcoming_count'],
-            'due_today' => $stats['due_today_count'], 
+            'due_today' => $stats['due_today_count'],
             'overdue' => $stats['overdue_count'],
-            'critical' => $stats['critical_count']
+            'critical' => $stats['critical_count'],
         ];
-        
+
         $stats['by_urgency'] = [
             'low' => $stats['upcoming_count'],
             'medium' => $stats['due_today_count'],
             'high' => $stats['overdue_count'],
-            'critical' => $stats['critical_count']
+            'critical' => $stats['critical_count'],
         ];
 
         return $stats;
@@ -737,17 +742,17 @@ class KPIReminderDomainService
         $user = $kpi->getUser();
         $userName = $user ? $user->getFullName() : 'Benutzer';
         $kpiName = $kpi->getName();
-        
-        if (isset($preferences['reminder_style']) && $preferences['reminder_style'] === 'formal') {
+
+        if (isset($preferences['reminder_style']) && 'formal' === $preferences['reminder_style']) {
             $parts = explode(' ', $userName);
-            $userName = count($parts) > 1 ? 'Frau ' . end($parts) : $userName;
+            $userName = count($parts) > 1 ? 'Frau '.end($parts) : $userName;
         }
-        
-        return match($type) {
+
+        return match ($type) {
             'upcoming' => "Hallo {$userName}, Ihre KPI '{$kpiName}' wird in {$days} Tagen fällig.",
             'due_today' => "Hallo {$userName}, Ihre KPI '{$kpiName}' ist heute fällig.",
             'overdue' => "Hallo {$userName}, Ihre KPI '{$kpiName}' ist seit {$days} Tagen überfällig.",
-            default => "Hallo {$userName}, bitte prüfen Sie Ihre KPI '{$kpiName}'."
+            default => "Hallo {$userName}, bitte prüfen Sie Ihre KPI '{$kpiName}'.",
         };
     }
 
@@ -758,8 +763,9 @@ class KPIReminderDomainService
     {
         $result = $template;
         foreach ($variables as $key => $value) {
-            $result = str_replace('{' . $key . '}', $value, $result);
+            $result = str_replace('{'.$key.'}', $value, $result);
         }
+
         return $result;
     }
 
@@ -771,21 +777,21 @@ class KPIReminderDomainService
         $preferredTime = $preferences['preferred_reminder_time'] ?? '09:00';
         $timezone = $preferences['timezone'] ?? 'Europe/Berlin';
         $workingDays = $preferences['working_days'] ?? ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-        
+
         $time = \DateTimeImmutable::createFromFormat('H:i', $preferredTime, new \DateTimeZone($timezone));
         if (!$time) {
             $time = new \DateTimeImmutable('09:00', new \DateTimeZone($timezone));
         }
-        
+
         // Prüfe ob heute ein Arbeitstag ist
-        $dayOfWeek = strtolower($time->format('l'));
-        if (!in_array($dayOfWeek, $workingDays)) {
+        $dayOfWeek = mb_strtolower($time->format('l'));
+        if (!in_array($dayOfWeek, $workingDays, true)) {
             // Nächster Arbeitstag
-            while (!in_array(strtolower($time->format('l')), $workingDays)) {
+            while (!in_array(mb_strtolower($time->format('l')), $workingDays, true)) {
                 $time = $time->modify('+1 day');
             }
         }
-        
+
         return $time;
     }
 
@@ -795,6 +801,7 @@ class KPIReminderDomainService
     private function calculateReminderPriority(KPI $kpi): int
     {
         $reminderData = $this->analyzeKpiForReminder($kpi);
+
         return $reminderData['urgency'] ?? 1;
     }
 }

@@ -89,11 +89,11 @@ class AdminServiceTest extends TestCase
             ->method('hashPassword')
             ->with($user, 'newPassword')
             ->willReturn('hashedNewPassword');
-        
+
         $user->expects($this->once())
             ->method('setPassword')
             ->with('hashedNewPassword');
-        
+
         $em->expects($this->once())
             ->method('flush');
 
@@ -114,10 +114,10 @@ class AdminServiceTest extends TestCase
 
         $hasher->expects($this->never())
             ->method('hashPassword');
-        
+
         $user->expects($this->never())
             ->method('setPassword');
-        
+
         $em->expects($this->once())
             ->method('flush');
 
@@ -139,7 +139,7 @@ class AdminServiceTest extends TestCase
         $kpi1->method('getId')->willReturn(1);
         $kpi2 = $this->createMock(KPI::class);
         $kpi2->method('getId')->willReturn(2);
-        
+
         $kpis = [$kpi1, $kpi2];
         $value1 = $this->createMock(KPIValue::class);
         $value2 = $this->createMock(KPIValue::class);
@@ -147,12 +147,12 @@ class AdminServiceTest extends TestCase
         $kpiRepo->expects($this->once())
             ->method('findAllWithUser')
             ->willReturn($kpis);
-        
+
         $kpiValueRepo->expects($this->exactly(2))
             ->method('findLatestValueForKpi')
             ->willReturnMap([
                 [$kpi1, $value1],
-                [$kpi2, $value2]
+                [$kpi2, $value2],
             ]);
 
         $service = new AdminService($em, $userRepo, $kpiRepo, $kpiValueRepo, $mailRepo, $hasher, $reminder);
@@ -176,11 +176,11 @@ class AdminServiceTest extends TestCase
         $reminder = $this->createMock(ReminderService::class);
 
         $settings = $this->createMock(MailSettings::class);
-        
+
         $em->expects($this->once())
             ->method('persist')
             ->with($settings);
-        
+
         $em->expects($this->once())
             ->method('flush');
 
@@ -199,7 +199,7 @@ class AdminServiceTest extends TestCase
         $reminder = $this->createMock(ReminderService::class);
 
         $email = 'test@example.com';
-        
+
         $reminder->expects($this->once())
             ->method('sendTestEmail')
             ->with($email)
@@ -222,7 +222,7 @@ class AdminServiceTest extends TestCase
         $reminder = $this->createMock(ReminderService::class);
 
         $expectedStats = ['sent' => 5, 'failed' => 1];
-        
+
         $reminder->expects($this->once())
             ->method('sendDueReminders')
             ->willReturn($expectedStats);
@@ -244,7 +244,7 @@ class AdminServiceTest extends TestCase
         $reminder = $this->createMock(ReminderService::class);
 
         $settings = $this->createMock(MailSettings::class);
-        
+
         $mailRepo->expects($this->once())
             ->method('findOneBy')
             ->with([])
@@ -265,7 +265,7 @@ class AdminServiceTest extends TestCase
         $mailRepo = $this->createMock(MailSettingsRepository::class);
         $hasher = $this->createMock(UserPasswordHasherInterface::class);
         $reminder = $this->createMock(ReminderService::class);
-        
+
         $mailRepo->expects($this->once())
             ->method('findOneBy')
             ->with([])

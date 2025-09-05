@@ -32,12 +32,12 @@ readonly class KPIBecameOverdue
      * Factory-Methode für Event-Erstellung.
      */
     public static function create(
-        KPI $kpi, 
-        KPIStatus $previousStatus, 
+        KPI $kpi,
+        KPIStatus $previousStatus,
         KPIStatus $currentStatus,
         int $daysOverdue,
         \DateTimeImmutable $dueDate,
-        array $context = []
+        array $context = [],
     ): self {
         return new self(
             kpi: $kpi,
@@ -98,15 +98,15 @@ readonly class KPIBecameOverdue
      */
     public function isCriticalKPI(): bool
     {
-        $name = strtolower($this->kpi->getName());
+        $name = mb_strtolower($this->kpi->getName());
         $criticalKeywords = ['umsatz', 'gewinn', 'revenue', 'critical', 'kritisch'];
-        
+
         foreach ($criticalKeywords as $keyword) {
             if (str_contains($name, $keyword)) {
                 return true;
             }
         }
-        
+
         return $this->context['is_critical'] ?? false;
     }
 
@@ -132,11 +132,11 @@ readonly class KPIBecameOverdue
     public function getNextReminderTime(): \DateTimeImmutable
     {
         $escalationLevel = $this->getEscalationLevel();
-        
+
         $hoursUntilNextReminder = match ($escalationLevel) {
             1 => 24,      // 1 Tag später
             2 => 12,      // 12 Stunden später
-            3 => 8,       // 8 Stunden später  
+            3 => 8,       // 8 Stunden später
             4 => 4,       // 4 Stunden später
             default => 2, // 2 Stunden später
         };
@@ -155,7 +155,7 @@ readonly class KPIBecameOverdue
                 'label' => 'KPI-Wert erfassen',
                 'url' => "/kpi/{$this->kpi->getId()}/add-value",
                 'priority' => 'high',
-            ]
+            ],
         ];
 
         if ($this->getEscalationLevel() >= 3) {

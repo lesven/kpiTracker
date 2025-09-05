@@ -3,11 +3,11 @@
 namespace App\Tests\Domain\Event;
 
 use App\Domain\Event\KPIBecameOverdue;
+use App\Domain\ValueObject\EmailAddress;
+use App\Domain\ValueObject\KpiInterval;
 use App\Domain\ValueObject\KPIStatus;
 use App\Entity\KPI;
 use App\Entity\User;
-use App\Domain\ValueObject\EmailAddress;
-use App\Domain\ValueObject\KpiInterval;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -61,10 +61,10 @@ class KPIBecameOverdueTest extends TestCase
         $this->assertSame($this->user, $event->user);
         $this->assertSame($this->previousStatus, $event->previousStatus);
         $this->assertSame($this->currentStatus, $event->currentStatus);
-        $this->assertEquals(5, $event->daysOverdue);
+        $this->assertSame(5, $event->daysOverdue);
         $this->assertSame($this->dueDate, $event->dueDate);
         $this->assertSame($occurredOn, $event->occurredOn);
-        $this->assertEquals($context, $event->context);
+        $this->assertSame($context, $event->context);
     }
 
     public function testCreateFactoryMethod(): void
@@ -87,9 +87,9 @@ class KPIBecameOverdueTest extends TestCase
         $this->assertSame($this->user, $event->user);
         $this->assertSame($this->previousStatus, $event->previousStatus);
         $this->assertSame($this->currentStatus, $event->currentStatus);
-        $this->assertEquals(3, $event->daysOverdue);
+        $this->assertSame(3, $event->daysOverdue);
         $this->assertSame($this->dueDate, $event->dueDate);
-        $this->assertEquals($context, $event->context);
+        $this->assertSame($context, $event->context);
         $this->assertInstanceOf(\DateTimeImmutable::class, $event->occurredOn);
     }
 
@@ -115,7 +115,7 @@ class KPIBecameOverdueTest extends TestCase
 
         // Assert
         $expectedId = 'kpi_became_overdue_123_20250904143000';
-        $this->assertEquals($expectedId, $event->getEventId());
+        $this->assertSame($expectedId, $event->getEventId());
     }
 
     public function testGetEventTypeReturnsCorrectType(): void
@@ -124,14 +124,14 @@ class KPIBecameOverdueTest extends TestCase
         $event = $this->createEvent();
 
         // Assert
-        $this->assertEquals('kpi.became.overdue', $event->getEventType());
+        $this->assertSame('kpi.became.overdue', $event->getEventType());
     }
 
     public function testIsFirstTimeOverdueReturnsTrueForYellowStatus(): void
     {
         // Arrange
         $yellowStatus = KPIStatus::yellow();
-        
+
         // Act
         $event = new KPIBecameOverdue(
             $this->kpi,
@@ -151,7 +151,7 @@ class KPIBecameOverdueTest extends TestCase
     {
         // Arrange
         $greenStatus = KPIStatus::green();
-        
+
         // Act
         $event = new KPIBecameOverdue(
             $this->kpi,
@@ -171,7 +171,7 @@ class KPIBecameOverdueTest extends TestCase
     {
         // Arrange
         $redStatus = KPIStatus::red();
-        
+
         // Act
         $event = new KPIBecameOverdue(
             $this->kpi,
@@ -204,7 +204,7 @@ class KPIBecameOverdueTest extends TestCase
         );
 
         // Assert
-        $this->assertEquals($expectedLevel, $event->getEscalationLevel());
+        $this->assertSame($expectedLevel, $event->getEscalationLevel());
     }
 
     public static function escalationLevelProvider(): array
@@ -234,7 +234,7 @@ class KPIBecameOverdueTest extends TestCase
         $event = $this->createEvent();
 
         // Assert
-        $this->assertEquals($expectedCritical, $event->isCriticalKPI());
+        $this->assertSame($expectedCritical, $event->isCriticalKPI());
     }
 
     public static function criticalKpiProvider(): array
@@ -277,7 +277,7 @@ class KPIBecameOverdueTest extends TestCase
     public function testGetUrgencyLevelBasedOnEscalationAndCriticality(
         int $daysOverdue,
         bool $isCritical,
-        string $expectedUrgency
+        string $expectedUrgency,
     ): void {
         // Arrange
         if ($isCritical) {
@@ -296,7 +296,7 @@ class KPIBecameOverdueTest extends TestCase
         );
 
         // Assert
-        $this->assertEquals($expectedUrgency, $event->getUrgencyLevel());
+        $this->assertSame($expectedUrgency, $event->getUrgencyLevel());
     }
 
     public static function urgencyLevelProvider(): array
@@ -332,7 +332,7 @@ class KPIBecameOverdueTest extends TestCase
 
         // Assert
         $expectedTime = $occurredOn->modify("+{$expectedHours} hours");
-        $this->assertEquals($expectedTime, $event->getNextReminderTime());
+        $this->assertSame($expectedTime, $event->getNextReminderTime());
     }
 
     public static function nextReminderTimeProvider(): array
@@ -355,14 +355,14 @@ class KPIBecameOverdueTest extends TestCase
         // Assert
         $this->assertIsArray($actions);
         $this->assertNotEmpty($actions);
-        
+
         // Should include add_value action
-        $addValueAction = array_filter($actions, fn($action) => $action['type'] === 'add_value');
+        $addValueAction = array_filter($actions, fn ($action) => 'add_value' === $action['type']);
         $this->assertNotEmpty($addValueAction);
-        
+
         $addValueAction = array_values($addValueAction)[0];
-        $this->assertEquals('KPI-Wert erfassen', $addValueAction['label']);
-        $this->assertEquals('high', $addValueAction['priority']);
+        $this->assertSame('KPI-Wert erfassen', $addValueAction['label']);
+        $this->assertSame('high', $addValueAction['priority']);
     }
 
     public function testGetRecommendedActionsIncludesSupportForHighEscalation(): void
@@ -382,7 +382,7 @@ class KPIBecameOverdueTest extends TestCase
         $actions = $event->getRecommendedActions();
 
         // Assert
-        $supportActions = array_filter($actions, fn($action) => $action['type'] === 'contact_support');
+        $supportActions = array_filter($actions, fn ($action) => 'contact_support' === $action['type']);
         $this->assertNotEmpty($supportActions);
     }
 
@@ -396,11 +396,11 @@ class KPIBecameOverdueTest extends TestCase
         $actions = $event->getRecommendedActions();
 
         // Assert
-        $escalateActions = array_filter($actions, fn($action) => $action['type'] === 'escalate_immediately');
+        $escalateActions = array_filter($actions, fn ($action) => 'escalate_immediately' === $action['type']);
         $this->assertNotEmpty($escalateActions);
-        
+
         $escalateAction = array_values($escalateActions)[0];
-        $this->assertEquals('critical', $escalateAction['priority']);
+        $this->assertSame('critical', $escalateAction['priority']);
     }
 
     public function testToArrayExportsAllRelevantData(): void
@@ -409,9 +409,9 @@ class KPIBecameOverdueTest extends TestCase
         $kpiMock = $this->createMock(KPI::class);
         $kpiMock->method('getId')->willReturn(123);
         $kpiMock->method('getName')->willReturn('Test KPI');
-        $kpiMock->method('getInterval')->willReturn(KPIInterval::MONTHLY);
+        $kpiMock->method('getInterval')->willReturn(KpiInterval::MONTHLY);
         $kpiMock->method('getUser')->willReturn($this->user);
-        
+
         $userMock = $this->createMock(User::class);
         $userMock->method('getId')->willReturn(456);
         $userMock->method('getEmail')->willReturn(EmailAddress::fromString('user@test.com'));
@@ -435,25 +435,25 @@ class KPIBecameOverdueTest extends TestCase
 
         // Assert
         $this->assertIsArray($array);
-        $this->assertEquals('kpi_became_overdue_123_20250904153000', $array['event_id']);
-        $this->assertEquals('kpi.became.overdue', $array['event_type']);
-        $this->assertEquals('2025-09-04T15:30:00+00:00', $array['occurred_on']);
-        $this->assertEquals(123, $array['kpi_id']);
-        $this->assertEquals('Test KPI', $array['kpi_name']);
-        $this->assertEquals('monthly', $array['kpi_interval']);
-        $this->assertEquals(456, $array['user_id']);
-        $this->assertEquals('user@test.com', $array['user_email']);
-        $this->assertEquals('yellow', $array['previous_status']);
-        $this->assertEquals('red', $array['current_status']);
-        $this->assertEquals(5, $array['days_overdue']);
-        $this->assertEquals('2025-08-31T00:00:00+00:00', $array['due_date']);
-        $this->assertEquals(3, $array['escalation_level']); // 5 days = level 3
-        $this->assertEquals('high', $array['urgency_level']);
+        $this->assertSame('kpi_became_overdue_123_20250904153000', $array['event_id']);
+        $this->assertSame('kpi.became.overdue', $array['event_type']);
+        $this->assertSame('2025-09-04T15:30:00+00:00', $array['occurred_on']);
+        $this->assertSame(123, $array['kpi_id']);
+        $this->assertSame('Test KPI', $array['kpi_name']);
+        $this->assertSame('monthly', $array['kpi_interval']);
+        $this->assertSame(456, $array['user_id']);
+        $this->assertSame('user@test.com', $array['user_email']);
+        $this->assertSame('yellow', $array['previous_status']);
+        $this->assertSame('red', $array['current_status']);
+        $this->assertSame(5, $array['days_overdue']);
+        $this->assertSame('2025-08-31T00:00:00+00:00', $array['due_date']);
+        $this->assertSame(3, $array['escalation_level']); // 5 days = level 3
+        $this->assertSame('high', $array['urgency_level']);
         $this->assertTrue($array['is_first_time_overdue']);
         $this->assertFalse($array['is_critical_kpi']);
         $this->assertArrayHasKey('next_reminder_time', $array);
         $this->assertArrayHasKey('recommended_actions', $array);
-        $this->assertEquals($context, $array['context']);
+        $this->assertSame($context, $array['context']);
     }
 
     private function createEvent(int $daysOverdue = 5): KPIBecameOverdue

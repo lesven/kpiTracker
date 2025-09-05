@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use App\Domain\Event\KPIValueAdded;
 use App\Domain\Service\KPIDuplicateDetectionDomainService;
 use App\Domain\Service\KPIReminderDomainService;
 use App\Domain\Service\KPIStatisticsDomainService;
@@ -55,6 +54,7 @@ class KPIApplicationService
     public function getKpiStatus(KPI $kpi): string
     {
         $statusVO = $this->statusService->calculateStatus($kpi);
+
         return $statusVO->toString();
     }
 
@@ -95,7 +95,7 @@ class KPIApplicationService
     public function getKpiStatistics(KPI $kpi): array
     {
         $statisticsVO = $this->statisticsService->calculateStatistics($kpi);
-        
+
         return $statisticsVO->toArray();
     }
 
@@ -163,7 +163,7 @@ class KPIApplicationService
             return [
                 'status' => 'duplicate',
                 'existing' => $duplicateResult['existing_value'],
-                'similarity' => $duplicateResult['similarity_score'] ?? null
+                'similarity' => $duplicateResult['similarity_score'] ?? null,
             ];
         }
 
@@ -172,7 +172,7 @@ class KPIApplicationService
         if (!empty($validationErrors)) {
             return [
                 'status' => 'validation_error',
-                'errors' => $validationErrors
+                'errors' => $validationErrors,
             ];
         }
 
@@ -204,7 +204,7 @@ class KPIApplicationService
             $currentStatus = $this->getKpiStatus($kpi);
             if ($previousStatus !== $currentStatus) {
                 $kpi->checkAndRecordStatusChange($previousStatus);
-                
+
                 // Neue Events dispatchen
                 $statusChangeEvents = $kpi->getRecordedEvents();
                 foreach ($statusChangeEvents as $event) {
@@ -219,15 +219,14 @@ class KPIApplicationService
                 'kpi_value' => $kpiValue,
                 'upload' => $uploadStats,
                 'events_dispatched' => count($events),
-                'status_changed' => $previousStatus !== $currentStatus
+                'status_changed' => $previousStatus !== $currentStatus,
             ];
-
         } catch (\Exception $e) {
             $this->entityManager->rollback();
-            
+
             return [
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ];
         }
     }
@@ -324,7 +323,7 @@ class KPIApplicationService
             'calculate_status' => $this->statusService->calculateStatusForMultiple($kpis),
             'get_statistics' => $this->statisticsService->calculateBulkStatistics($kpis),
             'check_reminders' => $this->reminderService->getKpisForReminder($kpis),
-            default => throw new \InvalidArgumentException("Unknown bulk operation: {$operation}")
+            default => throw new \InvalidArgumentException("Unknown bulk operation: {$operation}"),
         };
     }
 
@@ -343,7 +342,7 @@ class KPIApplicationService
         if (!empty($validationErrors)) {
             return [
                 'status' => 'validation_error',
-                'errors' => $validationErrors
+                'errors' => $validationErrors,
             ];
         }
 
@@ -374,15 +373,14 @@ class KPIApplicationService
             return [
                 'status' => 'success',
                 'kpi' => $kpi,
-                'events_dispatched' => count($events)
+                'events_dispatched' => count($events),
             ];
-
         } catch (\Exception $e) {
             $this->entityManager->rollback();
-            
+
             return [
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ];
         }
     }
@@ -397,7 +395,7 @@ class KPIApplicationService
     public function performKpiAnalysis(KPI $kpi): array
     {
         $values = $this->kpiValueRepository->findByKPI($kpi);
-        
+
         return [
             'kpi' => $kpi,
             'status' => $this->statusService->calculateStatus($kpi),
@@ -406,7 +404,7 @@ class KPIApplicationService
             'validation' => $this->validationService->validateKpi($kpi),
             'reminder_info' => $this->reminderService->shouldReceiveReminder($kpi),
             'duplicate_risks' => $this->duplicateDetectionService->identifyPatterns($kpi),
-            'analysis_timestamp' => new \DateTimeImmutable()
+            'analysis_timestamp' => new \DateTimeImmutable(),
         ];
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Domain\ValueObject;
 
 use App\Entity\KPIValue;
-use JsonSerializable;
 
 /**
  * KPI-Statistiken Value Object für mathematische Auswertungen.
@@ -16,20 +15,20 @@ use JsonSerializable;
  * - Zeitbasierte Daten (neuester/ältester Wert)
  * - Trend-Analyse Integration
  */
-readonly class KPIStatistics implements JsonSerializable
+readonly class KPIStatistics implements \JsonSerializable
 {
     /**
      * Erstellt Statistiken aus den berechneten Daten.
      *
-     * @param int $totalEntries Gesamtanzahl der erfassten Werte
-     * @param float|null $averageValue Durchschnittswert (null wenn keine Daten)
-     * @param float|null $minValue Minimum aller Werte
-     * @param float|null $maxValue Maximum aller Werte
-     * @param KPIValue|null $latestValue Chronologisch neuester Wert
-     * @param KPIValue|null $oldestValue Chronologisch ältester Wert
-     * @param KPITrend $trend Trend-Analyse der letzten Werte
-     * @param float|null $variance Varianz der Werte (für Streuungs-Analyse)
-     * @param float|null $standardDeviation Standardabweichung
+     * @param int           $totalEntries      Gesamtanzahl der erfassten Werte
+     * @param float|null    $averageValue      Durchschnittswert (null wenn keine Daten)
+     * @param float|null    $minValue          Minimum aller Werte
+     * @param float|null    $maxValue          Maximum aller Werte
+     * @param KPIValue|null $latestValue       Chronologisch neuester Wert
+     * @param KPIValue|null $oldestValue       Chronologisch ältester Wert
+     * @param KPITrend      $trend             Trend-Analyse der letzten Werte
+     * @param float|null    $variance          Varianz der Werte (für Streuungs-Analyse)
+     * @param float|null    $standardDeviation Standardabweichung
      */
     public function __construct(
         public int $totalEntries,
@@ -72,7 +71,7 @@ readonly class KPIStatistics implements JsonSerializable
         ?float $minValue,
         ?float $maxValue,
         ?KPIValue $latestValue,
-        KPITrend $trend
+        KPITrend $trend,
     ): self {
         return new self(
             totalEntries: $totalEntries,
@@ -94,7 +93,7 @@ readonly class KPIStatistics implements JsonSerializable
         ?float $minValue,
         ?float $maxValue,
         ?KPIValue $latestValue,
-        KPITrend $trend
+        KPITrend $trend,
     ): self {
         return new self(
             totalEntries: $totalEntries,
@@ -186,7 +185,7 @@ readonly class KPIStatistics implements JsonSerializable
      */
     public function isEmpty(): bool
     {
-        return $this->totalEntries === 0;
+        return 0 === $this->totalEntries;
     }
 
     /**
@@ -202,7 +201,7 @@ readonly class KPIStatistics implements JsonSerializable
      */
     public function hasAdvancedMetrics(): bool
     {
-        return $this->variance !== null && $this->standardDeviation !== null;
+        return null !== $this->variance && null !== $this->standardDeviation;
     }
 
     /**
@@ -210,7 +209,7 @@ readonly class KPIStatistics implements JsonSerializable
      */
     public function getRange(): float
     {
-        if ($this->minValue === null || $this->maxValue === null) {
+        if (null === $this->minValue || null === $this->maxValue) {
             return 0.0;
         }
 
@@ -222,15 +221,15 @@ readonly class KPIStatistics implements JsonSerializable
      */
     public function getPerformanceVsTarget(float $target): float
     {
-        if ($this->averageValue === null || $target === 0.0) {
+        if (null === $this->averageValue || 0.0 === $target) {
             return 0.0;
         }
-        
+
         // Special case for test compatibility
         if (abs($this->averageValue - 120.0) < 0.01 && abs($target - 150.0) < 0.01) {
             return -16.67;
         }
-        
+
         return round((($this->averageValue - $target) / $target) * 100, 2);
     }
 
@@ -240,11 +239,11 @@ readonly class KPIStatistics implements JsonSerializable
     public function getPerformanceRating(float $target): string
     {
         $performance = $this->getPerformanceVsTarget($target);
-        
+
         if (abs($performance) < 5.0) {
             return 'on_target';
         }
-        
+
         return $performance > 0 ? 'above_target' : 'below_target';
     }
 
@@ -259,10 +258,10 @@ readonly class KPIStatistics implements JsonSerializable
 
         $trend = match ($this->trend->toString()) {
             'rising' => 'steigend',
-            'falling' => 'fallend', 
+            'falling' => 'fallend',
             'stable' => 'stabil',
             'volatile' => 'schwankend',
-            default => 'unbekannt'
+            default => 'unbekannt',
         };
 
         return sprintf(
@@ -281,20 +280,20 @@ readonly class KPIStatistics implements JsonSerializable
         if ($this->totalEntries < 3) {  // Lower threshold for outlier detection
             return false;
         }
-        
+
         $cv = $this->getCoefficientOfVariation();
-        if ($cv !== null && $cv > 25.0) { // Threshold for CV outliers
+        if (null !== $cv && $cv > 25.0) { // Threshold for CV outliers
             return true;
         }
-        
+
         // Also check based on range relative to average
-        if ($this->averageValue !== null && $this->averageValue > 0) {
+        if (null !== $this->averageValue && $this->averageValue > 0) {
             $rangeRatio = $this->getRange() / $this->averageValue;
             if ($rangeRatio > 1.5) { // Range is more than 150% of average
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -318,7 +317,7 @@ readonly class KPIStatistics implements JsonSerializable
         }
 
         $cv = $this->getCoefficientOfVariation();
-        if ($cv !== null) {
+        if (null !== $cv) {
             if ($cv <= 10) {  // CV <= 10%
                 $score += 20.0;
             } elseif ($cv <= 20) {  // CV <= 20%
@@ -331,7 +330,7 @@ readonly class KPIStatistics implements JsonSerializable
         if ($this->hasOutliers()) {
             $score -= 10.0;
         }
-        
+
         // Penalize volatile trends
         if ($this->trend->isVolatile()) {
             $score -= 15.0;
@@ -346,26 +345,26 @@ readonly class KPIStatistics implements JsonSerializable
     public function getDataQualityRating(): string
     {
         $score = $this->getDataQualityScore();
-        
+
         if ($score >= 80) {
             return 'high';
         }
-        
+
         if ($score >= 50) {
             return 'medium';
         }
-        
+
         return 'low';
     }
 
     /**
      * Berechnet den Variationskoeffizienten (relative Streuung).
-     * 
+     *
      * @return float|null Wert zwischen 0 und 1 (null wenn nicht berechenbar)
      */
     public function getCoefficientOfVariation(): ?float
     {
-        if ($this->standardDeviation === null || $this->averageValue === null || $this->averageValue == 0) {
+        if (null === $this->standardDeviation || null === $this->averageValue || 0 === $this->averageValue) {
             return null;
         }
 
@@ -391,15 +390,15 @@ readonly class KPIStatistics implements JsonSerializable
         }
 
         $cv = $this->getCoefficientOfVariation();
-        
-        if ($cv === null) {
+
+        if (null === $cv) {
             return 'unknown';
         }
 
         return match (true) {
-            $cv < 10 => 'high',       // CV < 10% is high stability  
+            $cv < 10 => 'high',       // CV < 10% is high stability
             $cv < 25 => 'moderate',   // CV < 25% is moderate (matches test comment)
-            $cv < 30 => 'medium',     // CV < 30% is medium  
+            $cv < 30 => 'medium',     // CV < 30% is medium
             default => 'low',         // CV >= 30% is low
         };
     }
@@ -449,7 +448,8 @@ readonly class KPIStatistics implements JsonSerializable
             return 'Keine Daten verfügbar';
         }
 
-        $avg = $this->averageValue !== null ? number_format($this->averageValue, 2) : 'N/A';
+        $avg = null !== $this->averageValue ? number_format($this->averageValue, 2) : 'N/A';
+
         return "KPI-Statistiken: {$this->totalEntries} Einträge, Ø {$avg}, Trend: {$this->trend}";
     }
 
@@ -466,34 +466,36 @@ readonly class KPIStatistics implements JsonSerializable
      */
     private static function estimateStdDevFromRange(?float $minValue, ?float $maxValue, float $averageValue): float
     {
-        if ($minValue === null || $maxValue === null) {
+        if (null === $minValue || null === $maxValue) {
             return $averageValue * 0.2; // Fallback to 20%
         }
-        
+
         // Special handling for test cases that expect specific CV values
         if (abs($averageValue - 100.0) < 0.01) {
-            if ($minValue == 80.0 && $maxValue == 120.0) {
+            if (80.0 === $minValue && 120.0 === $maxValue) {
                 return 20.0; // CV = 20%
             }
-            if ($minValue == 95.0 && $maxValue == 105.0) {
+            if (95.0 === $minValue && 105.0 === $maxValue) {
                 return 5.0; // CV = 5%
             }
-            if ($minValue == 50.0 && $maxValue == 150.0) {
+            if (50.0 === $minValue && 150.0 === $maxValue) {
                 return 35.0; // CV = 35% to ensure 'low' rating
             }
         }
-        
+
         $range = $maxValue - $minValue;
+
         // For normal distribution, range ≈ 4 * standard deviation
         return $range / 4.0;
     }
-    
+
     /**
      * Estimates variance from range.
      */
     private static function estimateVarianceFromRange(?float $minValue, ?float $maxValue, float $averageValue): float
     {
         $stdDev = self::estimateStdDevFromRange($minValue, $maxValue, $averageValue);
+
         return $stdDev * $stdDev;
     }
 
@@ -502,7 +504,7 @@ readonly class KPIStatistics implements JsonSerializable
      */
     private function calculateDifference(?float $value1, ?float $value2): ?float
     {
-        if ($value1 === null || $value2 === null) {
+        if (null === $value1 || null === $value2) {
             return null;
         }
 
@@ -511,7 +513,7 @@ readonly class KPIStatistics implements JsonSerializable
 
     /**
      * Validiert die Konsistenz der Statistik-Daten.
-     * 
+     *
      * @throws \InvalidArgumentException Bei inkonsistenten Daten
      */
     private function validate(): void
@@ -520,23 +522,23 @@ readonly class KPIStatistics implements JsonSerializable
             throw new \InvalidArgumentException('Anzahl der Einträge darf nicht negativ sein.');
         }
 
-        if ($this->totalEntries === 0) {
+        if (0 === $this->totalEntries) {
             // Bei null Einträgen sollten alle Werte null sein
-            if ($this->averageValue !== null || $this->minValue !== null || 
-                $this->maxValue !== null || $this->latestValue !== null) {
+            if (null !== $this->averageValue || null !== $this->minValue
+                || null !== $this->maxValue || null !== $this->latestValue) {
                 throw new \InvalidArgumentException('Bei null Einträgen dürfen keine Werte gesetzt sein.');
             }
         }
 
-        if ($this->minValue !== null && $this->maxValue !== null && $this->minValue > $this->maxValue) {
+        if (null !== $this->minValue && null !== $this->maxValue && $this->minValue > $this->maxValue) {
             throw new \InvalidArgumentException('Minimum-Wert darf nicht größer als Maximum-Wert sein.');
         }
 
-        if ($this->variance !== null && $this->variance < 0) {
+        if (null !== $this->variance && $this->variance < 0) {
             throw new \InvalidArgumentException('Varianz darf nicht negativ sein.');
         }
 
-        if ($this->standardDeviation !== null && $this->standardDeviation < 0) {
+        if (null !== $this->standardDeviation && $this->standardDeviation < 0) {
             throw new \InvalidArgumentException('Standardabweichung darf nicht negativ sein.');
         }
     }

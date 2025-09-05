@@ -34,14 +34,14 @@ class KPIReminderDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function findet_kpis_die_vorab_erinnerung_benoetigen(): void
+    public function findetKpisDieVorabErinnerungBenoetigen(): void
     {
         $kpi = $this->createMockKPI('Test KPI', KpiInterval::WEEKLY);
-        
+
         // KPI ist in 3 Tagen fällig (Vorab-Erinnerung)
         $kpi->method('getNextDueDate')
             ->willReturn(new \DateTimeImmutable('+3 days'));
-            
+
         $this->kpiValueRepository
             ->method('findByKpiAndPeriod')
             ->willReturn(null); // Kein Wert vorhanden
@@ -49,17 +49,17 @@ class KPIReminderDomainServiceTest extends TestCase
         $reminders = $this->service->getKpisForReminder([$kpi]);
 
         $this->assertCount(1, $reminders);
-        $this->assertEquals('upcoming', $reminders[0]['type']);
-        $this->assertEquals($kpi, $reminders[0]['kpi']);
+        $this->assertSame('upcoming', $reminders[0]['type']);
+        $this->assertSame($kpi, $reminders[0]['kpi']);
     }
 
     /**
      * @test
      */
-    public function findet_kpis_die_heute_faellig_sind(): void
+    public function findetKpisDieHeuteFaelligSind(): void
     {
         $kpi = $this->createMockKPI('Today Due KPI', KpiInterval::MONTHLY);
-        
+
         // Override the default mock and set explicit due date
         $today = new \DateTimeImmutable('today midnight');
         $kpiOverride = $this->createMock(KPI::class);
@@ -67,9 +67,9 @@ class KPIReminderDomainServiceTest extends TestCase
         $kpiOverride->method('getInterval')->willReturn(KpiInterval::MONTHLY);
         $kpiOverride->method('getCurrentPeriod')->willReturn(Period::fromString('2024-01'));
         $kpiOverride->method('getId')->willReturn(1);
-        $kpiOverride->method('getUser')->willReturn($this->createMock(\App\Entity\User::class));
+        $kpiOverride->method('getUser')->willReturn($this->createMock(User::class));
         $kpiOverride->method('getNextDueDate')->willReturn($today);
-            
+
         $this->kpiValueRepository
             ->method('findByKpiAndPeriod')
             ->willReturn(null);
@@ -77,16 +77,16 @@ class KPIReminderDomainServiceTest extends TestCase
         $reminders = $this->service->getKpisForReminder([$kpiOverride]);
 
         $this->assertCount(1, $reminders);
-        $this->assertEquals('due_today', $reminders[0]['type']);
+        $this->assertSame('due_today', $reminders[0]['type']);
     }
 
     /**
      * @test
      */
-    public function findet_ueberfaellige_kpis(): void
+    public function findetUeberfaelligeKpis(): void
     {
         $kpi = $this->createMockKPI('Overdue KPI', KpiInterval::QUARTERLY);
-        
+
         // Override the default mock for overdue
         $overdue = new \DateTimeImmutable('-5 days midnight');
         $kpiOverdue = $this->createMock(KPI::class);
@@ -94,9 +94,9 @@ class KPIReminderDomainServiceTest extends TestCase
         $kpiOverdue->method('getInterval')->willReturn(KpiInterval::QUARTERLY);
         $kpiOverdue->method('getCurrentPeriod')->willReturn(Period::fromString('2024-01'));
         $kpiOverdue->method('getId')->willReturn(1);
-        $kpiOverdue->method('getUser')->willReturn($this->createMock(\App\Entity\User::class));
+        $kpiOverdue->method('getUser')->willReturn($this->createMock(User::class));
         $kpiOverdue->method('getNextDueDate')->willReturn($overdue);
-            
+
         $this->kpiValueRepository
             ->method('findByKpiAndPeriod')
             ->willReturn(null);
@@ -104,20 +104,20 @@ class KPIReminderDomainServiceTest extends TestCase
         $reminders = $this->service->getKpisForReminder([$kpiOverdue]);
 
         $this->assertCount(1, $reminders);
-        $this->assertEquals('overdue', $reminders[0]['type']);
+        $this->assertSame('overdue', $reminders[0]['type']);
     }
 
     /**
      * @test
      */
-    public function ignoriert_kpis_mit_aktuellen_werten(): void
+    public function ignoriertKpisMitAktuellenWerten(): void
     {
         $kpi = $this->createMockKPI('Current KPI', KpiInterval::WEEKLY);
-        
+
         // KPI ist überfällig, hat aber bereits einen Wert
         $kpi->method('getNextDueDate')
             ->willReturn(new \DateTimeImmutable('-2 days'));
-            
+
         $this->kpiValueRepository
             ->method('findByKpiAndPeriod')
             ->willReturn($this->createMock(KPIValue::class)); // Wert vorhanden
@@ -130,14 +130,14 @@ class KPIReminderDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function erstellt_personalisierte_nachrichten(): void
+    public function erstelltPersonalisierteNachrichten(): void
     {
         $user = $this->createMockUser('Max Mustermann');
         $kpi = $this->getMockBuilder(KPI::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['getName', 'getUser', 'getInterval', 'getCurrentPeriod', 'getId'])
             ->getMock();
-        
+
         $kpi->method('getName')->willReturn('Umsatz Q1');
         $kpi->method('getUser')->willReturn($user);
         $kpi->method('getInterval')->willReturn(KpiInterval::QUARTERLY);
@@ -163,14 +163,14 @@ class KPIReminderDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function beruecksichtigt_benutzer_praeferenzen(): void
+    public function beruecksichtigtBenutzerPraeferenzen(): void
     {
         $user = $this->createMockUser('Anna Schmidt');
         $kpi = $this->getMockBuilder(KPI::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['getName', 'getUser', 'getInterval', 'getCurrentPeriod', 'getId'])
             ->getMock();
-            
+
         $kpi->method('getName')->willReturn('Verkaufszahlen');
         $kpi->method('getUser')->willReturn($user);
         $kpi->method('getInterval')->willReturn(KpiInterval::MONTHLY);
@@ -180,7 +180,7 @@ class KPIReminderDomainServiceTest extends TestCase
         $preferences = [
             'reminder_style' => 'formal',
             'include_statistics' => true,
-            'language' => 'de'
+            'language' => 'de',
         ];
 
         $message = $this->service->createPersonalizedMessage($kpi, 'upcoming', 2, $preferences);
@@ -192,17 +192,17 @@ class KPIReminderDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function kann_erinnerungsfrequenz_pruefen(): void
+    public function kannErinnerungsfrequenzPruefen(): void
     {
         $kpi = $this->createMockKPI('Test KPI', KpiInterval::WEEKLY);
-        
+
         // KPI sollte Erinnerung erhalten
         $this->assertTrue($this->service->shouldReceiveReminder($kpi));
-        
+
         // Nach kürzlicher Erinnerung (Anti-Spam)
         $recentReminder = new \DateTimeImmutable('-2 hours');
         $this->assertFalse($this->service->shouldReceiveReminder($kpi, $recentReminder));
-        
+
         // Nach längerer Zeit wieder erlaubt
         $oldReminder = new \DateTimeImmutable('-25 hours');
         $this->assertTrue($this->service->shouldReceiveReminder($kpi, $oldReminder));
@@ -211,22 +211,22 @@ class KPIReminderDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function kann_eskalations_workflow_handhaben(): void
+    public function kannEskalationsWorkflowHandhaben(): void
     {
         $kpi = $this->createMockKPI('Critical KPI', KpiInterval::WEEKLY);
         $kpi->method('getNextDueDate')->willReturn(new \DateTimeImmutable('-10 days'));
-        
+
         $escalation = $this->service->calculateEscalationLevel($kpi, 10); // 10 Tage überfällig
-        
-        $this->assertEquals(4, $escalation['level']); // Höchste Eskalation bei 10 Tagen
-        $this->assertEquals('critical', $escalation['urgency']);
+
+        $this->assertSame(4, $escalation['level']); // Höchste Eskalation bei 10 Tagen
+        $this->assertSame('critical', $escalation['urgency']);
         $this->assertContains('Management', $escalation['notify_roles']);
     }
 
     /**
      * @test
      */
-    public function kann_batch_erinnerungen_verarbeiten(): void
+    public function kannBatchErinnerungenVerarbeiten(): void
     {
         $kpi1 = $this->createMockKPI('KPI 1', KpiInterval::WEEKLY);
         $kpi2 = $this->createMockKPI('KPI 2', KpiInterval::MONTHLY);
@@ -242,28 +242,28 @@ class KPIReminderDomainServiceTest extends TestCase
 
         $batchResult = $this->service->processBatchReminders([$kpi1, $kpi2, $kpi3]);
 
-        $this->assertEquals(3, $batchResult['total_processed']);
-        $this->assertEquals(3, $batchResult['reminders_created']);
+        $this->assertSame(3, $batchResult['total_processed']);
+        $this->assertSame(3, $batchResult['reminders_created']);
         $this->assertCount(3, $batchResult['reminders']);
     }
 
     /**
      * @test
      */
-    public function kann_erinnerungs_templates_verwenden(): void
+    public function kannErinnerungsTemplatesVerwenden(): void
     {
         $kpi = $this->createMockKPI('Sales KPI', KpiInterval::MONTHLY);
-        
+
         $template = $this->service->getMessageTemplate('upcoming', 'sales');
         $this->assertStringContainsString('{kpi_name}', $template);
         $this->assertStringContainsString('{days}', $template);
-        
+
         $customizedMessage = $this->service->applyTemplate($template, [
             'kpi_name' => $kpi->getName(),
             'days' => 3,
-            'user_name' => 'Test User'
+            'user_name' => 'Test User',
         ]);
-        
+
         $this->assertStringContainsString('Sales KPI', $customizedMessage);
         $this->assertStringNotContainsString('{kpi_name}', $customizedMessage);
     }
@@ -271,7 +271,7 @@ class KPIReminderDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function kann_intelligente_zeitplanung_durchfuehren(): void
+    public function kannIntelligenteZeitplanungDurchfuehren(): void
     {
         $user = $this->createMockUser('Test User');
         $kpi = $this->createMockKPI('Morning KPI', KpiInterval::WEEKLY);
@@ -281,25 +281,25 @@ class KPIReminderDomainServiceTest extends TestCase
         $preferences = [
             'preferred_reminder_time' => '09:00',
             'timezone' => 'Europe/Berlin',
-            'working_days' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+            'working_days' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
         ];
 
         $scheduledTime = $this->service->calculateOptimalReminderTime($kpi, $preferences);
-        
-        $this->assertEquals('09:00', $scheduledTime->format('H:i'));
-        $this->assertContains(strtolower($scheduledTime->format('l')), $preferences['working_days']);
+
+        $this->assertSame('09:00', $scheduledTime->format('H:i'));
+        $this->assertContains(mb_strtolower($scheduledTime->format('l')), $preferences['working_days']);
     }
 
     /**
      * @test
      */
-    public function kann_mehrsprachige_nachrichten_erstellen(): void
+    public function kannMehrsprachigeNachrichtenErstellen(): void
     {
         $kpi = $this->createMockKPI('Test KPI', KpiInterval::WEEKLY);
-        
+
         $germanMessage = $this->service->createLocalizedMessage($kpi, 'upcoming', 3, 'de');
         $this->assertStringContainsString('Tagen', $germanMessage);
-        
+
         $englishMessage = $this->service->createLocalizedMessage($kpi, 'upcoming', 3, 'en');
         $this->assertStringContainsString('days', $englishMessage);
     }
@@ -307,12 +307,12 @@ class KPIReminderDomainServiceTest extends TestCase
     /**
      * @test
      */
-    public function kann_erinnerungs_statistiken_generieren(): void
+    public function kannErinnerungsStatistikenGenerieren(): void
     {
         $kpis = [
             $this->createMockKPI('KPI 1', KpiInterval::WEEKLY),
             $this->createMockKPI('KPI 2', KpiInterval::MONTHLY),
-            $this->createMockKPI('KPI 3', KpiInterval::QUARTERLY)
+            $this->createMockKPI('KPI 3', KpiInterval::QUARTERLY),
         ];
 
         $this->statusService
@@ -325,8 +325,8 @@ class KPIReminderDomainServiceTest extends TestCase
 
         $stats = $this->service->generateReminderStatistics($kpis);
 
-        $this->assertEquals(3, $stats['total_kpis']);
-        $this->assertEquals(3, $stats['needs_reminder']);
+        $this->assertSame(3, $stats['total_kpis']);
+        $this->assertSame(3, $stats['needs_reminder']);
         $this->assertArrayHasKey('by_type', $stats);
         $this->assertArrayHasKey('by_urgency', $stats);
     }
@@ -340,14 +340,14 @@ class KPIReminderDomainServiceTest extends TestCase
             ->disableOriginalConstructor()
             ->onlyMethods(['getName', 'getInterval', 'getCurrentPeriod', 'getId', 'getUser', 'getNextDueDate'])
             ->getMock();
-            
+
         $kpi->method('getName')->willReturn($name);
         $kpi->method('getInterval')->willReturn($interval);
         $kpi->method('getCurrentPeriod')->willReturn(Period::fromString('2024-01'));
         $kpi->method('getId')->willReturn(1);
-        $kpi->method('getUser')->willReturn($this->createMock(\App\Entity\User::class));
+        $kpi->method('getUser')->willReturn($this->createMock(User::class));
         $kpi->method('getNextDueDate')->willReturn(new \DateTimeImmutable('+3 days'));
-        
+
         return $kpi;
     }
 
@@ -360,10 +360,10 @@ class KPIReminderDomainServiceTest extends TestCase
             ->disableOriginalConstructor()
             ->onlyMethods(['getFullName', 'getFirstName'])
             ->getMock();
-            
+
         $user->method('getFullName')->willReturn($name);
         $user->method('getFirstName')->willReturn(explode(' ', $name)[0]);
-        
+
         return $user;
     }
 }

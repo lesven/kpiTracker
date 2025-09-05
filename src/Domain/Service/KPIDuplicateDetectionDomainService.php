@@ -35,19 +35,20 @@ class KPIDuplicateDetectionDomainService
      * Prüft ob ein KPI-Wert als Duplikat betrachtet werden sollte.
      *
      * @param KPIValue $newValue Der neue zu prüfende Wert
-     * @param array $options Konfigurationsoptionen für Duplikat-Erkennung
+     * @param array    $options  Konfigurationsoptionen für Duplikat-Erkennung
+     *
      * @return array Duplikat-Analyse Ergebnis
      */
     public function checkForDuplicate(KPIValue $newValue, array $options = []): array
     {
         $config = $this->mergeDetectionConfig($options);
-        
+
         $exactDuplicate = $this->findExactDuplicate($newValue);
         $fuzzyMatches = $config['enable_fuzzy_matching'] ? $this->findFuzzyMatches($newValue, $config) : [];
         $valueSimilarities = $config['check_value_similarity'] ? $this->findValueSimilarities($newValue, $config) : [];
 
         $hasDuplicate = $exactDuplicate || !empty($fuzzyMatches) || !empty($valueSimilarities);
-        
+
         return [
             'has_duplicate' => $hasDuplicate,
             'duplicate_type' => $this->determineDuplicateType($exactDuplicate, $fuzzyMatches, $valueSimilarities),
@@ -63,8 +64,9 @@ class KPIDuplicateDetectionDomainService
      * Prüft ob ein bestehender Wert durch einen neuen überschrieben werden darf.
      *
      * @param KPIValue $existingValue Der bestehende Wert
-     * @param KPIValue $newValue Der neue Wert
-     * @param array $businessRules Geschäftsregeln für Überschreibung
+     * @param KPIValue $newValue      Der neue Wert
+     * @param array    $businessRules Geschäftsregeln für Überschreibung
+     *
      * @return array Überschreibungs-Analyse
      */
     public function canOverrideValue(KPIValue $existingValue, KPIValue $newValue, array $businessRules = []): array
@@ -115,9 +117,10 @@ class KPIDuplicateDetectionDomainService
     /**
      * Findet alle konfliktierenden Werte für einen KPI-Zeitraum.
      *
-     * @param KPI $kpi Die KPI
-     * @param Period $period Der Zeitraum
-     * @param bool $includeFuzzy Auch Fuzzy-Matches einschließen
+     * @param KPI    $kpi          Die KPI
+     * @param Period $period       Der Zeitraum
+     * @param bool   $includeFuzzy Auch Fuzzy-Matches einschließen
+     *
      * @return array Liste aller konfliktierenden Werte
      */
     public function findConflictingValues(KPI $kpi, Period $period, bool $includeFuzzy = false): array
@@ -147,7 +150,7 @@ class KPIDuplicateDetectionDomainService
         }
 
         // Nach Ähnlichkeits-Score sortieren
-        usort($conflicts, fn($a, $b) => $b['similarity_score'] <=> $a['similarity_score']);
+        usort($conflicts, fn ($a, $b) => $b['similarity_score'] <=> $a['similarity_score']);
 
         return array_slice($conflicts, 0, self::MAX_CONFLICTS_TO_RETURN);
     }
@@ -155,15 +158,16 @@ class KPIDuplicateDetectionDomainService
     /**
      * Analysiert Duplikat-Muster für eine KPI (für Datenqualitäts-Insights).
      *
-     * @param KPI $kpi Die zu analysierende KPI
+     * @param KPI $kpi           Die zu analysierende KPI
      * @param int $timeframeDays Analysezeitraum in Tagen
+     *
      * @return array Duplikat-Muster Analyse
      */
     public function analyzeDuplicatePatterns(KPI $kpi, int $timeframeDays = 90): array
     {
         $cutoffDate = new \DateTimeImmutable("-{$timeframeDays} days");
         $recentValues = $this->kpiValueRepository->findByKPI($kpi); // TODO: Filter by date
-        
+
         if (count($recentValues) < 2) {
             return ['status' => 'insufficient_data'];
         }
@@ -180,20 +184,20 @@ class KPIDuplicateDetectionDomainService
 
         foreach ($recentValues as $value) {
             $duplicateCheck = $this->checkForDuplicate($value, ['enable_fuzzy_matching' => true]);
-            
+
             if ($duplicateCheck['has_duplicate']) {
-                $patterns['potential_duplicates']++;
-                
+                ++$patterns['potential_duplicates'];
+
                 if ($duplicateCheck['exact_duplicate']) {
-                    $patterns['exact_duplicates']++;
+                    ++$patterns['exact_duplicates'];
                 }
-                
+
                 if (!empty($duplicateCheck['fuzzy_matches'])) {
-                    $patterns['fuzzy_matches']++;
+                    ++$patterns['fuzzy_matches'];
                 }
-                
+
                 if (!empty($duplicateCheck['value_similarities'])) {
-                    $patterns['value_duplicates']++;
+                    ++$patterns['value_duplicates'];
                 }
             }
         }
@@ -210,7 +214,7 @@ class KPIDuplicateDetectionDomainService
     private function findExactDuplicate(KPIValue $newValue): ?KPIValue
     {
         return $this->kpiValueRepository->findByKpiAndPeriod(
-            $newValue->getKpi(), 
+            $newValue->getKpi(),
             $newValue->getPeriod()
         );
     }
@@ -222,7 +226,7 @@ class KPIDuplicateDetectionDomainService
     {
         $kpi = $newValue->getKpi();
         $period = $newValue->getPeriod();
-        
+
         return $this->findFuzzyPeriodMatches($kpi, $period);
     }
 
@@ -233,16 +237,16 @@ class KPIDuplicateDetectionDomainService
     {
         $allValues = $this->kpiValueRepository->findByKPI($kpi);
         $matches = [];
-        
+
         foreach ($allValues as $existingValue) {
             $existingPeriod = $existingValue->getPeriod();
-            
+
             if (!$existingPeriod || $existingPeriod->value() === $period->value()) {
                 continue; // Überspringen - exakte Matches wurden bereits geprüft
             }
-            
+
             $similarity = $this->calculatePeriodSimilarity($period, $existingPeriod);
-            
+
             if ($similarity > 0.7) { // 70% Ähnlichkeit
                 $matches[] = [
                     'value' => $existingValue,
@@ -251,10 +255,10 @@ class KPIDuplicateDetectionDomainService
                 ];
             }
         }
-        
+
         // Nach Ähnlichkeit sortieren
-        usort($matches, fn($a, $b) => $b['similarity_score'] <=> $a['similarity_score']);
-        
+        usort($matches, fn ($a, $b) => $b['similarity_score'] <=> $a['similarity_score']);
+
         return $matches;
     }
 
@@ -266,13 +270,13 @@ class KPIDuplicateDetectionDomainService
         $kpi = $newValue->getKpi();
         $newNumericValue = $newValue->getValueAsFloat();
         $threshold = $config['value_similarity_threshold'] ?? self::VALUE_SIMILARITY_THRESHOLD;
-        
+
         $recentValues = $this->kpiValueRepository->findByKPI($kpi); // TODO: Limit to recent values
         $similarities = [];
-        
+
         foreach ($recentValues as $existingValue) {
             $existingNumericValue = $existingValue->getValueAsFloat();
-            
+
             if (abs($existingNumericValue - $newNumericValue) / max(abs($newNumericValue), 1) <= $threshold) {
                 $similarities[] = [
                     'value' => $existingValue,
@@ -281,7 +285,7 @@ class KPIDuplicateDetectionDomainService
                 ];
             }
         }
-        
+
         return $similarities;
     }
 
@@ -293,15 +297,15 @@ class KPIDuplicateDetectionDomainService
         if ($exact) {
             return 'exact';
         }
-        
+
         if (!empty($fuzzy)) {
             return 'fuzzy_period';
         }
-        
+
         if (!empty($values)) {
             return 'similar_value';
         }
-        
+
         return 'none';
     }
 
@@ -313,15 +317,15 @@ class KPIDuplicateDetectionDomainService
         if ($exact) {
             return 'Ein exaktes Duplikat wurde gefunden. Überschreibung oder Aktualisierung erforderlich.';
         }
-        
+
         if (!empty($fuzzy)) {
             return 'Ähnliche Zeiträume gefunden. Bitte prüfen Sie ob dies der korrekte Zeitraum ist.';
         }
-        
+
         if (!empty($values)) {
             return 'Ähnliche Werte in anderen Zeiträumen gefunden. Bitte Wert-Genauigkeit prüfen.';
         }
-        
+
         return 'Keine Duplikate gefunden. Wert kann gespeichert werden.';
     }
 
@@ -331,21 +335,21 @@ class KPIDuplicateDetectionDomainService
     private function generateOverrideOptions(?KPIValue $exact, array $fuzzy): array
     {
         $options = [];
-        
+
         if ($exact) {
             $options[] = [
                 'type' => 'replace',
                 'label' => 'Bestehenden Wert ersetzen',
                 'description' => 'Der neue Wert überschreibt den bestehenden Wert komplett.',
             ];
-            
+
             $options[] = [
                 'type' => 'update',
                 'label' => 'Bestehenden Wert aktualisieren',
                 'description' => 'Nur geänderte Felder werden aktualisiert, Metadaten bleiben erhalten.',
             ];
         }
-        
+
         if (!empty($fuzzy)) {
             $options[] = [
                 'type' => 'new_period',
@@ -353,7 +357,7 @@ class KPIDuplicateDetectionDomainService
                 'description' => 'Wert als separaten Eintrag für den spezifizierten Zeitraum speichern.',
             ];
         }
-        
+
         return $options;
     }
 
@@ -377,10 +381,10 @@ class KPIDuplicateDetectionDomainService
     {
         $existingCreated = $existing->getCreatedAt();
         $now = new \DateTimeImmutable();
-        
+
         // Regel: Werte älter als 24h können nicht überschrieben werden ohne Berechtigung
         $hoursSinceCreation = $now->diff($existingCreated)->h + ($now->diff($existingCreated)->days * 24);
-        
+
         if ($hoursSinceCreation > 24) {
             return [
                 'allowed' => false,
@@ -388,7 +392,7 @@ class KPIDuplicateDetectionDomainService
                 'hours_since_creation' => $hoursSinceCreation,
             ];
         }
-        
+
         return [
             'allowed' => true,
             'reason' => 'Zeitbasierte Überschreibung erlaubt',
@@ -403,12 +407,12 @@ class KPIDuplicateDetectionDomainService
     {
         $existingValue = $existing->getValueAsFloat();
         $newValue = $new->getValueAsFloat();
-        
+
         $changeMagnitude = abs($newValue - $existingValue);
-        $percentageChange = $existingValue != 0 ? ($changeMagnitude / abs($existingValue)) * 100 : 0;
-        
+        $percentageChange = 0 !== $existingValue ? ($changeMagnitude / abs($existingValue)) * 100 : 0;
+
         $suspiciousChangeThreshold = $businessRules['suspicious_change_threshold'] ?? 50; // 50%
-        
+
         if ($percentageChange > $suspiciousChangeThreshold) {
             return [
                 'requires_confirmation' => true,
@@ -417,7 +421,7 @@ class KPIDuplicateDetectionDomainService
                 'percentage_change' => $percentageChange,
             ];
         }
-        
+
         return [
             'requires_confirmation' => false,
             'reason' => 'Wertänderung liegt im normalen Bereich',
@@ -434,16 +438,16 @@ class KPIDuplicateDetectionDomainService
         // Vereinfachte Implementierung - in Realität würde hier Symfony Security verwendet
         $existingKpi = $existing->getKpi();
         $newKpi = $new->getKpi();
-        
+
         if ($existingKpi->getId() !== $newKpi->getId()) {
             return [
                 'allowed' => false,
                 'reason' => 'Wert gehört zu einer anderen KPI',
             ];
         }
-        
+
         // TODO: Prüfung ob aktueller Benutzer Berechtigung hat
-        
+
         return [
             'allowed' => true,
             'reason' => 'Benutzer hat Berechtigung zur Überschreibung',
@@ -456,20 +460,20 @@ class KPIDuplicateDetectionDomainService
     private function analyzeDataQuality(KPIValue $existing, KPIValue $new): array
     {
         $qualityScore = 1.0;
-        
+
         // Hat der neue Wert zusätzliche Metadaten?
         if ($new->getComment() && !$existing->getComment()) {
             $qualityScore *= 1.1; // 10% Bonus für Kommentar
         }
-        
+
         // Hat der neue Wert Dateien/Belege?
         $newHasFiles = $new->getFiles()->count() > 0;
         $existingHasFiles = $existing->getFiles()->count() > 0;
-        
+
         if ($newHasFiles && !$existingHasFiles) {
             $qualityScore *= 1.2; // 20% Bonus für Dateien
         }
-        
+
         return [
             'quality_factor' => min(1.0, $qualityScore),
             'quality_score' => $qualityScore,
@@ -483,19 +487,19 @@ class KPIDuplicateDetectionDomainService
     private function generateOverrideRecommendations(array $timeAnalysis, array $valueAnalysis, array $authAnalysis): array
     {
         $recommendations = [];
-        
+
         if (!$timeAnalysis['allowed']) {
             $recommendations[] = 'Kontaktieren Sie einen Administrator für historische Wertänderungen';
         }
-        
+
         if ($valueAnalysis['requires_confirmation']) {
             $recommendations[] = 'Fügen Sie einen Kommentar hinzu um die große Wertänderung zu erklären';
         }
-        
+
         if ($authAnalysis['allowed']) {
             $recommendations[] = 'Überschreibung ist technisch möglich';
         }
-        
+
         return $recommendations;
     }
 
@@ -507,12 +511,15 @@ class KPIDuplicateDetectionDomainService
         // Vereinfachte Implementierung basierend auf String-Ähnlichkeit
         $str1 = $period1->value();
         $str2 = $period2->value();
-        
+
         // Levenshtein-Ähnlichkeit
-        $maxLen = max(strlen($str1), strlen($str2));
-        if ($maxLen === 0) return 1.0;
-        
+        $maxLen = max(mb_strlen($str1), mb_strlen($str2));
+        if (0 === $maxLen) {
+            return 1.0;
+        }
+
         $distance = levenshtein($str1, $str2);
+
         return 1.0 - ($distance / $maxLen);
     }
 
@@ -522,7 +529,7 @@ class KPIDuplicateDetectionDomainService
     private function calculatePeriodDifferenceDays(Period $period1, Period $period2): int
     {
         // Vereinfachte Implementierung - würde in Realität komplexeres Parsing benötigen
-        return abs(strlen($period1->value()) - strlen($period2->value()));
+        return abs(mb_strlen($period1->value()) - mb_strlen($period2->value()));
     }
 
     /**
@@ -531,32 +538,32 @@ class KPIDuplicateDetectionDomainService
     private function generateDataQualityRecommendations(array $patterns): array
     {
         $recommendations = [];
-        
+
         if ($patterns['duplicate_rate'] > 20) {
             $recommendations[] = 'Hohe Duplikatrate erkannt. Prüfen Sie Ihre Eingabeprozesse';
         }
-        
+
         if ($patterns['fuzzy_matches'] > 5) {
             $recommendations[] = 'Viele ähnliche Zeiträume gefunden. Standardisieren Sie Zeitraum-Eingaben';
         }
-        
+
         if ($patterns['value_duplicates'] > 3) {
             $recommendations[] = 'Ähnliche Werte in verschiedenen Zeiträumen. Prüfen Sie Wert-Genauigkeit';
         }
-        
+
         return $recommendations;
     }
 
     /**
      * Identifiziert Muster in den KPI-Duplikaten für Analytics.
      */
-    public function identifyPatterns(KPI $kpi = null): array
+    public function identifyPatterns(?KPI $kpi = null): array
     {
         // Basic pattern identification - can be enhanced later
         return [
             'patterns_found' => 0,
             'common_duplicates' => [],
-            'suggestions' => []
+            'suggestions' => [],
         ];
     }
 }

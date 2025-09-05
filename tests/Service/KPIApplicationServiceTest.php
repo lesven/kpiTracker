@@ -203,7 +203,7 @@ class KPIApplicationServiceTest extends TestCase
         $kpi = $this->createMock(KPI::class);
         $kpiValue = $this->createMock(KPIValue::class);
         $period = new \App\Domain\ValueObject\Period('2024-01');
-        
+
         $kpiValue->method('getKpi')->willReturn($kpi);
         $kpiValue->method('getPeriod')->willReturn($period);
         $kpiValue->method('getValueAsFloat')->willReturn(100.0);
@@ -211,7 +211,7 @@ class KPIApplicationServiceTest extends TestCase
         $duplicateResult = [
             'has_duplicate' => true,
             'existing_value' => $this->createMock(KPIValue::class),
-            'similarity_score' => 0.95
+            'similarity_score' => 0.95,
         ];
 
         $this->duplicateDetectionService->expects($this->once())
@@ -231,7 +231,7 @@ class KPIApplicationServiceTest extends TestCase
         $kpi = $this->createMock(KPI::class);
         $kpiValue = $this->createMock(KPIValue::class);
         $period = new \App\Domain\ValueObject\Period('2024-01');
-        
+
         $kpiValue->method('getKpi')->willReturn($kpi);
         $kpiValue->method('getPeriod')->willReturn($period);
         $kpiValue->method('getValueAsFloat')->willReturn(100.0);
@@ -256,10 +256,10 @@ class KPIApplicationServiceTest extends TestCase
         $user = $this->createMock(User::class);
         $kpi = $this->createMock(KPI::class);
         $period = new \App\Domain\ValueObject\Period('2024-01');
-        
+
         $kpi->method('getUser')->willReturn($user);
         $kpi->method('getRecordedEvents')->willReturn([]);
-        
+
         $kpiValue = $this->createMock(KPIValue::class);
         $kpiValue->method('getKpi')->willReturn($kpi);
         $kpiValue->method('getPeriod')->willReturn($period);
@@ -269,7 +269,7 @@ class KPIApplicationServiceTest extends TestCase
 
         $this->duplicateDetectionService->method('checkForDuplicate')
             ->willReturn(['has_duplicate' => false]);
-        
+
         $this->validationService->method('validateKpiValue')
             ->willReturn([]);
 

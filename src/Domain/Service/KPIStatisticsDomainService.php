@@ -34,8 +34,9 @@ class KPIStatisticsDomainService
     /**
      * Berechnet umfassende Statistiken für eine KPI.
      *
-     * @param KPI $kpi Die zu analysierende KPI
+     * @param KPI   $kpi     Die zu analysierende KPI
      * @param array $options Konfigurationsoptionen für die Berechnung
+     *
      * @return KPIStatistics Vollständige statistische Auswertung
      */
     public function calculateStatistics(KPI $kpi, array $options = []): KPIStatistics
@@ -51,13 +52,13 @@ class KPIStatisticsDomainService
 
         $basicStats = $this->calculateBasicStatistics($numericValues);
         $trend = $this->calculateTrend($numericValues);
-        
+
         $latestValue = $values[0] ?? null; // Repository sortiert bereits chronologisch
         $oldestValue = end($values) ?: null;
 
         if ($includeAdvanced && count($numericValues) >= self::MIN_DATA_POINTS_FOR_STATISTICS) {
             $advancedStats = $this->calculateAdvancedStatistics($numericValues);
-            
+
             return new KPIStatistics(
                 totalEntries: count($values),
                 averageValue: $basicStats['average'],
@@ -84,14 +85,15 @@ class KPIStatisticsDomainService
     /**
      * Berechnet erweiterte Trend-Analyse mit Konfidenz-Intervallen.
      *
-     * @param array $values Array von KPIValue Objekten
-     * @param int $analysisWindow Anzahl der letzten Werte für Analyse
+     * @param array $values         Array von KPIValue Objekten
+     * @param int   $analysisWindow Anzahl der letzten Werte für Analyse
+     *
      * @return KPITrend Detaillierte Trend-Analyse
      */
     public function calculateDetailedTrend(array $values, int $analysisWindow = 5): KPITrend
     {
         $numericValues = $this->extractNumericValues($values);
-        
+
         if (count($numericValues) < self::MIN_DATA_POINTS_FOR_TREND) {
             return KPITrend::noData();
         }
@@ -100,13 +102,13 @@ class KPIStatisticsDomainService
         $totalValues = count($numericValues);
         $windowSize = min($analysisWindow, $totalValues);
         $recentValues = array_slice($numericValues, $totalValues - $windowSize, $windowSize);
-        
+
         if (count($recentValues) < 2) {
             return KPITrend::noData();
         }
 
         $trendData = $this->performTrendAnalysis($recentValues);
-        
+
         return KPITrend::fromData(
             percentageChange: $trendData['percentage_change'],
             volatility: $trendData['volatility'],
@@ -118,14 +120,15 @@ class KPIStatisticsDomainService
     /**
      * Identifiziert statistische Ausreißer in KPI-Daten.
      *
-     * @param KPI $kpi Die zu analysierende KPI
+     * @param KPI   $kpi       Die zu analysierende KPI
      * @param float $threshold Z-Score Schwellwert für Ausreißer (Standard: 2.0)
+     *
      * @return array Liste der KPIValues die als Ausreißer identifiziert wurden
      */
     public function detectOutliers(KPI $kpi, float $threshold = 2.0): array
     {
         $values = $this->kpiValueRepository->findByKPI($kpi);
-        
+
         if (count($values) < self::MIN_DATA_POINTS_FOR_STATISTICS) {
             return [];
         }
@@ -134,16 +137,16 @@ class KPIStatisticsDomainService
         $mean = array_sum($numericValues) / count($numericValues);
         $stdDev = $this->calculateStandardDeviation($numericValues, $mean);
 
-        if ($stdDev == 0) {
+        if (0 === $stdDev) {
             return []; // Keine Streuung = keine Ausreißer
         }
 
         $outliers = [];
-        
+
         foreach ($values as $index => $value) {
             $numericValue = $numericValues[$index];
             $zScore = abs(($numericValue - $mean) / $stdDev);
-            
+
             if ($zScore > $threshold) {
                 $outliers[] = [
                     'value' => $value,
@@ -161,6 +164,7 @@ class KPIStatisticsDomainService
      *
      * @param KPI $kpi1 Erste KPI
      * @param KPI $kpi2 Zweite KPI
+     *
      * @return array Korrelationsanalyse
      */
     public function calculateCorrelation(KPI $kpi1, KPI $kpi2): array
@@ -170,7 +174,7 @@ class KPIStatisticsDomainService
 
         // Zeitraum-basierte Zuordnung der Werte
         $pairedValues = $this->pairValuesByPeriod($values1, $values2);
-        
+
         if (count($pairedValues) < self::MIN_DATA_POINTS_FOR_STATISTICS) {
             return [
                 'correlation_coefficient' => null,
@@ -192,22 +196,23 @@ class KPIStatisticsDomainService
     /**
      * Erstellt Performance-Benchmark basierend auf historischen Daten.
      *
-     * @param KPI $kpi Die zu analysierende KPI
+     * @param KPI $kpi             Die zu analysierende KPI
      * @param int $benchmarkMonths Anzahl Monate für Benchmark-Berechnung
+     *
      * @return array Benchmark-Daten
      */
     public function createPerformanceBenchmark(KPI $kpi, int $benchmarkMonths = 12): array
     {
         $cutoffDate = new \DateTimeImmutable("-{$benchmarkMonths} months");
         $values = $this->kpiValueRepository->findByKPISince($kpi, $cutoffDate);
-        
+
         if (empty($values)) {
             return ['status' => 'no_historical_data'];
         }
 
         $numericValues = $this->extractNumericValues($values);
         $statistics = $this->calculateBasicStatistics($numericValues);
-        
+
         return [
             'benchmark_period' => $benchmarkMonths,
             'data_points' => count($values),
@@ -226,29 +231,30 @@ class KPIStatisticsDomainService
      * Prognostiziert zukünftige KPI-Werte basierend auf historischen Trends.
      * Einfache lineare Regression für Basis-Forecasting.
      *
-     * @param KPI $kpi Die zu prognostizierende KPI
+     * @param KPI $kpi             Die zu prognostizierende KPI
      * @param int $forecastPeriods Anzahl zukünftiger Perioden
+     *
      * @return array Prognose-Ergebnisse
      */
     public function forecastValues(KPI $kpi, int $forecastPeriods = 3): array
     {
         $values = $this->kpiValueRepository->findByKPI($kpi);
-        
+
         if (count($values) < 3) {
             return ['status' => 'insufficient_data_for_forecast'];
         }
 
         $numericValues = $this->extractNumericValues($values);
         $trendData = $this->performLinearRegression($numericValues);
-        
+
         if ($trendData['confidence'] < 0.5) {
             return ['status' => 'low_confidence_forecast', 'confidence' => $trendData['confidence']];
         }
 
         $forecasts = [];
         $lastIndex = count($numericValues);
-        
-        for ($i = 1; $i <= $forecastPeriods; $i++) {
+
+        for ($i = 1; $i <= $forecastPeriods; ++$i) {
             $forecastValue = $trendData['intercept'] + ($trendData['slope'] * ($lastIndex + $i));
             $forecasts[] = [
                 'period' => $i,
@@ -287,7 +293,7 @@ class KPIStatisticsDomainService
 
         $count = count($values);
         $sum = array_sum($values);
-        
+
         return [
             'average' => round($sum / $count, 2),
             'min' => min($values),
@@ -303,7 +309,7 @@ class KPIStatisticsDomainService
     {
         $mean = array_sum($values) / count($values);
         $variance = $this->calculateVariance($values, $mean);
-        
+
         return [
             'variance' => $variance,
             'std_deviation' => sqrt($variance),
@@ -317,6 +323,7 @@ class KPIStatisticsDomainService
     private function calculateVariance(array $values, float $mean): float
     {
         $squaredDifferences = array_map(fn ($value) => pow($value - $mean, 2), $values);
+
         return array_sum($squaredDifferences) / count($values);
     }
 
@@ -337,7 +344,7 @@ class KPIStatisticsDomainService
         $count = count($values);
         $middle = floor($count / 2);
 
-        return $count % 2 === 0 
+        return 0 === $count % 2
             ? ($values[$middle - 1] + $values[$middle]) / 2
             : $values[$middle];
     }
@@ -355,7 +362,7 @@ class KPIStatisticsDomainService
         $first = end($recentValues);
         $last = $recentValues[0];
 
-        if ($first == 0) {
+        if (0 === $first) {
             return KPITrend::stable();
         }
 
@@ -372,18 +379,18 @@ class KPIStatisticsDomainService
         $count = count($values);
         $first = $values[0]; // Erster Wert im Zeitfenster (älterer Wert)
         $last = $values[count($values) - 1]; // Letzter Wert im Zeitfenster (neuerer Wert)
-        
-        $percentageChange = $first != 0 ? (($last - $first) / $first) * 100 : 0;
-        
+
+        $percentageChange = 0 !== $first ? (($last - $first) / $first) * 100 : 0;
+
         // Volatilität basierend auf Standardabweichung
         $mean = array_sum($values) / $count;
         $volatility = $count > 1 ? $this->calculateStandardDeviation($values, $mean) : 0.0;
-        
+
         // Confidence basierend auf Anzahl Datenpunkte und Konsistenz
         $dataPointsConfidence = min(1.0, $count / 10); // Max bei 10+ Datenpunkten
-        $volatilityPenalty = $mean != 0 ? min($volatility / $mean, 0.5) : 0; // Max Penalty 50%
+        $volatilityPenalty = 0 !== $mean ? min($volatility / $mean, 0.5) : 0; // Max Penalty 50%
         $confidence = max(0.1, $dataPointsConfidence * (1 - $volatilityPenalty)); // Min 10%
-        
+
         return [
             'percentage_change' => $percentageChange,
             'volatility' => $volatility,
@@ -398,23 +405,23 @@ class KPIStatisticsDomainService
     {
         $n = count($values);
         $xValues = range(1, $n);
-        
+
         $sumX = array_sum($xValues);
         $sumY = array_sum($values);
         $sumXY = 0;
         $sumXSquared = 0;
-        
-        for ($i = 0; $i < $n; $i++) {
+
+        for ($i = 0; $i < $n; ++$i) {
             $sumXY += $xValues[$i] * $values[$i];
             $sumXSquared += $xValues[$i] * $xValues[$i];
         }
-        
+
         $slope = ($n * $sumXY - $sumX * $sumY) / ($n * $sumXSquared - $sumX * $sumX);
         $intercept = ($sumY - $slope * $sumX) / $n;
-        
+
         // R-squared für Konfidenz-Berechnung
         $rSquared = $this->calculateRSquared($values, $xValues, $slope, $intercept);
-        
+
         return [
             'slope' => $slope,
             'intercept' => $intercept,
@@ -431,13 +438,13 @@ class KPIStatisticsDomainService
         $yMean = array_sum($yValues) / count($yValues);
         $totalSumSquares = 0;
         $residualSumSquares = 0;
-        
-        for ($i = 0; $i < count($yValues); $i++) {
+
+        for ($i = 0; $i < count($yValues); ++$i) {
             $predicted = $slope * $xValues[$i] + $intercept;
             $totalSumSquares += pow($yValues[$i] - $yMean, 2);
             $residualSumSquares += pow($yValues[$i] - $predicted, 2);
         }
-        
+
         return $totalSumSquares > 0 ? 1 - ($residualSumSquares / $totalSumSquares) : 0;
     }
 
@@ -448,7 +455,7 @@ class KPIStatisticsDomainService
     {
         $pairedValues = [];
         $values2ByPeriod = [];
-        
+
         // Index für values2 nach Periode erstellen
         foreach ($values2 as $value) {
             $period = $value->getPeriod()?->value();
@@ -456,7 +463,7 @@ class KPIStatisticsDomainService
                 $values2ByPeriod[$period] = $value->getValueAsFloat();
             }
         }
-        
+
         // Pairing durchführen
         foreach ($values1 as $value1) {
             $period = $value1->getPeriod()?->value();
@@ -467,7 +474,7 @@ class KPIStatisticsDomainService
                 ];
             }
         }
-        
+
         return $pairedValues;
     }
 
@@ -477,32 +484,32 @@ class KPIStatisticsDomainService
     private function calculatePearsonCorrelation(array $pairedValues): ?float
     {
         $n = count($pairedValues);
-        
+
         if ($n < 3) {
             return null;
         }
-        
+
         $xValues = array_column($pairedValues, 'x');
         $yValues = array_column($pairedValues, 'y');
-        
+
         $xMean = array_sum($xValues) / $n;
         $yMean = array_sum($yValues) / $n;
-        
+
         $numerator = 0;
         $xSumSquares = 0;
         $ySumSquares = 0;
-        
-        for ($i = 0; $i < $n; $i++) {
+
+        for ($i = 0; $i < $n; ++$i) {
             $xDeviation = $xValues[$i] - $xMean;
             $yDeviation = $yValues[$i] - $yMean;
-            
+
             $numerator += $xDeviation * $yDeviation;
             $xSumSquares += $xDeviation * $xDeviation;
             $ySumSquares += $yDeviation * $yDeviation;
         }
-        
+
         $denominator = sqrt($xSumSquares * $ySumSquares);
-        
+
         return $denominator > 0 ? $numerator / $denominator : null;
     }
 
@@ -511,12 +518,12 @@ class KPIStatisticsDomainService
      */
     private function interpretCorrelationStrength(?float $correlation): string
     {
-        if ($correlation === null) {
+        if (null === $correlation) {
             return 'unknown';
         }
-        
+
         $abs = abs($correlation);
-        
+
         return match (true) {
             $abs >= 0.9 => 'very_strong',
             $abs >= 0.7 => 'strong',

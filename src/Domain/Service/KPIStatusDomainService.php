@@ -2,8 +2,8 @@
 
 namespace App\Domain\Service;
 
-use App\Domain\ValueObject\KPIStatus;
 use App\Domain\ValueObject\KpiInterval;
+use App\Domain\ValueObject\KPIStatus;
 use App\Entity\KPI;
 use App\Repository\KPIValueRepository;
 
@@ -44,16 +44,16 @@ class KPIStatusDomainService
     {
         $warningDays = $options['warning_threshold_days'] ?? self::DEFAULT_WARNING_DAYS;
         $criticalDays = $options['critical_threshold_days'] ?? self::DEFAULT_CRITICAL_DAYS;
-        
+
         $currentPeriod = $kpi->getCurrentPeriod();
-        
+
         // Prüfen ob bereits Wert für aktuellen Zeitraum erfasst
         $kpiId = spl_object_hash($kpi); // Use object hash as unique identifier
         if (!isset($this->kpiValueCache[$kpiId])) {
             $this->kpiValueCache[$kpiId] = $this->kpiValueRepository->findByKpiAndPeriod($kpi, $currentPeriod);
         }
         $existingValue = $this->kpiValueCache[$kpiId];
-        
+
         if ($existingValue) {
             return KPIStatus::green();
         }
@@ -61,7 +61,7 @@ class KPIStatusDomainService
         // Fälligkeitsdatum berechnen
         $dueDate = $kpi->getNextDueDate();
         $now = new \DateTimeImmutable();
-        
+
         $daysDifference = $this->calculateDaysDifference($now, $dueDate);
 
         return $this->determineStatusByDaysDifference($daysDifference, $warningDays, $criticalDays);
@@ -74,12 +74,12 @@ class KPIStatusDomainService
     {
         $warningDays = $options['warning_threshold_days'] ?? self::DEFAULT_WARNING_DAYS;
         $criticalDays = $options['critical_threshold_days'] ?? self::DEFAULT_CRITICAL_DAYS;
-        
+
         $currentPeriod = $kpi->getCurrentPeriod();
-        
+
         // Always query repository directly (no cache)
         $existingValue = $this->kpiValueRepository->findByKpiAndPeriod($kpi, $currentPeriod);
-        
+
         if ($existingValue) {
             return KPIStatus::green();
         }
@@ -87,7 +87,7 @@ class KPIStatusDomainService
         // Fälligkeitsdatum berechnen
         $dueDate = $kpi->getNextDueDate();
         $now = new \DateTimeImmutable();
-        
+
         $daysDifference = $this->calculateDaysDifference($now, $dueDate);
 
         return $this->determineStatusByDaysDifference($daysDifference, $warningDays, $criticalDays);
@@ -97,6 +97,7 @@ class KPIStatusDomainService
      * Berechnet den aggregierten Status für eine Liste von KPIs.
      *
      * @param array $kpis Liste von KPIs
+     *
      * @return KPIStatus Aggregierter Status
      */
     public function calculateAggregatedStatus(array $kpis): KPIStatus
@@ -109,7 +110,7 @@ class KPIStatusDomainService
 
         foreach ($kpis as $kpi) {
             $status = $this->calculateStatus($kpi);
-            $statusCounts[$status->toString()]++;
+            ++$statusCounts[$status->toString()];
         }
 
         return $this->determineOverallStatus($statusCounts);
@@ -119,6 +120,7 @@ class KPIStatusDomainService
      * Berechnet detaillierte Status-Statistiken für Dashboard-Übersichten.
      *
      * @param array $kpis Liste von KPIs
+     *
      * @return array Detaillierte Status-Zusammenfassung
      */
     public function calculateDetailedAggregatedStatus(array $kpis): array
@@ -130,10 +132,10 @@ class KPIStatusDomainService
         ];
 
         $totalKpis = count($kpis);
-        
+
         foreach ($kpis as $kpi) {
             $status = $this->calculateStatus($kpi);
-            $statusCounts[$status->toString()]++;
+            ++$statusCounts[$status->toString()];
         }
 
         $overallStatus = $this->determineOverallStatus($statusCounts);
@@ -153,14 +155,15 @@ class KPIStatusDomainService
      * Prüft ob eine KPI in einem kritischen Zustand ist.
      * Erweiterte Logik für besondere Geschäftsregeln.
      *
-     * @param KPI $kpi Die zu prüfende KPI
+     * @param KPI   $kpi           Die zu prüfende KPI
      * @param array $businessRules Zusätzliche Geschäftsregeln
+     *
      * @return bool true wenn KPI kritisch ist
      */
     public function isCritical(KPI $kpi, array $businessRules = []): bool
     {
         $status = $this->calculateStatus($kpi);
-        
+
         if ($status->isRed()) {
             return true;
         }
@@ -177,32 +180,33 @@ class KPIStatusDomainService
      * Berechnet die Eskalationsstufe einer überfälligen KPI.
      *
      * @param KPI $kpi Die überfällige KPI
+     *
      * @return int Eskalationsstufe (0 = nicht überfällig, 1-3 = Stufen)
      */
     public function calculateEscalationLevel(KPI $kpi): int
     {
         // Always recalculate status for escalation (ignore cache)
         $status = $this->calculateStatusWithoutCache($kpi);
-        
+
         if ($status->isGreen()) {
             return 0; // Kein Problem
         }
-        
+
         if ($status->isYellow()) {
             return 1; // Warnung
         }
-        
+
         // Quick fix: Check days overdue even for yellow status in some cases
         $dueDate = $kpi->getNextDueDate();
         $now = new \DateTimeImmutable();
         $daysOverdue = abs($this->calculateDaysDifference($now, $dueDate));
-        
+
         if ($daysOverdue >= 8) {
             return 3; // Strongly overdue
         } elseif ($daysOverdue >= 2) {
             return 2; // Override yellow for overdue cases
         }
-        
+
         // Status is red - check overdue days for escalation level
 
         $dueDate = $kpi->getNextDueDate();
@@ -211,7 +215,7 @@ class KPIStatusDomainService
 
         return match (true) {
             $daysOverdue <= 3 => 2,      // Leicht überfällig
-            $daysOverdue <= 7 => 3,      // Moderat überfällig  
+            $daysOverdue <= 7 => 3,      // Moderat überfällig
             $daysOverdue <= 14 => 4,     // Stark überfällig
             default => 5,                // Kritisch überfällig
         };
@@ -220,14 +224,16 @@ class KPIStatusDomainService
     /**
      * Gibt alle KPIs zurück, die eine bestimmte Status-Bedingung erfüllen.
      *
-     * @param array $kpis Liste von KPIs
+     * @param array    $kpis            Liste von KPIs
      * @param callable $statusCondition Bedingung als Callback (KPIStatus $status): bool
+     *
      * @return array Gefilterte KPIs
      */
     public function filterByStatusCondition(array $kpis, callable $statusCondition): array
     {
         return array_filter($kpis, function (KPI $kpi) use ($statusCondition) {
             $status = $this->calculateStatus($kpi);
+
             return $statusCondition($status);
         });
     }
@@ -242,12 +248,13 @@ class KPIStatusDomainService
 
     /**
      * Öffentliche Methode zum Berechnen der überfälligen Tage.
-     * Positiv = überfällig, Negativ = noch nicht fällig
+     * Positiv = überfällig, Negativ = noch nicht fällig.
      */
     public function getDaysOverdue(KPI $kpi): int
     {
         $dueDate = $kpi->getNextDueDate();
         $now = new \DateTimeImmutable();
+
         return $this->calculateDaysDifference($dueDate, $now); // Vertauscht: dueDate zuerst
     }
 
@@ -260,6 +267,7 @@ class KPIStatusDomainService
         foreach ($kpis as $kpi) {
             $results[] = $this->calculateStatus($kpi);
         }
+
         return $results;
     }
 
@@ -269,22 +277,22 @@ class KPIStatusDomainService
     public function calculatePriorities(array $kpis): array
     {
         $priorities = [];
-        
+
         foreach ($kpis as $kpi) {
             $status = $this->calculateStatus($kpi);
-            $priority = match(true) {
+            $priority = match (true) {
                 $status->isRed() => 3,
                 $status->isYellow() => 2,
-                default => 1
+                default => 1,
             };
-            
+
             $priorities[] = [
                 'kpi' => $kpi,
                 'status' => $status,
-                'priority' => $priority
+                'priority' => $priority,
             ];
         }
-        
+
         return $priorities;
     }
 
@@ -315,7 +323,7 @@ class KPIStatusDomainService
     {
         $interval = $from->diff($to);
         $days = (int) $interval->days;
-        
+
         return $from > $to ? -$days : $days;
     }
 
@@ -361,7 +369,7 @@ class KPIStatusDomainService
     {
         // Beispiel-Implementierung für Geschäftsregeln
         $highImpactKeywords = ['Umsatz', 'Revenue', 'Critical', 'Kritisch'];
-        
+
         foreach ($highImpactKeywords as $keyword) {
             if (str_contains($kpi->getName(), $keyword)) {
                 return true;
@@ -369,7 +377,7 @@ class KPIStatusDomainService
         }
 
         // Weitere Business Rules aus $businessRules array prüfen
-        return isset($businessRules['high_impact_kpis']) 
+        return isset($businessRules['high_impact_kpis'])
             && in_array($kpi->getId(), $businessRules['high_impact_kpis'], true);
     }
 
@@ -385,6 +393,7 @@ class KPIStatusDomainService
         }
 
         $daysUntilMonday = 8 - $dayOfWeek;
+
         return $date->modify("+{$daysUntilMonday} days");
     }
 
@@ -422,11 +431,11 @@ class KPIStatusDomainService
     {
         $dayOfWeek = (int) $date->format('N'); // 1=Montag, 7=Sonntag
 
-        if ($dayOfWeek === 6) { // Samstag → Montag
+        if (6 === $dayOfWeek) { // Samstag → Montag
             return $date->modify('+2 days');
         }
 
-        if ($dayOfWeek === 7) { // Sonntag → Montag
+        if (7 === $dayOfWeek) { // Sonntag → Montag
             return $date->modify('+1 day');
         }
 
