@@ -73,7 +73,7 @@ final class Period
     {
         if (preg_match('/^(\d{4})-(\d{1,2})$/', $this->value, $matches)) {
             $year = $matches[1];
-            $month = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+            $month = mb_str_pad($matches[2], 2, '0', STR_PAD_LEFT);
             $monthNames = [
                 '01' => 'Januar', '02' => 'Februar', '03' => 'März',
                 '04' => 'April', '05' => 'Mai', '06' => 'Juni',
