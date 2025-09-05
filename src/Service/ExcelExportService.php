@@ -32,6 +32,21 @@ class ExcelExportService
     }
 
     /**
+     * Erstellt Spreadsheet mit KPI-Daten.
+     */
+    public function createExcelWithKpis(array $kpis): Spreadsheet
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('KPI Export');
+
+        $this->addKpiListHeaders($sheet);
+        $this->addKpiListDataRows($sheet, $kpis);
+
+        return $spreadsheet;
+    }
+
+    /**
      * Generiert Excel-Datei mit KPI-Daten.
      */
     private function generateKpiExcelFile(array $kpiValues): void
@@ -63,6 +78,23 @@ class ExcelExportService
     }
 
     /**
+     * Fügt Excel-Header für KPI-Listen-Export hinzu.
+     */
+    private function addKpiListHeaders(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): void
+    {
+        $headers = [
+            'Name',
+            'Beschreibung',
+            'Intervall',
+            'Ziel',
+            'Einheit',
+            'Benutzer',
+        ];
+
+        $sheet->fromArray($headers, null, 'A1');
+    }
+
+    /**
      * Fügt KPI-Datenzeilen zu Excel-Sheet hinzu.
      */
     private function addKpiDataRows($sheet, array $kpiValues): void
@@ -71,6 +103,20 @@ class ExcelExportService
 
         foreach ($kpiValues as $kpiValue) {
             $rowData = $this->extractKpiRowData($kpiValue);
+            $this->writeRowToSheet($sheet, $rowData, $currentRow);
+            ++$currentRow;
+        }
+    }
+
+    /**
+     * Fügt KPI-Listen-Datenzeilen zu Excel-Sheet hinzu.
+     */
+    private function addKpiListDataRows(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, array $kpis): void
+    {
+        $currentRow = 2; // Start nach Header-Zeile
+
+        foreach ($kpis as $kpi) {
+            $rowData = $this->extractKpiListRowData($kpi);
             $this->writeRowToSheet($sheet, $rowData, $currentRow);
             ++$currentRow;
         }
@@ -94,14 +140,33 @@ class ExcelExportService
     }
 
     /**
+     * Extrahiert Zeilen-Daten aus KPI Entity.
+     */
+    private function extractKpiListRowData($kpi): array
+    {
+        $user = $kpi?->getUser();
+
+        return [
+            $kpi?->getName() ?? self::DEFAULT_VALUE,
+            $kpi?->getDescription() ?? self::DEFAULT_VALUE,
+            $kpi?->getInterval()?->value ?? self::DEFAULT_VALUE,
+            $kpi?->getTarget() ? (string) $kpi->getTarget() : self::DEFAULT_VALUE,
+            $kpi?->getUnit() ?? self::DEFAULT_VALUE,
+            $user ? sprintf('%s %s (%s)', $user->getFirstName(), $user->getLastName(), $user->getEmail()->getValue()) : self::DEFAULT_VALUE,
+        ];
+    }
+
+    /**
      * Schreibt eine Datenzeile in das Excel-Sheet.
      */
     private function writeRowToSheet(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, array $rowData, int $rowNumber): void
     {
-        $columns = ['A', 'B', 'C', 'D', 'E'];
+        $columns = ['A', 'B', 'C', 'D', 'E', 'F'];
 
         foreach ($rowData as $index => $value) {
-            $sheet->setCellValue($columns[$index].$rowNumber, $value);
+            if (isset($columns[$index])) {
+                $sheet->setCellValue($columns[$index].$rowNumber, $value);
+            }
         }
     }
 

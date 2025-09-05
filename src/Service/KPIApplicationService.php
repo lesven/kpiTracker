@@ -94,8 +94,7 @@ class KPIApplicationService
      */
     public function getKpiStatistics(KPI $kpi): array
     {
-        $values = $this->kpiValueRepository->findByKPI($kpi);
-        $statisticsVO = $this->statisticsService->calculateStatistics($values);
+        $statisticsVO = $this->statisticsService->calculateStatistics($kpi);
         
         return $statisticsVO->toArray();
     }
@@ -109,8 +108,7 @@ class KPIApplicationService
      */
     public function getKpiStatisticsValueObject(KPI $kpi): KPIStatistics
     {
-        $values = $this->kpiValueRepository->findByKPI($kpi);
-        return $this->statisticsService->calculateStatistics($values);
+        return $this->statisticsService->calculateStatistics($kpi);
     }
 
     /**
@@ -157,10 +155,8 @@ class KPIApplicationService
     public function addValue(KPIValue $kpiValue, ?array $uploadedFiles = null): array
     {
         // 1. Duplikat-Prüfung über Domain Service
-        $duplicateResult = $this->duplicateDetectionService->checkForDuplicates(
-            $kpiValue->getKpi(),
-            $kpiValue->getPeriod(),
-            $kpiValue->getValueAsFloat()
+        $duplicateResult = $this->duplicateDetectionService->checkForDuplicate(
+            $kpiValue
         );
 
         if ($duplicateResult['has_duplicate']) {
@@ -405,11 +401,11 @@ class KPIApplicationService
         return [
             'kpi' => $kpi,
             'status' => $this->statusService->calculateStatus($kpi),
-            'statistics' => $this->statisticsService->calculateStatistics($values),
-            'trend' => $this->statisticsService->calculateTrend($values),
+            'statistics' => $this->statisticsService->calculateStatistics($kpi),
+            'trend' => $this->statisticsService->calculateDetailedTrend($values),
             'validation' => $this->validationService->validateKpi($kpi),
             'reminder_info' => $this->reminderService->shouldReceiveReminder($kpi),
-            'duplicate_risks' => $this->duplicateDetectionService->identifyPatterns([$kpi]),
+            'duplicate_risks' => $this->duplicateDetectionService->identifyPatterns($kpi),
             'analysis_timestamp' => new \DateTimeImmutable()
         ];
     }

@@ -3,33 +3,56 @@
 namespace App\Tests\Service;
 
 use App\Domain\ValueObject\EmailAddress;
+use App\Entity\KPI;
 use App\Entity\User;
+use App\Repository\UserRepository;
 use App\Service\UserService;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
 class UserServiceTest extends TestCase
 {
+    private EntityManagerInterface $entityManager;
+    private LoggerInterface $logger;
+    private UserRepository $userRepository;
+    private UserService $service;
+
+    protected function setUp(): void
+    {
+        $this->entityManager = $this->createMock(EntityManagerInterface::class);
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->userRepository = $this->createMock(UserRepository::class);
+
+        $this->entityManager
+            ->method('getRepository')
+            ->with(User::class)
+            ->willReturn($this->userRepository);
+
+        $this->service = new UserService($this->entityManager, $this->logger);
+    }
+
     public function testDeleteUserWithDataLogsAndDeletes(): void
     {
-        $em = $this->createMock(EntityManagerInterface::class);
-        $logger = $this->createMock(LoggerInterface::class);
         $user = $this->createMock(User::class);
         $user->method('getEmail')->willReturn(new EmailAddress('test@example.com'));
         $user->method('getId')->willReturn(1);
+        $user->method('getKpis')->willReturn(new ArrayCollection([]));
+        $user->method('getCreatedAt')->willReturn(new \DateTimeImmutable());
+
         $calls = [];
-        $logger->method('info')->willReturnCallback(function ($msg, $context) use (&$calls) {
+        $this->logger->method('info')->willReturnCallback(function ($msg, $context) use (&$calls) {
             $calls[] = [$msg, $context];
         });
-        $em->expects($this->once())->method('beginTransaction');
-        $service = new UserService($em, $logger);
-        // Da die Methode Exceptions werfen kann, nur Aufruf testen
-        try {
-            $service->deleteUserWithData($user);
-        } catch (\Exception $e) {
-            // Ignoriere Exception für diesen Test
-        }
+
+        $this->entityManager->expects($this->once())->method('beginTransaction');
+        $this->entityManager->expects($this->once())->method('remove')->with($user);
+        $this->entityManager->expects($this->once())->method('flush');
+        $this->entityManager->expects($this->once())->method('commit');
+
+        $this->service->deleteUserWithData($user);
+
         $this->assertCount(2, $calls);
         $this->assertStringContainsString('Starting GDPR-compliant user deletion', $calls[0][0]);
         $this->assertArrayHasKey('user_id', $calls[0][1]);
@@ -37,45 +60,145 @@ class UserServiceTest extends TestCase
         $this->assertArrayHasKey('stats', $calls[1][1]);
     }
 
+    public function testDeleteUserWithDataRollsBackOnException(): void
+    {
+        $user = $this->createMock(User::class);
+        $user->method('getEmail')->willReturn(new EmailAddress('test@example.com'));
+        $user->method('getId')->willReturn(1);
+
+        $this->entityManager->expects($this->once())->method('beginTransaction');
+        $this->entityManager->expects($this->once())->method('remove')->willThrowException(new \Exception('Database error'));
+        $this->entityManager->expects($this->once())->method('rollback');
+        
+        $this->logger->expects($this->once())
+            ->method('error')
+            ->with('GDPR user deletion failed', $this->isType('array'));
+
+        $this->expectException(\Exception::class);
+        $this->service->deleteUserWithData($user);
+    }
+
     public function testGetUserDeletionStatsReturnsArrayWithKeys(): void
     {
-        $em = $this->createMock(EntityManagerInterface::class);
-        $logger = $this->createMock(LoggerInterface::class);
+        $kpi = new KPI();
+        $kpis = new ArrayCollection([$kpi]);
 
         $user = $this->createMock(User::class);
-
-        $user->method('getKpis')->willReturn(new \Doctrine\Common\Collections\ArrayCollection([]));
+        $user->method('getKpis')->willReturn($kpis);
         $user->method('getEmail')->willReturn(new EmailAddress('test@example.com'));
         $user->method('getCreatedAt')->willReturn(new \DateTimeImmutable());
 
-        $service = new UserService($em, $logger);
-        $stats = $service->getUserDeletionStats($user);
+        $stats = $this->service->getUserDeletionStats($user);
 
         $this->assertIsArray($stats);
         $this->assertArrayHasKey('email', $stats);
         $this->assertArrayHasKey('kpi_count', $stats);
         $this->assertArrayHasKey('value_count', $stats);
         $this->assertArrayHasKey('file_count', $stats);
+        $this->assertSame('test@example.com', $stats['email']);
+        $this->assertSame(1, $stats['kpi_count']);
     }
 
     public function testCanDeleteUserReturnsArray(): void
     {
-        $em = $this->createMock(EntityManagerInterface::class);
-        $logger = $this->createMock(LoggerInterface::class);
-
         $user = $this->createMock(User::class);
         $currentUser = $this->createMock(User::class);
 
         $user->method('isAdmin')->willReturn(false);
+        $currentUser->method('getId')->willReturn(2);
+        $user->method('getId')->willReturn(1);
 
-        $userRepo = $this->createMock(\App\Repository\UserRepository::class);
-        $em->method('getRepository')->willReturn($userRepo);
+        $this->userRepository->method('count')->willReturn(5); // Mehr als 1 Admin
 
-        $service = new UserService($em, $logger);
-        $result = $service->canDeleteUser($user, $currentUser);
+        $result = $this->service->canDeleteUser($user, $currentUser);
 
         $this->assertIsArray($result);
         $this->assertArrayHasKey('can_delete', $result);
         $this->assertArrayHasKey('reasons', $result);
+    }
+
+    public function testCanDeleteUserPreventsLastAdminDeletion(): void
+    {
+        $user = $this->createMock(User::class);
+        $currentUser = $this->createMock(User::class);
+
+        $user->method('isAdmin')->willReturn(true);
+        $this->userRepository->method('count')->willReturn(1); // Nur 1 Admin
+
+        $result = $this->service->canDeleteUser($user, $currentUser);
+
+        $this->assertFalse($result['can_delete']);
+        $this->assertContains('Der letzte Administrator kann nicht gelöscht werden.', $result['reasons']);
+    }
+
+    public function testCanDeleteUserPreventsSelfDeletion(): void
+    {
+        // Verwende echte User-Objekte statt Mocks für Objektvergleich
+        $user = new User();
+        $user->setEmail(new EmailAddress('test@example.com'));
+        $currentUser = $user; // Gleiche Objektreferenz = Selbstlöschung
+
+        $this->userRepository->method('count')->willReturn(5);
+
+        $result = $this->service->canDeleteUser($user, $currentUser);
+
+        $this->assertFalse($result['can_delete']);
+        $this->assertContains('Ein Benutzer kann sich nicht selbst löschen.', $result['reasons']);
+    }
+
+    public function testCanDeleteUserAllowsDeletionWhenValid(): void
+    {
+        $user = $this->createMock(User::class);
+        $currentUser = $this->createMock(User::class);
+
+        $user->method('isAdmin')->willReturn(false);
+        $user->method('getId')->willReturn(1);
+        $currentUser->method('getId')->willReturn(2);
+
+        $this->userRepository->method('count')->willReturn(5);
+
+        $result = $this->service->canDeleteUser($user, $currentUser);
+
+        $this->assertTrue($result['can_delete']);
+        $this->assertEmpty($result['reasons']);
+    }
+
+    public function testGetUserDeletionStatsWithKpisAndValues(): void
+    {
+        $kpi1 = new KPI();
+        $kpi2 = new KPI();
+        $kpis = new ArrayCollection([$kpi1, $kpi2]);
+
+        $user = $this->createMock(User::class);
+        $user->method('getKpis')->willReturn($kpis);
+        $user->method('getEmail')->willReturn(new EmailAddress('user@example.com'));
+        $user->method('getCreatedAt')->willReturn(new \DateTimeImmutable('2023-01-01'));
+
+        $stats = $this->service->getUserDeletionStats($user);
+
+        $this->assertSame('user@example.com', $stats['email']);
+        $this->assertSame(2, $stats['kpi_count']);
+        $this->assertIsInt($stats['value_count']);
+        $this->assertIsInt($stats['file_count']);
+        $this->assertInstanceOf(\DateTimeImmutable::class, $stats['created_at']);
+    }
+
+    public function testDeleteUserWithDataDeletesKpisAndValues(): void
+    {
+        $kpi = new KPI();
+        $kpis = new ArrayCollection([$kpi]);
+
+        $user = $this->createMock(User::class);
+        $user->method('getEmail')->willReturn(new EmailAddress('test@example.com'));
+        $user->method('getId')->willReturn(1);
+        $user->method('getKpis')->willReturn($kpis);
+        $user->method('getCreatedAt')->willReturn(new \DateTimeImmutable());
+
+        $this->entityManager->expects($this->once())->method('beginTransaction');
+        $this->entityManager->expects($this->exactly(2))->method('remove'); // KPI + User
+        $this->entityManager->expects($this->once())->method('flush');
+        $this->entityManager->expects($this->once())->method('commit');
+
+        $this->service->deleteUserWithData($user);
     }
 }
