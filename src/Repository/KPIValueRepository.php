@@ -200,6 +200,23 @@ class KPIValueRepository extends ServiceEntityRepository
     }
 
     /**
+     * Findet Werte für eine KPI seit einem bestimmten Datum.
+     *
+     * @return KPIValue[]
+     */
+    public function findByKPISince(KPI $kpi, \DateTimeInterface $since): array
+    {
+        return $this->createQueryBuilder('v')
+            ->andWhere('v.kpi = :kpi')
+            ->andWhere('v.createdAt >= :since')
+            ->setParameter('kpi', $kpi)
+            ->setParameter('since', $since)
+            ->orderBy('v.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Berechnet Durchschnittswerte für eine KPI.
      */
     public function calculateAverageForKpi(KPI $kpi): ?float

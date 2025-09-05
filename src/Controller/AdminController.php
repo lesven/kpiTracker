@@ -80,7 +80,7 @@ class AdminController extends AbstractController
     #[Route('/users/new', name: 'app_admin_user_new', methods: ['GET', 'POST'])]
     public function newUser(Request $request): Response
     {
-        $user = $this->userFactory->createRegularUser('', '', '');
+        $user = new User();
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
 
