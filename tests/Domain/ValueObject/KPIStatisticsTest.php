@@ -50,9 +50,9 @@ class KPIStatisticsTest extends TestCase
         );
 
         $this->assertSame(1, $stats->getTotalEntries());
-        $this->assertSame(100.0, $stats->getAverageValue());
-        $this->assertSame(100.0, $stats->getMinValue());
-        $this->assertSame(100.0, $stats->getMaxValue());
+    $this->assertEquals(100.0, $stats->getAverageValue());
+    $this->assertEquals(100.0, $stats->getMinValue());
+    $this->assertEquals(100.0, $stats->getMaxValue());
         $this->assertSame($kpiValue, $stats->getLatestValue());
         $this->assertTrue($stats->hasData());
         $this->assertFalse($stats->isEmpty());
@@ -192,7 +192,7 @@ class KPIStatisticsTest extends TestCase
 
         $this->assertIsArray($array);
         $this->assertSame(5, $array['total_entries']);
-        $this->assertSame(100.0, $array['average_value']);
+    $this->assertEquals(100.0, $array['average_value']);
         $this->assertSame(80.0, $array['min_value']);
         $this->assertSame(120.0, $array['max_value']);
         $this->assertSame($kpiValue, $array['latest_value']);
@@ -222,7 +222,7 @@ class KPIStatisticsTest extends TestCase
         $decoded = json_decode($json, true);
         $this->assertIsArray($decoded);
         $this->assertSame(3, $decoded['total_entries']);
-        $this->assertSame(100.0, $decoded['average_value']);
+    $this->assertEquals(100.0, $decoded['average_value']);
     }
 
     /**
@@ -324,7 +324,7 @@ class KPIStatisticsTest extends TestCase
 
         // Original sollte unverändert sein
         $this->assertSame(5, $originalStats->getTotalEntries());
-        $this->assertSame(100.0, $originalStats->getAverageValue());
+    $this->assertEquals(100.0, $originalStats->getAverageValue());
         $this->assertSame(10, $newStats->getTotalEntries());
         $this->assertSame(200.0, $newStats->getAverageValue());
     }

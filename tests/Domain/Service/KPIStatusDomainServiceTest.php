@@ -112,7 +112,7 @@ class KPIStatusDomainServiceTest extends TestCase
         $dueDate = $this->service->calculateDueDate($kpi);
 
         // Sollte der nächste Montag sein
-        $this->assertSame(1, $dueDate->format('N')); // ISO-8601: 1 = Montag
+    $this->assertEquals(1, (int) $dueDate->format('N')); // ISO-8601: 1 = Montag
         $this->assertGreaterThan(new \DateTimeImmutable(), $dueDate);
     }
 

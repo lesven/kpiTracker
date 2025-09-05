@@ -105,7 +105,7 @@ readonly class KPIValueAdded
             'kpi_name' => $this->kpi->getName(),
             'kpi_interval' => $this->kpi->getInterval()?->value,
             'user_id' => $this->user->getId(),
-            'user_email' => $this->user->getEmail(),
+            'user_email' => (string) $this->user->getEmail(),
             'value_id' => $this->kpiValue->getId(),
             'value_amount' => $this->kpiValue->getValueAsFloat(),
             'value_period' => $this->kpiValue->getPeriod()?->value(),

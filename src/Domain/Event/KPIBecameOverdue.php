@@ -190,7 +190,7 @@ readonly class KPIBecameOverdue
             'kpi_name' => $this->kpi->getName(),
             'kpi_interval' => $this->kpi->getInterval()?->value,
             'user_id' => $this->user->getId(),
-            'user_email' => $this->user->getEmail(),
+            'user_email' => (string) $this->user->getEmail(),
             'previous_status' => $this->previousStatus->toString(),
             'current_status' => $this->currentStatus->toString(),
             'days_overdue' => $this->daysOverdue,

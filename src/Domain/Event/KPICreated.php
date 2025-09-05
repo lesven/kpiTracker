@@ -247,7 +247,7 @@ readonly class KPICreated
             'has_target' => null !== $this->kpi->getTarget(),
             'has_description' => !empty($this->kpi->getDescription()),
             'user_id' => $this->user->getId(),
-            'user_email' => $this->user->getEmail(),
+            'user_email' => (string) $this->user->getEmail(),
             'creation_source' => $this->getCreationSource(),
             'complexity_level' => $this->getComplexityLevel(),
             'is_first_kpi' => $this->isFirstKpiForUser(),

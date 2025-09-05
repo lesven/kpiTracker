@@ -145,7 +145,8 @@ class KPIStatisticsDomainService
 
         foreach ($values as $index => $value) {
             $numericValue = $numericValues[$index];
-            $zScore = abs(($numericValue - $mean) / $stdDev);
+            // defensive: avoid division by zero in any edge case
+            $zScore = $stdDev == 0.0 ? 0.0 : abs(($numericValue - $mean) / $stdDev);
 
             if ($zScore > $threshold) {
                 $outliers[] = [

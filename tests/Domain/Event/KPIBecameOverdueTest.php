@@ -332,7 +332,7 @@ class KPIBecameOverdueTest extends TestCase
 
         // Assert
         $expectedTime = $occurredOn->modify("+{$expectedHours} hours");
-        $this->assertSame($expectedTime, $event->getNextReminderTime());
+    $this->assertEquals($expectedTime, $event->getNextReminderTime());
     }
 
     public static function nextReminderTimeProvider(): array

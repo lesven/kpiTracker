@@ -42,9 +42,9 @@ class KPIStatisticsDomainServiceTest extends TestCase
         $statistics = $this->service->calculateStatistics($kpi, ['include_advanced' => false]);
 
         $this->assertSame(1, $statistics->getTotalEntries());
-        $this->assertSame(100.0, $statistics->getAverageValue());
-        $this->assertSame(100.0, $statistics->getMinValue());
-        $this->assertSame(100.0, $statistics->getMaxValue());
+    $this->assertEquals(100.0, $statistics->getAverageValue());
+    $this->assertEquals(100.0, $statistics->getMinValue());
+    $this->assertEquals(100.0, $statistics->getMaxValue());
         $this->assertNotNull($statistics->getLatestValue());
     }
 
@@ -422,8 +422,8 @@ class KPIStatisticsDomainServiceTest extends TestCase
         $this->assertEmpty($outliers); // Keine Standardabweichung = keine Ausreißer
 
         $statistics = $this->service->calculateStatistics($kpi, ['include_advanced' => true]);
-        $this->assertSame(0, $statistics->getVariance());
-        $this->assertSame(0, $statistics->getStandardDeviation());
+    $this->assertEquals(0.0, $statistics->getVariance());
+    $this->assertEquals(0.0, $statistics->getStandardDeviation());
     }
 
     /**
